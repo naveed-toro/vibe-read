@@ -50,6 +50,10 @@
         "icon": "$(book)"
       },
       {
+        "command": "vibeRead.pickMark",
+        "title": "Vibe Read: Change the mark"
+      },
+      {
         "command": "vibeRead.openWalkthrough",
         "title": "Vibe Read: Open Walkthrough"
       },
@@ -150,7 +154,12 @@
         "vibeRead.hiddenIcon": {
           "type": "string",
           "default": "🙈",
-          "markdownDescription": "What to show in place of hidden code.\n\nSuggestions: `🙈`  `⋯`  `💤`  `🫥` — or type anything you like."
+          "markdownDescription": "What stands in for hidden code.\n\nEasier to change from the status bar: click the mark at the bottom of the window."
+        },
+        "vibeRead.yourMark": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Your own mark, kept alongside the four suggested ones so you can go back to it.\n\nSet from the status bar rather than here — the emoji keyboard is easier than typing."
         },
         "vibeRead.showEditorButton": {
           "type": "boolean",

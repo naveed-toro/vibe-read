@@ -79,8 +79,19 @@ function isHideable(l: ScannedLine): boolean {
 let decoration: vscode.TextEditorDecorationType | undefined;
 let currentIcon = '';
 
+/**
+ * Set while someone is choosing a mark, so the editor behind the list shows
+ * what they are pointing at before they commit to it.
+ */
+let previewMark: string | undefined;
+
+function activeMark(): string {
+    if (previewMark) { return previewMark; }
+    return vscode.workspace.getConfiguration('vibeRead').get<string>('hiddenIcon') || DEFAULT_MARK;
+}
+
 function decorationType(): vscode.TextEditorDecorationType {
-    const icon = vscode.workspace.getConfiguration('vibeRead').get<string>('hiddenIcon') || '🙈';
+    const icon = activeMark();
 
     if (decoration && icon === currentIcon) { return decoration; }
 
@@ -148,6 +159,9 @@ function redraw(editor: vscode.TextEditor | undefined): void {
 
 let statusBar: vscode.StatusBarItem;
 
+/** The mark itself, sitting next to the mode. Click it to change it. */
+let markBar: vscode.StatusBarItem;
+
 /**
  * On, or off — and when on, how much there is to read.
  *
@@ -163,7 +177,13 @@ let statusBar: vscode.StatusBarItem;
 function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hidden: number): void {
     if (!editor) { statusBar.hide(); return; }
 
-    const icon = currentIcon || '🙈';
+    const icon = currentIcon || DEFAULT_MARK;
+
+    markBar.text = icon;
+    markBar.tooltip = new vscode.MarkdownString(
+        '**Change the mark**\n\n' + emojiKeyboardHint()
+    );
+    markBar.show();
 
     // Both tooltips end the same way, one word apart — hide only those, show
     // only those. Nowhere does either of them use the word toggle; reading the
@@ -496,6 +516,204 @@ async function saveAsNotes(editor: vscode.TextEditor): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
+// Choosing the mark
+//
+// The setting was always there, and nobody was ever going to find it. Opening
+// Settings, searching for the extension and typing an emoji is four steps too
+// many for something you might want to change on a whim — and a mark you look
+// at forty times a page is exactly the sort of thing you change on a whim.
+//
+// So: the current mark sits in the status bar, and clicking it offers four,
+// plus one slot that is yours. Four rather than forty because a long list is
+// another thing to read; the four are picked to suit four different sorts of
+// person rather than to be four variations of the same idea.
+//
+// Anything outside those four goes in the fifth slot, and the emoji keyboard
+// that opens it belongs to the operating system. Shipping two thousand emoji
+// with names and categories, to rebuild a picker every machine already has,
+// would be a great deal of work for a worse result.
+// ---------------------------------------------------------------------------
+
+const DEFAULT_MARK = '🙈';
+const MOST_MARKS = 4;
+
+const SUGGESTED: { mark: string; why: string }[] = [
+    { mark: '🙈', why: 'the default' },
+    { mark: '🤫', why: 'quiet' },
+    { mark: '💤', why: 'asleep' },
+    { mark: '💻', why: 'there is code here' },
+];
+
+interface MarkChoice extends vscode.QuickPickItem {
+    mark?: string;
+}
+
+function yourMark(): string {
+    return vscode.workspace.getConfiguration('vibeRead').get<string>('yourMark') || '';
+}
+
+async function remember(key: 'hiddenIcon' | 'yourMark', value: string): Promise<void> {
+    await vscode.workspace
+        .getConfiguration('vibeRead')
+        .update(key, value, vscode.ConfigurationTarget.Global);
+}
+
+async function pickMark(): Promise<void> {
+    const picked = await offerTheFour();
+    if (!picked) { return; }
+
+    if (picked.mark) {
+        await remember('hiddenIcon', picked.mark);
+        return;
+    }
+
+    // They want their own. Whatever comes back is both used and kept, so the
+    // fifth slot still holds it after they have wandered off to 💤 and back.
+    const own = await askForOwnMark(yourMark());
+    if (own === undefined) { return; }
+
+    await remember('yourMark', own);
+    await remember('hiddenIcon', own);
+}
+
+/** Four suggestions and a slot of your own. Resolves undefined if dismissed. */
+function offerTheFour(): Promise<{ mark?: string } | undefined> {
+    return new Promise(resolve => {
+        const box = vscode.window.createQuickPick<MarkChoice>();
+        const mine = yourMark();
+        const showing = vscode.workspace
+            .getConfiguration('vibeRead').get<string>('hiddenIcon') || DEFAULT_MARK;
+
+        box.title = 'What stands in for hidden code';
+        box.items = [
+            ...SUGGESTED.map(s => ({ label: s.mark, description: s.why, mark: s.mark })),
+            mine
+                ? {
+                    label: mine,
+                    description: 'yours',
+                    mark: mine,
+                    // Clicking the row uses it; clicking the pencil changes it.
+                    // Two things people want at different times, one row.
+                    buttons: [{
+                        iconPath: new vscode.ThemeIcon('edit'),
+                        tooltip: 'Change this one',
+                    }],
+                }
+                : { label: '$(add) Set your own…' },
+        ];
+
+        const already = box.items.find(i => i.mark === showing);
+        if (already) { box.activeItems = [already]; }
+
+        let answered = false;
+
+        // Arrowing down the list changes the editor behind it. Only visible
+        // while something is actually hidden, which is when it matters.
+        box.onDidChangeActive(items => {
+            previewMark = items[0]?.mark;
+            redraw(vscode.window.activeTextEditor);
+        });
+
+        box.onDidTriggerItemButton(() => {
+            answered = true;
+            box.hide();
+            resolve({});
+        });
+
+        box.onDidAccept(() => {
+            const chosen = box.activeItems[0];
+            answered = true;
+            box.hide();
+            resolve(chosen?.mark ? { mark: chosen.mark } : {});
+        });
+
+        box.onDidHide(() => {
+            previewMark = undefined;
+            redraw(vscode.window.activeTextEditor);
+            box.dispose();
+            if (!answered) { resolve(undefined); }
+        });
+
+        box.show();
+    });
+}
+
+/** The box where the operating system's emoji keyboard does the real work. */
+function askForOwnMark(current: string): Promise<string | undefined> {
+    return new Promise(resolve => {
+        const box = vscode.window.createInputBox();
+        box.title = 'Your own mark';
+        box.value = current;
+        box.prompt = emojiKeyboardHint();
+
+        let answered = false;
+
+        box.onDidChangeValue(value => {
+            const wrong = whatIsWrong(value);
+            box.validationMessage = wrong ?? '';
+            previewMark = wrong ? undefined : value.trim();
+            redraw(vscode.window.activeTextEditor);
+        });
+
+        box.onDidAccept(() => {
+            const value = box.value.trim();
+            if (whatIsWrong(value)) { return; }
+            answered = true;
+            box.hide();
+            resolve(value);
+        });
+
+        box.onDidHide(() => {
+            previewMark = undefined;
+            redraw(vscode.window.activeTextEditor);
+            box.dispose();
+            if (!answered) { resolve(undefined); }
+        });
+
+        box.show();
+    });
+}
+
+/**
+ * Every system has an emoji keyboard except, dependably, Linux — where the
+ * shortcut belongs to the desktop rather than the system and is different on
+ * each one. Naming a shortcut that does nothing is worse than naming none:
+ * they press it, nothing happens, and the extension looks broken. Pasting
+ * works everywhere.
+ */
+function emojiKeyboardHint(): string {
+    switch (process.platform) {
+        case 'win32': return 'Win + .  opens the emoji keyboard. Up to four.';
+        case 'darwin': return 'Control + Command + Space  opens the emoji keyboard. Up to four.';
+        default: return 'Type or paste any emoji. Up to four.';
+    }
+}
+
+function whatIsWrong(value: string): string | undefined {
+    const text = value.trim();
+    if (text === '') { return 'Pick at least one.'; }
+
+    const count = marksIn(text);
+    if (count > MOST_MARKS) { return `Four at most — that is ${count}.`; }
+
+    return undefined;
+}
+
+/**
+ * Counts what a person would call characters. A single emoji is often several
+ * code units, and some are several code points joined together, so neither
+ * .length nor spreading gives an answer anybody would agree with.
+ */
+function marksIn(text: string): number {
+    const segmenter = (Intl as unknown as {
+        Segmenter?: new () => { segment(input: string): Iterable<{ segment: string }> };
+    }).Segmenter;
+
+    if (!segmenter) { return [...text].length; }
+    return [...new segmenter().segment(text)].length;
+}
+
+// ---------------------------------------------------------------------------
 // The guided introduction
 // ---------------------------------------------------------------------------
 
@@ -568,6 +786,10 @@ export function activate(context: vscode.ExtensionContext): void {
     statusBar.command = 'vibeRead.toggle';
     context.subscriptions.push(statusBar);
 
+    markBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 99);
+    markBar.command = 'vibeRead.pickMark';
+    context.subscriptions.push(markBar);
+
     // A key that quietly does nothing is worse than no key at all — the user
     // decides the extension is broken and never presses it again. So when there
     // is no file to work on, say so.
@@ -581,6 +803,7 @@ export function activate(context: vscode.ExtensionContext): void {
         vscode.commands.registerCommand('vibeRead.toggle', withEditor(toggle)),
         vscode.commands.registerCommand('vibeRead.saveAsNotes', withEditor(saveAsNotes)),
         vscode.commands.registerCommand('vibeRead.smartCopy', withEditor(smartCopy)),
+        vscode.commands.registerCommand('vibeRead.pickMark', pickMark),
         vscode.commands.registerCommand('vibeRead.openWalkthrough', openWalkthrough),
         vscode.commands.registerCommand('vibeRead.openSample', openSample),
 
