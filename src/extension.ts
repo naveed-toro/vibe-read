@@ -116,21 +116,29 @@ function redraw(editor: vscode.TextEditor | undefined): void {
     const doc = editor.document;
     const s = stateFor(doc);
 
-    // Nothing hidden means nothing to draw. Worth checking first: this runs on
-    // every keystroke, and scanning a large file each time would be felt.
+    // Nothing asked for means nothing to draw. Worth checking first: this runs
+    // on every keystroke, and scanning a large file each time would be felt.
     if (!isEngaged(s)) {
         editor.setDecorations(decorationType(), []);
-        updateStatusBar(editor, 0);
+        updateStatusBar(editor, { hidden: 0, shown: 0, wholeFile: false });
         vscode.commands.executeCommand('setContext', 'vibeRead.active', false);
         return;
     }
 
     const lines = scan(doc, syntaxFor(doc.languageId));
     const ranges: vscode.Range[] = [];
+    let shown = 0;
 
     for (let i = 0; i < lines.length; i++) {
         const l = lines[i];
-        if (!isHideable(l) || !isLineHidden(i, s)) { continue; }
+        if (!isHideable(l)) { continue; }
+
+        if (!isLineHidden(i, s)) {
+            // A line of code that would be hidden but for the user asking to
+            // see it. Counted, because the status bar has to admit to it.
+            if (s.overrides.get(i) === false) { shown++; }
+            continue;
+        }
 
         // For a mixed line we hide only the code and leave the comment showing.
         const end = l.kind.kind === 'mixed' ? l.kind.commentAt : doc.lineAt(i).text.length;
@@ -141,8 +149,12 @@ function redraw(editor: vscode.TextEditor | undefined): void {
     }
 
     editor.setDecorations(decorationType(), ranges);
-    updateStatusBar(editor, ranges.length);
-    vscode.commands.executeCommand('setContext', 'vibeRead.active', true);
+    updateStatusBar(editor, { hidden: ranges.length, shown, wholeFile: s.wholeFile });
+
+    // "On" means something is covered up at this moment — not that a flag is
+    // set somewhere. If every line has been asked back, nothing is hidden, so
+    // Ctrl+C has no reason to behave any differently from VS Code's own.
+    vscode.commands.executeCommand('setContext', 'vibeRead.active', ranges.length > 0);
 }
 
 // ---------------------------------------------------------------------------
@@ -155,38 +167,51 @@ function redraw(editor: vscode.TextEditor | undefined): void {
 
 let statusBar: vscode.StatusBarItem;
 
-function updateStatusBar(editor: vscode.TextEditor | undefined, hiddenLines: number): void {
+interface Counts { hidden: number; shown: number; wholeFile: boolean; }
+
+/**
+ * What the screen actually looks like, in words.
+ *
+ * There are four states and they must not share a label. Saying "Reading"
+ * while most of the file plainly shows its code reads as a broken extension —
+ * and once someone believes that, they uninstall rather than ask.
+ */
+function updateStatusBar(editor: vscode.TextEditor | undefined, c: Counts): void {
     if (!editor) { statusBar.hide(); return; }
 
-    const s = stateFor(editor.document);
     const icon = currentIcon || '🙈';
+    const lines = (n: number) => `${n} line${n === 1 ? '' : 's'}`;
     const keys =
         '`Alt+X` show the code back  \n' +
         '`Alt+M` keep it as notes  \n' +
         '`Ctrl+C` copies only what you can see';
 
-    if (!isEngaged(s)) {
+    if (c.hidden === 0) {
+        // Nothing is covered up, whatever the flags happen to say.
         statusBar.text = '$(eye) Vibe Read';
         statusBar.tooltip = new vscode.MarkdownString(
             '**Vibe Read**\n\n' +
             '`Alt+X` hide the code, read the reasoning  \n' +
             'Select some lines first to hide only those.'
         );
-    } else if (s.wholeFile) {
+    } else if (c.wholeFile && c.shown === 0) {
         statusBar.text = `${icon} Reading`;
         statusBar.tooltip = new vscode.MarkdownString(
             '**Vibe Read is on** — only the reasoning is showing.\n\n' + keys
         );
-    } else {
-        // Hiding a selection leaves most of the file looking untouched. Saying
-        // only "Reading" here invites the reasonable conclusion that the
-        // extension is broken, so the count says what actually happened.
-        const n = hiddenLines;
-        statusBar.text = `${icon} Reading · ${n} line${n === 1 ? '' : 's'}`;
+    } else if (c.wholeFile) {
+        // The whole file, less the lines that were asked back.
+        statusBar.text = `${icon} Reading · ${lines(c.shown)} shown`;
         statusBar.tooltip = new vscode.MarkdownString(
-            `**Vibe Read is on for ${n} line${n === 1 ? '' : 's'}.**\n\n` +
+            `**Vibe Read is on**, apart from ${lines(c.shown)} you asked to see.\n\n` +
+            'Select them and press `Alt+X` to put them away again.\n\n' + keys
+        );
+    } else {
+        statusBar.text = `${icon} Reading · ${lines(c.hidden)} hidden`;
+        statusBar.tooltip = new vscode.MarkdownString(
+            `**Vibe Read is on for ${lines(c.hidden)}.**\n\n` +
             'The rest of the file is untouched. Press `Alt+X` with nothing ' +
-            'selected to hide the whole file.\n\n' + keys
+            'selected to hide all of it.\n\n' + keys
         );
     }
 
