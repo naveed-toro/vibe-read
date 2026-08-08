@@ -48,6 +48,14 @@
         "command": "vibeRead.saveAsNotes",
         "title": "Vibe Read: Save as notes",
         "icon": "$(book)"
+      },
+      {
+        "command": "vibeRead.openWalkthrough",
+        "title": "Vibe Read: Open Walkthrough"
+      },
+      {
+        "command": "vibeRead.openSample",
+        "title": "Vibe Read: Open a sample file"
       }
     ],
     "keybindings": [
@@ -92,18 +100,24 @@
           "command": "vibeRead.saveAsNotes",
           "group": "vibeRead@2"
         }
+      ],
+      "commandPalette": [
+        {
+          "command": "vibeRead.openSample",
+          "when": "false"
+        }
       ]
     },
     "walkthroughs": [
       {
         "id": "readMyAI",
-        "title": "Read My AI",
+        "title": "Read the why",
         "description": "AI writes the code. Its comments explain the why. Four steps, about a minute.",
         "steps": [
           {
             "id": "open",
             "title": "Open a file your AI wrote",
-            "description": "Any code file works, as long as it has comments in it.",
+            "description": "Any code file works, as long as it has comments in it.\n[Open a sample file](command:vibeRead.openSample)",
             "media": { "markdown": "media/1-open.md", "altText": "A commented function" }
           },
           {

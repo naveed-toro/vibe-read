@@ -486,6 +486,64 @@ async function saveAsNotes(editor: vscode.TextEditor): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
+// The guided introduction
+// ---------------------------------------------------------------------------
+
+const WALKTHROUGH = 'naveed-toro.vibe-read#readMyAI';
+
+/**
+ * Its own command, because the built-in "Welcome: Open Walkthrough" hides ours
+ * in a list among every other extension's. Typing "walk" in the palette should
+ * find it, the way it finds everybody else's.
+ */
+function openWalkthrough(): void {
+    vscode.commands.executeCommand('workbench.action.openWalkthrough', WALKTHROUGH, false);
+}
+
+/**
+ * The first step's button.
+ *
+ * A walkthrough panel can only hold pictures and text — no buttons of its own,
+ * nothing that runs. So rather than animate what Alt+X does, this hands the
+ * reader a real file and lets them press the key themselves. The editor is the
+ * demonstration; the panel only has to point at it.
+ *
+ * Untitled, not a file on disk, so nothing they try can damage anything.
+ */
+async function openSample(): Promise<void> {
+    const doc = await vscode.workspace.openTextDocument({
+        language: 'python',
+        content: SAMPLE,
+    });
+    await vscode.window.showTextDocument(doc, { preview: false });
+}
+
+const SAMPLE = `# A file to try Vibe Read on. Press Alt+X.
+
+
+def apply_checkout(cart, tax_rate, coupon=None):
+    """Work out what the customer actually pays."""
+
+    # An empty cart has to be caught here. The maths below
+    # divides by the item count and would crash on it.
+    if not cart:
+        return 0.0
+
+    subtotal = sum(item.price for item in cart)
+
+    # Discount before tax, never after. The other order
+    # overcharges the customer, and in most places it is
+    # also illegal.
+    if coupon:
+        subtotal *= (1 - coupon.rate)
+
+    # Rounding once, at the very end. Rounding at each step
+    # drifts by a few cents on large carts, and the accounts
+    # team does notice.
+    return round(subtotal * (1 + tax_rate), 2)  # validated above
+`;
+
+// ---------------------------------------------------------------------------
 // Wiring
 // ---------------------------------------------------------------------------
 
@@ -513,6 +571,8 @@ export function activate(context: vscode.ExtensionContext): void {
         vscode.commands.registerCommand('vibeRead.toggle', withEditor(toggle)),
         vscode.commands.registerCommand('vibeRead.saveAsNotes', withEditor(saveAsNotes)),
         vscode.commands.registerCommand('vibeRead.smartCopy', withEditor(smartCopy)),
+        vscode.commands.registerCommand('vibeRead.openWalkthrough', openWalkthrough),
+        vscode.commands.registerCommand('vibeRead.openSample', openSample),
 
         vscode.window.onDidChangeActiveTextEditor(redraw),
 
@@ -563,15 +623,10 @@ function showWelcomeOnce(context: vscode.ExtensionContext): void {
         'and leaves the why — press it again to bring the code back.',
         'Show me how'
     ).then(choice => {
-        if (choice !== 'Show me how') { return; }
         // The walkthrough, not the keyboard shortcuts list. Someone who has
         // just been told what this is for wants to see it work, not read a
         // table of key bindings.
-        vscode.commands.executeCommand(
-            'workbench.action.openWalkthrough',
-            'naveed-toro.vibe-read#readMyAI',
-            false
-        );
+        if (choice === 'Show me how') { openWalkthrough(); }
     });
 }
 

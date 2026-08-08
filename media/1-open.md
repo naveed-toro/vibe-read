@@ -1,12 +1,12 @@
-Any code file will do, in any language. The only thing that matters is that
-something in it explains itself.
+Any code file, in any language. The only thing that
+matters is that something in it explains itself.
 
 ```python
-# The discount comes off before tax. The other order overcharges
-# the customer, and in most places it is also illegal.
+# Discount before tax. The other order
+# overcharges the customer.
 if coupon:
     subtotal *= (1 - coupon.rate)
 ```
 
-If your AI wrote the file without comments, ask it again and add four words:
-**"and comment your reasoning."**
+No comments in what your AI gave you? Ask again and
+add four words: **"and comment your reasoning."**
