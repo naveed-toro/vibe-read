@@ -29,6 +29,9 @@ C++, C#, Go, Rust, Ruby, PHP, Swift, Kotlin, SQL, HTML, YAML, shell, Lua,
 Haskell, LaTeX and more. Trailing comments work too — `total = a + b  # why`
 hides the statement and leaves the reason.
 
+Python docstrings count as reasoning, not as code. A string used as data — a
+block of SQL, an HTML template — still counts as code and is hidden.
+
 ---
 
 *Vibe Read grew out of Smart Fold, an earlier extension of mine. Smart Fold

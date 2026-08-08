@@ -11,10 +11,21 @@ export interface CommentSyntax {
     line: string[];
     /** Block comment delimiters, if the language has them. */
     block?: { open: string; close: string };
+    /**
+     * Quote marks that, when a line begins with them, open a block of prose
+     * rather than a value. Python's docstrings, essentially.
+     *
+     * Every other language documents itself in real comments — JSDoc, Javadoc,
+     * `///`, `<!-- -->`, `/* *\/` are all comments already. Python is the one
+     * that puts its explanation in a string, and it is also the language most
+     * AI-written code arrives in, so it cannot be left out.
+     */
+    docQuotes?: string[];
 }
 
 const C_STYLE: CommentSyntax = { line: ['//'], block: { open: '/*', close: '*/' } };
 const HASH: CommentSyntax = { line: ['#'] };
+const PYTHON: CommentSyntax = { line: ['#'], docQuotes: ['"""', "'''"] };
 const HTML: CommentSyntax = { line: [], block: { open: '<!--', close: '-->' } };
 
 const BY_LANGUAGE: Record<string, CommentSyntax> = {
@@ -27,7 +38,7 @@ const BY_LANGUAGE: Record<string, CommentSyntax> = {
     json: C_STYLE, jsonc: C_STYLE, groovy: C_STYLE, objectivec: C_STYLE,
 
     // Hash family — this is the one that matters most
-    python: HASH, ruby: HASH, shellscript: HASH, bash: HASH, zsh: HASH,
+    python: PYTHON, ruby: HASH, shellscript: HASH, bash: HASH, zsh: HASH,
     yaml: HASH, toml: HASH, dockerfile: HASH, makefile: HASH,
     r: HASH, perl: HASH, elixir: HASH, powershell: { line: ['#'], block: { open: '<#', close: '#>' } },
 
@@ -97,9 +108,16 @@ export type LineKind =
  * `insideBlock` tells us we are already inside a /* ... *\/ that opened on an
  * earlier line, so the whole line counts as comment.
  */
-export function readLine(text: string, syntax: CommentSyntax, insideBlock: boolean): LineKind {
-    if (text.trim() === '') { return { kind: 'blank' }; }
+export function readLine(
+    text: string,
+    syntax: CommentSyntax,
+    insideBlock: boolean,
+    docAllowed = false
+): LineKind {
+    // Inside a block, even an empty line belongs to it. This is checked first:
+    // treating it as blank would cut one long explanation into two.
     if (insideBlock) { return { kind: 'comment' }; }
+    if (text.trim() === '') { return { kind: 'blank' }; }
 
     const trimmed = text.trim();
 
@@ -108,6 +126,8 @@ export function readLine(text: string, syntax: CommentSyntax, insideBlock: boole
         if (trimmed.startsWith(token)) { return { kind: 'comment' }; }
     }
     if (syntax.block && trimmed.startsWith(syntax.block.open)) { return { kind: 'comment' }; }
+    // A docstring: prose, so far as anyone reading is concerned.
+    if (docAllowed && openingDoc(trimmed, syntax) !== null) { return { kind: 'comment' }; }
     // Continuation of a JSDoc-style block: "  * some text"
     if (syntax.block?.open === '/*' && trimmed.startsWith('*')) { return { kind: 'comment' }; }
 
@@ -140,16 +160,94 @@ function findTrailingComment(text: string, syntax: CommentSyntax): number {
     return -1;
 }
 
-/** Does a block comment open on this line and stay open? */
-export function opensBlock(text: string, syntax: CommentSyntax, insideBlock: boolean): boolean {
+/**
+ * Which docstring quote this line begins with, or null.
+ *
+ * The line has to *start* with it. That single condition is what keeps a
+ * multi-line string being used as data out of the way:
+ *
+ *     query = """SELECT * FROM carts"""    <- starts with `query =`, so: code
+ *     """Why this function exists."""      <- starts with the quotes, so: prose
+ *
+ * A string only stands alone at the start of a line when it is being used as
+ * documentation. Anything else has a name or an operator in front of it.
+ */
+function openingDoc(trimmed: string, syntax: CommentSyntax): string | null {
+    for (const quote of syntax.docQuotes ?? []) {
+        if (trimmed.startsWith(quote)) { return quote; }
+    }
+    return null;
+}
+
+/** Does a block comment or docstring open on this line and stay open? */
+export function opensBlock(
+    text: string,
+    syntax: CommentSyntax,
+    insideBlock: boolean,
+    docAllowed = false
+): boolean {
+    const trimmed = text.trim();
+
+    if (insideBlock) {
+        // Whichever kind we are inside, a closing token on this line ends it.
+        // Both are checked because only one of them can have been open, and no
+        // language here has both.
+        if (syntax.block && text.includes(syntax.block.close)) { return false; }
+        for (const quote of syntax.docQuotes ?? []) {
+            if (text.includes(quote)) { return false; }
+        }
+        return !!(syntax.block || syntax.docQuotes);
+    }
+
+    if (docAllowed) {
+        const quote = openingDoc(trimmed, syntax);
+        if (quote !== null) {
+            // The tokens are the same at both ends, so a one-liner needs a
+            // second one: `"""Short."""` opens and closes on this line.
+            return trimmed.indexOf(quote, quote.length) === -1;
+        }
+    }
+
     if (!syntax.block) { return false; }
     const { open, close } = syntax.block;
-
-    if (insideBlock) { return !text.includes(close); }
-
     const openAt = text.lastIndexOf(open);
     if (openAt === -1) { return false; }
     return text.indexOf(close, openAt + open.length) === -1;
+}
+
+/**
+ * Reads a whole file, keeping the state that single lines cannot carry.
+ *
+ * The docstring rule lives here because it needs the line before. Python only
+ * calls a string a docstring when it is the first thing in a module, a class
+ * or a function — so it has to open the file, or follow a line ending in a
+ * colon. Anywhere else a string is just a value:
+ *
+ *     query = """            <- a value; the closing """ below is not prose
+ *         SELECT * FROM carts
+ *     """
+ *
+ * Without that condition the closing quotes of an ordinary multi-line string
+ * look exactly like the start of a docstring, and every line after it in the
+ * file is misread as explanation.
+ */
+export function scanLines(texts: string[], syntax: CommentSyntax): ScannedLine[] {
+    const out: ScannedLine[] = [];
+    let insideBlock = false;
+    let previous: string | null = null;   // last line that was not blank
+
+    for (const text of texts) {
+        const docAllowed = previous === null || previous.trimEnd().endsWith(':');
+
+        out.push({
+            kind: readLine(text, syntax, insideBlock, docAllowed),
+            codeStart: text.length - text.trimStart().length,
+        });
+
+        insideBlock = opensBlock(text, syntax, insideBlock, docAllowed);
+        if (text.trim() !== '') { previous = text; }
+    }
+    return out;
 }
 
 /** Strips comment markers so the text can be read as prose. */
@@ -162,6 +260,10 @@ export function toProse(text: string, syntax: CommentSyntax): string {
     if (syntax.block) {
         if (s.startsWith(syntax.block.open)) { s = s.slice(syntax.block.open.length); }
         if (s.endsWith(syntax.block.close)) { s = s.slice(0, -syntax.block.close.length); }
+    }
+    for (const quote of syntax.docQuotes ?? []) {
+        if (s.startsWith(quote)) { s = s.slice(quote.length); }
+        if (s.endsWith(quote)) { s = s.slice(0, -quote.length); }
     }
     if (s.startsWith('*')) { s = s.slice(1); }        // JSDoc continuation
 

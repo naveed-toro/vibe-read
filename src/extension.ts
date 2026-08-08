@@ -11,7 +11,7 @@
 
 import * as vscode from 'vscode';
 import type { CommentSyntax, ScannedLine } from './comments';
-import { countWhys, opensBlock, readLine, syntaxFor, toProse } from './comments';
+import { countWhys, scanLines, syntaxFor, toProse } from './comments';
 import { buildNotes } from './notes';
 
 // ---------------------------------------------------------------------------
@@ -56,26 +56,15 @@ function isLineHidden(line: number, s: DocState): boolean {
 // Reading the document
 // ---------------------------------------------------------------------------
 
-/**
- * One pass over the file. Block comments need to be tracked across lines,
- * so this cannot be done line-by-line on demand.
- */
-export function scan(doc: vscode.TextDocument, syntax: CommentSyntax): ScannedLine[] {
-    const out: ScannedLine[] = [];
-    let insideBlock = false;
+/** One pass over the file. The scanner itself lives in comments.ts. */
+function scan(doc: vscode.TextDocument, syntax: CommentSyntax): ScannedLine[] {
+    return scanLines(textOf(doc), syntax);
+}
 
-    for (let i = 0; i < doc.lineCount; i++) {
-        const line = doc.lineAt(i);
-        const text = line.text;
-
-        out.push({
-            kind: readLine(text, syntax, insideBlock),
-            codeStart: line.firstNonWhitespaceCharacterIndex,
-        });
-
-        insideBlock = opensBlock(text, syntax, insideBlock);
-    }
-    return out;
+function textOf(doc: vscode.TextDocument): string[] {
+    const texts: string[] = [];
+    for (let i = 0; i < doc.lineCount; i++) { texts.push(doc.lineAt(i).text); }
+    return texts;
 }
 
 /** Only code can be hidden. Comments are the whole point, blanks keep the shape. */
@@ -379,13 +368,13 @@ function visibleTextOf(
 async function saveAsNotes(editor: vscode.TextEditor): Promise<void> {
     const doc = editor.document;
     const syntax = syntaxFor(doc.languageId);
-    const lines = scan(doc, syntax);
+    const lineTexts = textOf(doc);
 
     const markdown = buildNotes({
         fileName: doc.fileName.split(/[\\/]/).pop() || 'untitled',
         languageId: doc.languageId,
-        lineTexts: Array.from({ length: doc.lineCount }, (_, i) => doc.lineAt(i).text),
-        scanned: lines,
+        lineTexts,
+        scanned: scanLines(lineTexts, syntax),
         toProse: text => toProse(text, syntax),
         includeFullSource: vscode.workspace
             .getConfiguration('vibeRead')

@@ -166,6 +166,19 @@ becomes this:
 
 The statement goes, the reason stays.
 
+Python docstrings count as reasoning too. Most languages explain themselves in
+real comments — JSDoc, Javadoc, `///`, `<!-- -->` — but Python puts its
+explanation in a string, and hiding that would defeat the whole point:
+
+```python
+def apply_checkout(cart, tax_rate):
+    """Discount before tax. The other order overcharges."""
+    return round(sum(cart) * (1 + tax_rate), 2)
+```
+
+`Alt+X` keeps the docstring and hides the `return`. A string used as data —
+a block of SQL, an HTML template — is code, and goes.
+
 ---
 
 ## Not just for AI code

@@ -17,6 +17,11 @@ class Cart:
 
 
 def apply_checkout(cart, tax_rate, coupon=None):
+    """Work out what the customer actually pays.
+
+    Python explains itself in docstrings more often than in # comments, so
+    these count as reasoning too. Press Alt+X and this paragraph stays.
+    """
     # An empty cart has to be caught right here. The average further down
     # divides by the item count, so an empty list would crash it.
     if not cart.items:
@@ -32,6 +37,16 @@ def apply_checkout(cart, tax_rate, coupon=None):
     # Rounding once, at the very end. Rounding at each step drifts by a few
     # cents on large carts, and the accounts team does notice.
     return round(subtotal * (1 + tax_rate), 2)
+
+
+def build_query(customer_id):
+    """Fetch the customer's open carts."""
+    # The SQL below is a plain string, not an explanation — so Alt+X hides it,
+    # including the quotes that end it. That distinction is the tricky part.
+    query = """
+        SELECT * FROM carts WHERE customer_id = ? AND state = 'open'
+    """
+    return query, (customer_id,)
 
 
 def average_price(cart):
