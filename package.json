@@ -1,0 +1,128 @@
+{
+  "name": "vibe-read",
+  "displayName": "Vibe Read — Read My AI",
+  "publisher": "naveed-toro",
+  "description": "AI writes the code. Its comments explain the why. Hide the code, read the reasoning — then give better instructions. Save it as notes.",
+  "version": "0.1.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/naveed-toro/vibe-read.git"
+  },
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "AI",
+    "Visualization",
+    "Education"
+  ],
+  "keywords": [
+    "ai",
+    "comments",
+    "vibe coding",
+    "copilot",
+    "cursor",
+    "hide code",
+    "read code",
+    "fold",
+    "markdown",
+    "notes",
+    "documentation",
+    "legacy code",
+    "python",
+    "explain"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "vibeRead.toggle",
+        "title": "Vibe Read: Hide / show the code",
+        "icon": "$(eye-closed)"
+      },
+      {
+        "command": "vibeRead.saveAsNotes",
+        "title": "Vibe Read: Save as notes",
+        "icon": "$(book)"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "vibeRead.toggle",
+        "key": "alt+x",
+        "mac": "alt+x",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "vibeRead.saveAsNotes",
+        "key": "alt+m",
+        "mac": "alt+m",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "vibeRead.smartCopy",
+        "key": "ctrl+c",
+        "mac": "cmd+c",
+        "when": "editorTextFocus && vibeRead.active"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "vibeRead.toggle",
+          "group": "navigation@1",
+          "when": "editorIsOpen && config.vibeRead.showEditorButton"
+        },
+        {
+          "command": "vibeRead.saveAsNotes",
+          "group": "navigation@2",
+          "when": "vibeRead.active && config.vibeRead.showEditorButton"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "vibeRead.toggle",
+          "group": "vibeRead@1"
+        },
+        {
+          "command": "vibeRead.saveAsNotes",
+          "group": "vibeRead@2"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Vibe Read",
+      "properties": {
+        "vibeRead.hiddenIcon": {
+          "type": "string",
+          "default": "🙈",
+          "markdownDescription": "What to show in place of hidden code.\n\nSuggestions: `🙈`  `⋯`  `💤`  `🫥` — or type anything you like."
+        },
+        "vibeRead.showEditorButton": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the Vibe Read buttons above the editor."
+        },
+        "vibeRead.notesIncludeFullSource": {
+          "type": "boolean",
+          "default": true,
+          "description": "Add the complete file, collapsed, at the end of the saved notes."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.75.0",
+    "@types/node": "20.x",
+    "typescript": "^5.9.3"
+  }
+}
