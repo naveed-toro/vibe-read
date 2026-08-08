@@ -250,6 +250,19 @@ function noteSelectionUsed(): void {
     const state = learning();
     if (state.usedSelection) { return; }
     learningStore.update(LEARNING_KEY, { ...state, usedSelection: true });
+    markLearned();
+}
+
+/**
+ * The walkthrough's third step ticks itself off this.
+ *
+ * Deliberately the same signal that silences the tip. One fact about the
+ * person, read in two places — so the walkthrough and the tip can never
+ * disagree about whether they know this, and whichever one they happen to
+ * meet first covers for the other.
+ */
+function markLearned(): void {
+    vscode.commands.executeCommand('setContext', 'vibeRead.learnedSelection', true);
 }
 
 /** A few seconds in the status bar. Not a popup — those have to be dismissed. */
@@ -479,6 +492,10 @@ async function saveAsNotes(editor: vscode.TextEditor): Promise<void> {
 export function activate(context: vscode.ExtensionContext): void {
     learningStore = context.globalState;
 
+    // Context keys do not survive a restart, so this has to be set again for
+    // anyone who learned it in an earlier session.
+    if (learning().usedSelection) { markLearned(); }
+
     statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
     statusBar.command = 'vibeRead.toggle';
     context.subscriptions.push(statusBar);
@@ -544,11 +561,17 @@ function showWelcomeOnce(context: vscode.ExtensionContext): void {
     vscode.window.showInformationMessage(
         '🙈 AI writes the code. Its comments explain the why. Alt+X hides the code ' +
         'and leaves the why — press it again to bring the code back.',
-        'Show me the shortcuts'
+        'Show me how'
     ).then(choice => {
-        if (choice === 'Show me the shortcuts') {
-            vscode.commands.executeCommand('workbench.action.openGlobalKeybindings', 'Vibe Read');
-        }
+        if (choice !== 'Show me how') { return; }
+        // The walkthrough, not the keyboard shortcuts list. Someone who has
+        // just been told what this is for wants to see it work, not read a
+        // table of key bindings.
+        vscode.commands.executeCommand(
+            'workbench.action.openWalkthrough',
+            'naveed-toro.vibe-read#readMyAI',
+            false
+        );
     });
 }
 
