@@ -120,7 +120,7 @@ function redraw(editor: vscode.TextEditor | undefined): void {
     // every keystroke, and scanning a large file each time would be felt.
     if (!isEngaged(s)) {
         editor.setDecorations(decorationType(), []);
-        updateStatusBar(editor);
+        updateStatusBar(editor, 0);
         vscode.commands.executeCommand('setContext', 'vibeRead.active', false);
         return;
     }
@@ -141,7 +141,7 @@ function redraw(editor: vscode.TextEditor | undefined): void {
     }
 
     editor.setDecorations(decorationType(), ranges);
-    updateStatusBar(editor);
+    updateStatusBar(editor, ranges.length);
     vscode.commands.executeCommand('setContext', 'vibeRead.active', true);
 }
 
@@ -155,22 +155,41 @@ function redraw(editor: vscode.TextEditor | undefined): void {
 
 let statusBar: vscode.StatusBarItem;
 
-function updateStatusBar(editor: vscode.TextEditor | undefined): void {
+function updateStatusBar(editor: vscode.TextEditor | undefined, hiddenLines: number): void {
     if (!editor) { statusBar.hide(); return; }
 
-    const engaged = isEngaged(stateFor(editor.document));
-    statusBar.text = engaged ? `${currentIcon || '🙈'} Reading` : '$(eye) Vibe Read';
-    statusBar.tooltip = new vscode.MarkdownString(
-        engaged
-            ? '**Vibe Read is on** — only the reasoning is showing.\n\n' +
-              '`Alt+X` show the code back  \n' +
-              '`Alt+M` keep it as notes  \n' +
-              '`Ctrl+C` copies only what you can see  \n\n' +
-              'Select a few lines and press `Alt+X` to work on just those.'
-            : '**Vibe Read**\n\n' +
-              '`Alt+X` hide the code, read the reasoning  \n' +
-              'Select some lines first to hide only those.'
-    );
+    const s = stateFor(editor.document);
+    const icon = currentIcon || '🙈';
+    const keys =
+        '`Alt+X` show the code back  \n' +
+        '`Alt+M` keep it as notes  \n' +
+        '`Ctrl+C` copies only what you can see';
+
+    if (!isEngaged(s)) {
+        statusBar.text = '$(eye) Vibe Read';
+        statusBar.tooltip = new vscode.MarkdownString(
+            '**Vibe Read**\n\n' +
+            '`Alt+X` hide the code, read the reasoning  \n' +
+            'Select some lines first to hide only those.'
+        );
+    } else if (s.wholeFile) {
+        statusBar.text = `${icon} Reading`;
+        statusBar.tooltip = new vscode.MarkdownString(
+            '**Vibe Read is on** — only the reasoning is showing.\n\n' + keys
+        );
+    } else {
+        // Hiding a selection leaves most of the file looking untouched. Saying
+        // only "Reading" here invites the reasonable conclusion that the
+        // extension is broken, so the count says what actually happened.
+        const n = hiddenLines;
+        statusBar.text = `${icon} Reading · ${n} line${n === 1 ? '' : 's'}`;
+        statusBar.tooltip = new vscode.MarkdownString(
+            `**Vibe Read is on for ${n} line${n === 1 ? '' : 's'}.**\n\n` +
+            'The rest of the file is untouched. Press `Alt+X` with nothing ' +
+            'selected to hide the whole file.\n\n' + keys
+        );
+    }
+
     statusBar.show();
 }
 
