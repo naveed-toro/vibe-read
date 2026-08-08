@@ -413,9 +413,13 @@ export function activate(context: vscode.ExtensionContext): void {
     statusBar.command = 'vibeRead.toggle';
     context.subscriptions.push(statusBar);
 
+    // A key that quietly does nothing is worse than no key at all — the user
+    // decides the extension is broken and never presses it again. So when there
+    // is no file to work on, say so.
     const withEditor = (fn: (e: vscode.TextEditor) => void | Promise<void>) => () => {
         const editor = vscode.window.activeTextEditor;
         if (editor) { return fn(editor); }
+        vscode.window.setStatusBarMessage('🙈  Open a file first, then press Alt+X.', 4000);
     };
 
     context.subscriptions.push(

@@ -55,13 +55,13 @@
         "command": "vibeRead.toggle",
         "key": "alt+x",
         "mac": "alt+x",
-        "when": "editorTextFocus"
+        "when": "editorIsOpen && !terminalFocus"
       },
       {
         "command": "vibeRead.saveAsNotes",
         "key": "alt+m",
         "mac": "alt+m",
-        "when": "editorTextFocus"
+        "when": "editorIsOpen && !terminalFocus"
       },
       {
         "command": "vibeRead.smartCopy",
