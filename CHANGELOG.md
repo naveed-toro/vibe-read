@@ -12,11 +12,11 @@ Vibe Read hides the code so the reasoning is all that is left.
 
 **What you get**
 
-- `Alt+X` — hide the code. Select some lines first to hide only those.
+- `Alt+X` — hide the code. Select some lines to hide only those.
 - `Alt+M` — keep it as notes: a Markdown document where the reasoning is the
   text and the code sits collapsed underneath it.
-- `Ctrl+C` — copies only what you can see. Only while something is hidden;
-  the rest of the time this is VS Code's own copy, untouched.
+- `Ctrl+C` — copy only what you see. Only while something is hidden; the rest
+  of the time this is VS Code's own copy, untouched.
 - `vibeRead.hiddenIcon` — 🙈 by default, or anything you like.
 
 There is no separate command for a single line, and that is deliberate. Select

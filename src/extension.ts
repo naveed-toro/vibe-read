@@ -163,16 +163,25 @@ let statusBar: vscode.StatusBarItem;
 function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hidden: number): void {
     if (!editor) { statusBar.hide(); return; }
 
+    const icon = currentIcon || '🙈';
+
+    // Both tooltips end the same way, one word apart — hide only those, show
+    // only those. Nowhere does either of them use the word toggle; reading the
+    // pair a minute apart teaches it better than the word would.
     if (hidden === 0) {
         // Nothing is covered up, whatever the flags happen to say.
         statusBar.text = '$(eye) Vibe Read';
         statusBar.tooltip = new vscode.MarkdownString(
             '**Vibe Read**\n\n' +
-            '`Alt+X` hide the code, read the reasoning  \n' +
-            'Select some lines first to hide only those.'
+            // A blank line, not a line break: the key is one thing and the
+            // advice underneath it is another, and they were reading as one.
+            '`Alt+X` hide the code, read the reasoning\n\n' +
+            // The icon goes here and not in the other one, because here it is
+            // a preview of what you are about to get. Over there they are
+            // already on screen.
+            `${icon} Select some lines to hide only those.`
         );
     } else {
-        const icon = currentIcon || '🙈';
         statusBar.text = whys > 0
             ? `${icon} Reading ${whys} why${whys === 1 ? '' : 's'}`
             : `${icon} Reading`;
@@ -180,7 +189,8 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
             "**The code is hidden. You're reading the why.**\n\n" +
             '`Alt+X` show the code back  \n' +
             '`Alt+M` keep it as notes  \n' +
-            '`Ctrl+C` copies only what you can see'
+            '`Ctrl+C` copy only what you see\n\n' +
+            'Select some lines to show only those.'
         );
     }
 

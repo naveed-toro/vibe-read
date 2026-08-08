@@ -110,9 +110,9 @@ R, Perl, Elixir and more. Trailing comments and Python docstrings too.
 
 | Key | What it does |
 |---|---|
-| <kbd>Alt</kbd> <kbd>X</kbd> | Hide / show the code. Select some lines first to do only those. |
+| <kbd>Alt</kbd> <kbd>X</kbd> | Hide / show the code. Select some lines to do only those. |
 | <kbd>Alt</kbd> <kbd>M</kbd> | Keep it as notes |
-| <kbd>Ctrl</kbd> <kbd>C</kbd> | Copies only what you can see |
+| <kbd>Ctrl</kbd> <kbd>C</kbd> | Copy only what you see |
 
 That is all of them. There is nothing else to learn.
 
