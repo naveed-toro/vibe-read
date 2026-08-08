@@ -188,6 +188,76 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
 }
 
 // ---------------------------------------------------------------------------
+// Teaching, without becoming a nag
+//
+// Two things are worth saying out loud, and nowhere on screen says them:
+//
+//   That Alt+X is a toggle. Someone presses it, their whole file vanishes, and
+//   if they do not know how to undo that they will assume it broke something.
+//   Panic first — everything else can wait.
+//
+//   That a selection narrows it. There is no way to discover this by looking.
+//
+// Shown once and it gets ignored; shown every time and it becomes an
+// irritation. So it is shown until the person has actually learned it — which
+// is something we can see rather than guess, because using Alt+X on a
+// selection *is* the skill — or five times, whichever comes first. The limit
+// matters: plenty of people will never want that move, and they should not be
+// told about it forever.
+//
+// One reminder much later, for anyone who learned it and then stopped. Then
+// silence, permanently.
+//
+// It is two messages, not a system, and it must stay that way. Alt+M and
+// Ctrl+C will look like they deserve the same treatment. They do not.
+// ---------------------------------------------------------------------------
+
+interface Learning {
+    /** How many times the whole file has been hidden. */
+    hides: number;
+    /** Has Alt+X ever been used on a selection? */
+    usedSelection: boolean;
+}
+
+const LEARNING_KEY = 'vibeRead.learning';
+const TIP_LIMIT = 5;
+/** Hides after which someone who learned it and stopped gets one reminder. */
+const REMIND_AT = 60;
+
+let learningStore: vscode.Memento;
+
+function learning(): Learning {
+    return learningStore.get<Learning>(LEARNING_KEY) ?? { hides: 0, usedSelection: false };
+}
+
+/** Called when Alt+X hides the whole file. */
+function noteWholeFileHide(): void {
+    const state = learning();
+
+    if (state.hides === 0) {
+        say('Press Alt+X again to bring the code back.');
+    } else if (!state.usedSelection && state.hides <= TIP_LIMIT) {
+        say('Tip: select a few lines and press Alt+X to see just their code.');
+    } else if (state.usedSelection && state.hides === REMIND_AT) {
+        say('Remember: select a few lines and press Alt+X to see just their code.');
+    }
+
+    learningStore.update(LEARNING_KEY, { ...state, hides: state.hides + 1 });
+}
+
+/** Called when Alt+X is used on a selection — the moment the skill is learned. */
+function noteSelectionUsed(): void {
+    const state = learning();
+    if (state.usedSelection) { return; }
+    learningStore.update(LEARNING_KEY, { ...state, usedSelection: true });
+}
+
+/** A few seconds in the status bar. Not a popup — those have to be dismissed. */
+function say(message: string): void {
+    vscode.window.setStatusBarMessage(`${currentIcon || '🙈'}  ${message}`, 6000);
+}
+
+// ---------------------------------------------------------------------------
 // Alt+X — the only key that matters
 // ---------------------------------------------------------------------------
 
@@ -206,6 +276,7 @@ function toggle(editor: vscode.TextEditor): void {
 
         s.wholeFile = turningOn;
         s.overrides.clear();
+        if (turningOn) { noteWholeFileHide(); }
     } else {
         // A selection: only those lines. If they are all hidden, show them.
         const targets: number[] = [];
@@ -221,6 +292,7 @@ function toggle(editor: vscode.TextEditor): void {
 
         const allHidden = targets.every(i => isLineHidden(i, s));
         for (const i of targets) { s.overrides.set(i, !allHidden); }
+        noteSelectionUsed();
     }
 
     redraw(editor);
@@ -405,6 +477,8 @@ async function saveAsNotes(editor: vscode.TextEditor): Promise<void> {
 // ---------------------------------------------------------------------------
 
 export function activate(context: vscode.ExtensionContext): void {
+    learningStore = context.globalState;
+
     statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
     statusBar.command = 'vibeRead.toggle';
     context.subscriptions.push(statusBar);
@@ -453,13 +527,23 @@ export function activate(context: vscode.ExtensionContext): void {
     redraw(vscode.window.activeTextEditor);
 }
 
-/** One sentence, once, so the extension is not invisible after installing. */
+/**
+ * The first thing anyone ever sees from this extension.
+ *
+ * It used to be nothing but keys, which made the whole thing look like a
+ * shortcut utility. Four short statements now: what happens, why it matters,
+ * the key, and — the one that prevents panic — how to undo it.
+ *
+ * Nothing here asks the reader to work anything out. A sentence they have to
+ * finish in their own head is a sentence they skip.
+ */
 function showWelcomeOnce(context: vscode.ExtensionContext): void {
     if (context.globalState.get<boolean>('vibeRead.welcomed')) { return; }
     context.globalState.update('vibeRead.welcomed', true);
 
     vscode.window.showInformationMessage(
-        '🙈 Vibe Read is ready. Open a file your AI wrote and press Alt+X — the code hides, the reasoning stays.',
+        '🙈 AI writes the code. Its comments explain the why. Alt+X hides the code ' +
+        'and leaves the why — press it again to bring the code back.',
         'Show me the shortcuts'
     ).then(choice => {
         if (choice === 'Show me the shortcuts') {
