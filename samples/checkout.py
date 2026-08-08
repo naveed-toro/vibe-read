@@ -2,7 +2,8 @@
 #
 # Press Alt+X. The code disappears and only this reasoning is left.
 # Press Alt+X again to bring it back.
-# Click any 🙈 to peek at that one line.
+# Rest the mouse on any 🙈 to see the line hidden under it.
+# Select a few lines and press Alt+X to work on just those.
 # Press Alt+M to keep the whole thing as notes.
 
 

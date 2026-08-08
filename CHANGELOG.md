@@ -17,7 +17,7 @@ Vibe Read hides the code so the reasoning is all that is left.
   text and the code sits collapsed underneath it.
 - `Ctrl+C` — copies only what you can see. Only while something is hidden;
   the rest of the time this is VS Code's own copy, untouched.
-- Click a line to peek at it. Click it again to put it back.
+- Rest the mouse on an icon to see the line hidden under it.
 - `vibeRead.hiddenIcon` — 🙈 by default, or anything you like.
 
 **Languages**

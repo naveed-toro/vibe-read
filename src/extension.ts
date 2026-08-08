@@ -126,23 +126,30 @@ function redraw(editor: vscode.TextEditor | undefined): void {
     }
 
     const lines = scan(doc, syntaxFor(doc.languageId));
-    const ranges: vscode.Range[] = [];
+    const marks: vscode.DecorationOptions[] = [];
 
     for (let i = 0; i < lines.length; i++) {
         const l = lines[i];
         if (!isHideable(l) || !isLineHidden(i, s)) { continue; }
 
         // For a mixed line we hide only the code and leave the comment showing.
-        const end = l.kind.kind === 'mixed'
-            ? l.kind.commentAt
-            : doc.lineAt(i).text.length;
+        const text = doc.lineAt(i).text;
+        const end = l.kind.kind === 'mixed' ? l.kind.commentAt : text.length;
 
         if (end > l.codeStart) {
-            ranges.push(new vscode.Range(i, l.codeStart, i, end));
+            marks.push({
+                range: new vscode.Range(i, l.codeStart, i, end),
+                // Rest the mouse on the icon to see what is underneath it.
+                // A hover asks nothing of the user and remembers nothing, so
+                // it cannot get out of step with what is on screen.
+                hoverMessage: new vscode.MarkdownString(
+                    '```' + doc.languageId + '\n' + text.slice(l.codeStart, end).trim() + '\n```'
+                ),
+            });
         }
     }
 
-    editor.setDecorations(decorationType(), ranges);
+    editor.setDecorations(decorationType(), marks);
     updateStatusBar(editor);
     vscode.commands.executeCommand('setContext', 'vibeRead.active', true);
 }
@@ -166,9 +173,9 @@ function updateStatusBar(editor: vscode.TextEditor | undefined): void {
         engaged
             ? '**Vibe Read is on** — only the reasoning is showing.\n\n' +
               '`Alt+X` show the code back  \n' +
-              '`Alt+M` save it as notes  \n' +
-              '`Ctrl+C` copies only what you can see  \n' +
-              'Click a line to peek at it'
+              '`Alt+M` keep it as notes  \n' +
+              '`Ctrl+C` copies only what you can see  \n\n' +
+              'Rest the mouse on an icon to see the line underneath it.'
             : '**Vibe Read**\n\n' +
               '`Alt+X` hide the code, read the reasoning  \n' +
               'Select some lines first to hide only those.'
@@ -241,40 +248,21 @@ function warnIfNothingToRead(lines: ScannedLine[]): boolean {
 }
 
 // ---------------------------------------------------------------------------
-// Click to peek
+// A note on peeking at a single line
+//
+// This was a click at first: click the icon, that line comes back. It had to
+// go, because VS Code gives an extension no click event — only "the cursor
+// moved". Two things broke on that, and neither could be fixed:
+//
+//   1. Pressing the mouse down to start a drag-selection creates an empty
+//      cursor first. That looked identical to a click, so beginning to select
+//      text uncovered whatever line you started from.
+//   2. Clicking a line the cursor is already on moves nothing, so no event
+//      arrives at all — meaning a revealed line could never be put back.
+//
+// A hover replaces it. It holds no state, so it can never disagree with the
+// screen, and to hide one line again you select it and press Alt+X.
 // ---------------------------------------------------------------------------
-
-/** Where the cursor was before the current click, so a click can also un-peek. */
-let cursorWasAt: { uri: string; line: number } | undefined;
-
-function onSelectionChange(e: vscode.TextEditorSelectionChangeEvent): void {
-    const editor = e.textEditor;
-    const s = stateFor(editor.document);
-    const uri = editor.document.uri.toString();
-
-    const sel = e.selections[0];
-    const previous = cursorWasAt;
-    cursorWasAt = sel ? { uri, line: sel.active.line } : undefined;
-
-    if (e.kind !== vscode.TextEditorSelectionChangeKind.Mouse) { return; }
-    if (!isEngaged(s) || !sel || !sel.isEmpty) { return; }
-
-    const line = sel.active.line;
-    const scanned = scan(editor.document, syntaxFor(editor.document.languageId))[line];
-    if (!scanned || !isHideable(scanned)) { return; }
-
-    if (isLineHidden(line, s)) {
-        s.overrides.set(line, false);           // peek
-    } else if (previous && previous.uri === uri && previous.line === line) {
-        // Clicking a line the cursor was already sitting on puts it back.
-        // Guarding on that means an ordinary click for editing never re-hides.
-        s.overrides.set(line, true);
-    } else {
-        return;
-    }
-
-    redraw(editor);
-}
 
 // ---------------------------------------------------------------------------
 // Ctrl+C — copies what you can see, nothing more
@@ -428,7 +416,6 @@ export function activate(context: vscode.ExtensionContext): void {
         vscode.commands.registerCommand('vibeRead.smartCopy', withEditor(smartCopy)),
 
         vscode.window.onDidChangeActiveTextEditor(redraw),
-        vscode.window.onDidChangeTextEditorSelection(onSelectionChange),
 
         vscode.workspace.onDidChangeTextDocument(e => {
             const editor = vscode.window.activeTextEditor;

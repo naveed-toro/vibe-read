@@ -107,7 +107,7 @@ little less.
 ## What it does
 
 🙈 **Hide the code** — one key, and only the reasoning is left on screen
-🖱️ **Peek at any line** — click it to see just that one
+🖱️ **Peek at any line** — rest the mouse on the icon to see what is under it
 📋 **Copy what you see** — `Ctrl+C` skips whatever is hidden
 📄 **Keep it as notes** — turn the file into a document worth revisiting
 
@@ -120,9 +120,12 @@ little less.
 | `Alt` + `X` | Hide / show the code. Select some lines first to do only those. |
 | `Alt` + `M` | Keep it as notes |
 | `Ctrl` + `C` | Copies only what you can see |
-| Click a line | Peek at it. Click again to put it back. |
 
-That is all of them. There is nothing else to learn.
+Two keys. That is all of them, and there is nothing else to learn.
+
+To bring back one line on its own, select it and press `Alt+X` — the same key,
+narrowed to what you picked. To simply look without changing anything, hover
+over the icon.
 
 `Ctrl+C` only changes while something is hidden. The rest of the time it is
 VS Code's own copy, untouched — an editor's defaults are not mine to take away.
