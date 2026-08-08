@@ -156,10 +156,11 @@
           "default": "🙈",
           "markdownDescription": "What stands in for hidden code.\n\nEasier to change from the status bar: click the mark at the bottom of the window."
         },
-        "vibeRead.yourMark": {
-          "type": "string",
-          "default": "",
-          "markdownDescription": "Your own mark, kept alongside the four suggested ones so you can go back to it.\n\nSet from the status bar rather than here — the emoji keyboard is easier than typing."
+        "vibeRead.marks": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": ["🤫", "🙈 not looking", "💤💤", "💻 code", "⋯", ""],
+          "markdownDescription": "The slots offered when you click the mark in the status bar.\n\nEasier to change there than here — the pencil on each row opens your system's emoji keyboard. Delete this setting to get these back."
         },
         "vibeRead.showEditorButton": {
           "type": "boolean",

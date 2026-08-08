@@ -203,10 +203,21 @@ string used as data — a block of SQL, an HTML template — is code, and goes.
 is VS Code's own copy, untouched. An editor's defaults are not mine to take
 away.
 
-**Change the monkey.** The mark sits in the status bar at the bottom. Click it
-and take 🤫 or 💤 or 💻 instead — or set your own, where your system's emoji
-keyboard does the choosing. Up to four, in whatever order you like. Whatever
-you set is kept, so going back to a suggestion does not lose it.
+**Change the monkey.** The mark sits at the bottom of the window. Click it:
+
+```
+🤫              quiet
+🙈 not looking  emoji + text
+💤💤            sleepy
+💻 code         there is code here
+⋯               no emoji — best for reading
+＋              Set your own…
+```
+
+Every row has a pencil. These are a starting point, not a cage — replace any
+of them, and your system's emoji keyboard does the choosing. Emoji, text, or
+both. Arrow down the list and the editor behind it changes, so you can see a
+mark on your own file before you take it.
 
 ## Why I built this
 

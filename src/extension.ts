@@ -179,10 +179,10 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
 
     const icon = currentIcon || DEFAULT_MARK;
 
-    markBar.text = icon;
-    markBar.tooltip = new vscode.MarkdownString(
-        '**Change the mark**\n\n' + emojiKeyboardHint()
-    );
+    // The pencil is what says this is a control. On its own the mark reads as
+    // decoration, and nobody presses decoration.
+    markBar.text = `${icon} $(edit)`;
+    markBar.tooltip = new vscode.MarkdownString('**Change the mark**');
     markBar.show();
 
     // Both tooltips end the same way, one word apart — hide only those, show
@@ -518,113 +518,143 @@ async function saveAsNotes(editor: vscode.TextEditor): Promise<void> {
 // ---------------------------------------------------------------------------
 // Choosing the mark
 //
-// The setting was always there, and nobody was ever going to find it. Opening
-// Settings, searching for the extension and typing an emoji is four steps too
-// many for something you might want to change on a whim — and a mark you look
-// at forty times a page is exactly the sort of thing you change on a whim.
+// The setting was always there and nobody was ever going to find it. Open
+// Settings, search the extension, type an emoji — four steps too many for
+// something you might change on a whim, and a mark you look at forty times a
+// page is exactly the sort of thing you change on a whim.
 //
-// So: the current mark sits in the status bar, and clicking it offers four,
-// plus one slot that is yours. Four rather than forty because a long list is
-// another thing to read; the four are picked to suit four different sorts of
-// person rather than to be four variations of the same idea.
+// So the mark sits in the status bar and clicking it opens the slots below.
+// They are only a starting point: every one of them has a pencil, and editing
+// one replaces it. Ready-made choices, not a cage.
 //
-// Anything outside those four goes in the fifth slot, and the emoji keyboard
-// that opens it belongs to the operating system. Shipping two thousand emoji
-// with names and categories, to rebuild a picker every machine already has,
-// would be a great deal of work for a worse result.
+// The five that come filled in are chosen to demonstrate the shapes rather
+// than to be five variations of the same idea — one emoji, one with a word
+// after it, two emoji, and one with no emoji at all. Seeing them is what
+// teaches; a sentence explaining that combinations are allowed would be read
+// by nobody.
+//
+// The emoji keyboard behind the pencil belongs to the operating system.
+// Shipping two thousand emoji with names and categories, to rebuild a picker
+// every machine already has, would be a great deal of weight for a worse
+// result.
 // ---------------------------------------------------------------------------
 
 const DEFAULT_MARK = '🙈';
-const MOST_MARKS = 4;
+const MOST_CHARACTERS = 15;
 
-const SUGGESTED: { mark: string; why: string }[] = [
-    { mark: '🙈', why: 'the default' },
-    { mark: '🤫', why: 'quiet' },
-    { mark: '💤', why: 'asleep' },
-    { mark: '💻', why: 'there is code here' },
-];
+const FILLED_IN = ['🤫', '🙈 not looking', '💤💤', '💻 code', '⋯', ''];
 
-interface MarkChoice extends vscode.QuickPickItem {
-    mark?: string;
+/**
+ * What each of the five says about itself. Only shown while the slot still
+ * holds what we put there — once somebody replaces it, our word for it is no
+ * longer true, so it goes.
+ */
+const NOTES = ['quiet', 'emoji + text', 'sleepy', 'there is code here',
+    'no emoji — best for reading', ''];
+
+interface MarkRow extends vscode.QuickPickItem {
+    slot: number;
+    mark: string;
 }
 
-function yourMark(): string {
-    return vscode.workspace.getConfiguration('vibeRead').get<string>('yourMark') || '';
+function savedMarks(): string[] {
+    const saved = vscode.workspace.getConfiguration('vibeRead').get<string[]>('marks');
+    if (!Array.isArray(saved) || saved.length !== FILLED_IN.length) { return [...FILLED_IN]; }
+    return saved.map(m => (typeof m === 'string' ? m : ''));
 }
 
-async function remember(key: 'hiddenIcon' | 'yourMark', value: string): Promise<void> {
+async function keep(key: 'hiddenIcon' | 'marks', value: string | string[]): Promise<void> {
     await vscode.workspace
         .getConfiguration('vibeRead')
         .update(key, value, vscode.ConfigurationTarget.Global);
 }
 
 async function pickMark(): Promise<void> {
-    const picked = await offerTheFour();
-    if (!picked) { return; }
+    const answer = await showTheSlots();
+    if (!answer) { return; }
 
-    if (picked.mark) {
-        await remember('hiddenIcon', picked.mark);
+    if (answer.use !== undefined) {
+        await keep('hiddenIcon', answer.use);
         return;
     }
 
-    // They want their own. Whatever comes back is both used and kept, so the
-    // fifth slot still holds it after they have wandered off to 💤 and back.
-    const own = await askForOwnMark(yourMark());
-    if (own === undefined) { return; }
+    const slot = answer.edit as number;
+    const marks = savedMarks();
 
-    await remember('yourMark', own);
-    await remember('hiddenIcon', own);
+    const typed = await askForMark(marks[slot]);
+    if (typed === undefined) { return; }
+
+    marks[slot] = typed;
+    await keep('marks', marks);
+    await keep('hiddenIcon', typed);
 }
 
-/** Four suggestions and a slot of your own. Resolves undefined if dismissed. */
-function offerTheFour(): Promise<{ mark?: string } | undefined> {
+function slotRows(): MarkRow[] {
+    return savedMarks().map((mark, slot) => {
+        if (mark === '') {
+            return { label: '$(add) Set your own…', slot, mark };
+        }
+        return {
+            label: mark,
+            // Ours, or theirs — and the note only belongs to ours.
+            description: mark === FILLED_IN[slot] ? NOTES[slot] : 'yours',
+            slot,
+            mark,
+            buttons: [{
+                iconPath: new vscode.ThemeIcon('edit'),
+                tooltip: 'Change this one',
+            }],
+        };
+    });
+}
+
+/** Resolves what to do: use a mark, edit a slot, or nothing. */
+function showTheSlots(): Promise<{ use?: string; edit?: number } | undefined> {
     return new Promise(resolve => {
-        const box = vscode.window.createQuickPick<MarkChoice>();
-        const mine = yourMark();
+        const box = vscode.window.createQuickPick<MarkRow>();
         const showing = vscode.workspace
             .getConfiguration('vibeRead').get<string>('hiddenIcon') || DEFAULT_MARK;
 
         box.title = 'What stands in for hidden code';
-        box.items = [
-            ...SUGGESTED.map(s => ({ label: s.mark, description: s.why, mark: s.mark })),
-            mine
-                ? {
-                    label: mine,
-                    description: 'yours',
-                    mark: mine,
-                    // Clicking the row uses it; clicking the pencil changes it.
-                    // Two things people want at different times, one row.
-                    buttons: [{
-                        iconPath: new vscode.ThemeIcon('edit'),
-                        tooltip: 'Change this one',
-                    }],
-                }
-                : { label: '$(add) Set your own…' },
-        ];
+        box.placeholder = 'Pick one, or press the pencil to change it';
+        box.buttons = [{
+            iconPath: new vscode.ThemeIcon('discard'),
+            tooltip: 'Back to the originals',
+        }];
+        box.items = slotRows();
 
-        const already = box.items.find(i => i.mark === showing);
-        if (already) { box.activeItems = [already]; }
+        const inUse = box.items.find(row => row.mark === showing);
+        if (inUse) { box.activeItems = [inUse]; }
 
         let answered = false;
 
-        // Arrowing down the list changes the editor behind it. Only visible
-        // while something is actually hidden, which is when it matters.
-        box.onDidChangeActive(items => {
-            previewMark = items[0]?.mark;
+        // Moving down the list changes the editor behind it, so a mark can be
+        // seen on your own file before you commit to it.
+        box.onDidChangeActive(rows => {
+            previewMark = rows[0]?.mark || undefined;
             redraw(vscode.window.activeTextEditor);
         });
 
-        box.onDidTriggerItemButton(() => {
+        // The list stays open — you see the originals come back rather than
+        // being thrown out and left to wonder whether anything happened.
+        box.onDidTriggerButton(async () => {
+            await keep('marks', [...FILLED_IN]);
+            box.items = slotRows();
+        });
+
+        box.onDidTriggerItemButton(event => {
             answered = true;
             box.hide();
-            resolve({});
+            resolve({ edit: event.item.slot });
         });
 
         box.onDidAccept(() => {
-            const chosen = box.activeItems[0];
+            const row = box.activeItems[0];
+            if (!row) { return; }
             answered = true;
             box.hide();
-            resolve(chosen?.mark ? { mark: chosen.mark } : {});
+            // An empty slot has nothing to use, so accepting it means fill it.
+            resolve(row.mark ? { use: row.mark } : { edit: row.slot });
         });
 
         box.onDidHide(() => {
@@ -639,7 +669,7 @@ function offerTheFour(): Promise<{ mark?: string } | undefined> {
 }
 
 /** The box where the operating system's emoji keyboard does the real work. */
-function askForOwnMark(current: string): Promise<string | undefined> {
+function askForMark(current: string): Promise<string | undefined> {
     return new Promise(resolve => {
         const box = vscode.window.createInputBox();
         box.title = 'Your own mark';
@@ -676,35 +706,37 @@ function askForOwnMark(current: string): Promise<string | undefined> {
 
 /**
  * Every system has an emoji keyboard except, dependably, Linux — where the
- * shortcut belongs to the desktop rather than the system and is different on
- * each one. Naming a shortcut that does nothing is worse than naming none:
- * they press it, nothing happens, and the extension looks broken. Pasting
- * works everywhere.
+ * shortcut belongs to the desktop rather than the system and differs on each
+ * one. Naming a shortcut that does nothing is worse than naming none: they
+ * press it, nothing happens, and the extension looks broken. Pasting works
+ * everywhere, and so does typing.
  */
 function emojiKeyboardHint(): string {
+    const both = 'Emoji, text, or both.';
     switch (process.platform) {
-        case 'win32': return 'Win + .  opens the emoji keyboard. Up to four.';
-        case 'darwin': return 'Control + Command + Space  opens the emoji keyboard. Up to four.';
-        default: return 'Type or paste any emoji. Up to four.';
+        case 'win32': return `Win + .  opens the emoji keyboard. ${both}`;
+        case 'darwin': return `Control + Command + Space  opens the emoji keyboard. ${both}`;
+        default: return both;
     }
 }
 
 function whatIsWrong(value: string): string | undefined {
     const text = value.trim();
-    if (text === '') { return 'Pick at least one.'; }
+    if (text === '') { return 'Type or paste something.'; }
 
-    const count = marksIn(text);
-    if (count > MOST_MARKS) { return `Four at most — that is ${count}.`; }
-
+    const length = charactersIn(text);
+    if (length > MOST_CHARACTERS) {
+        return `A little shorter — ${MOST_CHARACTERS} at most, and that is ${length}.`;
+    }
     return undefined;
 }
 
 /**
  * Counts what a person would call characters. A single emoji is often several
- * code units, and some are several code points joined together, so neither
- * .length nor spreading gives an answer anybody would agree with.
+ * code units and sometimes several code points joined together, so neither
+ * .length nor spreading gives a number anybody would agree with.
  */
-function marksIn(text: string): number {
+function charactersIn(text: string): number {
     const segmenter = (Intl as unknown as {
         Segmenter?: new () => { segment(input: string): Iterable<{ segment: string }> };
     }).Segmenter;
