@@ -8,5 +8,8 @@ if coupon:
     subtotal *= (1 - coupon.rate)
 ```
 
+Python docstrings count as reasoning too, not as
+code — so they stay on screen with the comments.
+
 No comments in what your AI gave you? Ask again and
 add four words: **"and comment your reasoning."**

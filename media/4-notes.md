@@ -8,7 +8,6 @@ The other order overcharges the customer.
 
 <details>
 <summary>🙈 code</summary>
-...
 </details>
 ```
 
