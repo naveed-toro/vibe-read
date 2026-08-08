@@ -10,3 +10,4 @@ node_modules/**
 .git/**
 PLAN.md
 README-draft.md
+samples/**
