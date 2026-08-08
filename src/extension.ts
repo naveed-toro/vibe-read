@@ -11,7 +11,7 @@
 
 import * as vscode from 'vscode';
 import type { CommentSyntax, ScannedLine } from './comments';
-import { opensBlock, readLine, syntaxFor, toProse } from './comments';
+import { countWhys, opensBlock, readLine, syntaxFor, toProse } from './comments';
 import { buildNotes } from './notes';
 
 // ---------------------------------------------------------------------------
@@ -120,7 +120,7 @@ function redraw(editor: vscode.TextEditor | undefined): void {
     // on every keystroke, and scanning a large file each time would be felt.
     if (!isEngaged(s)) {
         editor.setDecorations(decorationType(), []);
-        updateStatusBar(editor, 0);
+        updateStatusBar(editor, 0, 0);
         vscode.commands.executeCommand('setContext', 'vibeRead.active', false);
         return;
     }
@@ -141,7 +141,7 @@ function redraw(editor: vscode.TextEditor | undefined): void {
     }
 
     editor.setDecorations(decorationType(), ranges);
-    updateStatusBar(editor, ranges.length);
+    updateStatusBar(editor, countWhys(lines), ranges.length);
 
     // "On" means something is covered up at this moment — not that a flag is
     // set somewhere. If every line has been asked back, nothing is hidden, so
@@ -160,18 +160,18 @@ function redraw(editor: vscode.TextEditor | undefined): void {
 let statusBar: vscode.StatusBarItem;
 
 /**
- * On, or off. Nothing else.
+ * On, or off — and when on, how much there is to read.
  *
- * This did try to be more helpful — counting the hidden lines, and saying
- * whether it was the whole file or a selection. Four wordings, and every one
- * of them still had to be read to be understood. A status bar is glanced at,
- * not read, so any wording that needs reading is wasted there.
+ * Every earlier version of this line counted the hidden code. That was exactly
+ * backwards: nobody is reading the code, that is the whole point. So no wording
+ * could ever be made to sound right, because the number itself was the wrong
+ * number. It counts the whys now — the things the file explains.
  *
- * It is also telling people something they already know. They chose the lines
- * and pressed the key a second ago, and the screen in front of them shows
- * exactly what is hidden. This is a light, not a report.
+ * There is a second use for it, which may matter more than knowing where you
+ * are. A low number means the AI barely explained itself, and that is worth
+ * seeing, because the answer to it is to ask for better comments next time.
  */
-function updateStatusBar(editor: vscode.TextEditor | undefined, hidden: number): void {
+function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hidden: number): void {
     if (!editor) { statusBar.hide(); return; }
 
     if (hidden === 0) {
@@ -183,9 +183,12 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, hidden: number):
             'Select some lines first to hide only those.'
         );
     } else {
-        statusBar.text = `${currentIcon || '🙈'} Reading`;
+        const icon = currentIcon || '🙈';
+        statusBar.text = whys > 0
+            ? `${icon} Reading ${whys} why${whys === 1 ? '' : 's'}`
+            : `${icon} Reading`;
         statusBar.tooltip = new vscode.MarkdownString(
-            '**Reading**\n\n' +
+            "**The code is hidden. You're reading the why.**\n\n" +
             '`Alt+X` show the code back  \n' +
             '`Alt+M` keep it as notes  \n' +
             '`Ctrl+C` copies only what you can see'

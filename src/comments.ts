@@ -50,6 +50,32 @@ export function syntaxFor(languageId: string): CommentSyntax {
     return BY_LANGUAGE[languageId] ?? C_STYLE;
 }
 
+/**
+ * How many separate things the file explains — its "whys".
+ *
+ * Not the number of comment lines. A four-line paragraph is one reason told
+ * over four lines, not four reasons, and counting lines would say otherwise.
+ * A run of comment lines is one why; a blank line or a line of code ends it;
+ * a trailing comment is a why of its own, belonging to the line it sits on.
+ *
+ * This is the unit the status bar counts and the unit Alt+M turns into a
+ * numbered section, so both always agree.
+ */
+export function countWhys(lines: ScannedLine[]): number {
+    let total = 0;
+    let insideRun = false;
+
+    for (const line of lines) {
+        if (line.kind.kind === 'comment') {
+            if (!insideRun) { total++; insideRun = true; }
+            continue;
+        }
+        insideRun = false;
+        if (line.kind.kind === 'mixed') { total++; }
+    }
+    return total;
+}
+
 /** One line of the file, after we have worked out what it is made of. */
 export interface ScannedLine {
     kind: LineKind;

@@ -92,6 +92,8 @@ function collect(input: NotesInput): Section[] {
     const sections: Section[] = [];
     let current: Section | null = null;
     let lastWasCode = false;
+    /** A blank line has ended a run of comments, so the next one starts fresh. */
+    let runBroken = false;
 
     for (let i = 0; i < input.scanned.length; i++) {
         const { kind } = input.scanned[i];
@@ -99,19 +101,25 @@ function collect(input: NotesInput): Section[] {
 
         if (kind.kind === 'blank') {
             if (current && current.code.length > 0) { current.code.push(''); }
+            else if (current) { runBroken = true; }
             continue;
         }
 
         if (kind.kind === 'comment') {
-            if (!current || lastWasCode) {
+            // Same rule as countWhys, so the number in the status bar and the
+            // number of sections here can never disagree.
+            if (!current || lastWasCode || runBroken) {
                 current = { prose: [], code: [] };
                 sections.push(current);
             }
             const prose = input.toProse(text);
             if (prose !== '') { current.prose.push(prose); }
             lastWasCode = false;
+            runBroken = false;
             continue;
         }
+
+        runBroken = false;
 
         // 'code' or 'mixed' — a trailing comment is kept with its own line,
         // since separating it from the statement would lose the point.
