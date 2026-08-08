@@ -1,6 +1,6 @@
-### Any file. Any language.
+## Any file. Any language.
 
-It only needs comments in it.
+It only needs **comments** in it.
 
 ```python
 # Discount before tax. The other order
@@ -12,4 +12,4 @@ if coupon:
 **←  or open the sample file**
 
 No comments? Ask your AI again, adding
-*"and comment your reasoning."*
+**"and comment your reasoning."**

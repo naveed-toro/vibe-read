@@ -1,17 +1,17 @@
-### The file, turned inside out.
+## Your file becomes notes.
 
-The reasoning becomes the document.
-
-**1. Discount before tax**
-
-The other order overcharges the customer.
-
-▸ 🙈 code
-
-**2. Round once, at the end**
-
-Rounding at each step drifts a few cents.
-
-▸ 🙈 code
-
-Nothing is saved unless you save it.
+**In your editor**
+```python
+# Round once, at the end.
+# Rounding at each step drifts a few cents.
+return round(subtotal * 1.2, 2)
+```
+**In your notes**
+> **checkout.py**  
+> 🙈 Vibe Read · 2026-08-08 · 1 note
+>
+> **1. Round once, at the end**
+>
+> Rounding at each step drifts a few cents.
+>
+> ▸ 🙈 code
