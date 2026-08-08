@@ -172,9 +172,13 @@ interface Counts { hidden: number; shown: number; wholeFile: boolean; }
 /**
  * What the screen actually looks like, in words.
  *
- * There are four states and they must not share a label. Saying "Reading"
- * while most of the file plainly shows its code reads as a broken extension —
- * and once someone believes that, they uninstall rather than ask.
+ * Four states, and the wording carries all the weight. An earlier attempt read
+ * "2 lines shown" and "2 lines hidden" — opposite meanings, and the only thing
+ * telling them apart was the last word. A glance cannot catch that.
+ *
+ * So: a bare "Reading" means everything is hidden. Anything after it means
+ * something unusual is going on and is worth reading. "all but" and "only"
+ * are far enough apart to tell at a glance.
  */
 function updateStatusBar(editor: vscode.TextEditor | undefined, c: Counts): void {
     if (!editor) { statusBar.hide(); return; }
@@ -201,17 +205,17 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, c: Counts): void
         );
     } else if (c.wholeFile) {
         // The whole file, less the lines that were asked back.
-        statusBar.text = `${icon} Reading · ${lines(c.shown)} shown`;
+        statusBar.text = `${icon} Reading · all but ${lines(c.shown)}`;
         statusBar.tooltip = new vscode.MarkdownString(
-            `**Vibe Read is on**, apart from ${lines(c.shown)} you asked to see.\n\n` +
+            `**The whole file, except ${lines(c.shown)} you asked to see.**\n\n` +
             'Select them and press `Alt+X` to put them away again.\n\n' + keys
         );
     } else {
-        statusBar.text = `${icon} Reading · ${lines(c.hidden)} hidden`;
+        statusBar.text = `${icon} Reading · ${lines(c.hidden)} only`;
         statusBar.tooltip = new vscode.MarkdownString(
-            `**Vibe Read is on for ${lines(c.hidden)}.**\n\n` +
-            'The rest of the file is untouched. Press `Alt+X` with nothing ' +
-            'selected to hide all of it.\n\n' + keys
+            `**Only ${lines(c.hidden)} are hidden.**\n\n` +
+            'The rest of the file is untouched — that is why most of it still ' +
+            'shows its code. Press `Alt+X` with nothing selected to hide all of it.\n\n' + keys
         );
     }
 
