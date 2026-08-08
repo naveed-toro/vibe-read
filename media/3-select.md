@@ -1,7 +1,6 @@
-One reason catches your eye and you want to see what
-it actually did.
+### One line back. Not all of them.
 
-Select those lines, press `Alt+X`:
+Select it, press `Alt+X`:
 
 ```python
 # Round once, at the end.
@@ -9,7 +8,6 @@ return round(subtotal * 1.2, 2)
 🙈
 ```
 
-The same key, narrowed to what you picked. Press it
-again on those lines to put them away.
+The same key, narrowed to what you picked.
 
-There is no second key for this, on purpose.
+No second key. On purpose.

@@ -1,15 +1,17 @@
-Nothing is edited — `Alt+X` again brings it all back.
+### Nothing is edited.
 
-Before:
+Before
 
 ```python
 # Discount before tax.
 subtotal *= (1 - rate)
 ```
 
-After:
+After `Alt+X`
 
 ```python
 # Discount before tax.
 🙈
 ```
+
+Press it again — it all comes back.

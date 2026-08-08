@@ -1,5 +1,6 @@
-Any code file, in any language. The only thing that
-matters is that something in it explains itself.
+### Any file. Any language.
+
+It only needs comments in it.
 
 ```python
 # Discount before tax. The other order
@@ -8,8 +9,7 @@ if coupon:
     subtotal *= (1 - coupon.rate)
 ```
 
-Python docstrings count as reasoning too, not as
-code — so they stay on screen with the comments.
+**←  or open the sample file**
 
-No comments in what your AI gave you? Ask again and
-add four words: **"and comment your reasoning."**
+No comments? Ask your AI again, adding
+*"and comment your reasoning."*
