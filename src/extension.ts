@@ -120,25 +120,17 @@ function redraw(editor: vscode.TextEditor | undefined): void {
     // on every keystroke, and scanning a large file each time would be felt.
     if (!isEngaged(s)) {
         editor.setDecorations(decorationType(), []);
-        updateStatusBar(editor, { hidden: 0, shown: 0, wholeFile: false });
+        updateStatusBar(editor, 0);
         vscode.commands.executeCommand('setContext', 'vibeRead.active', false);
         return;
     }
 
     const lines = scan(doc, syntaxFor(doc.languageId));
     const ranges: vscode.Range[] = [];
-    let shown = 0;
 
     for (let i = 0; i < lines.length; i++) {
         const l = lines[i];
-        if (!isHideable(l)) { continue; }
-
-        if (!isLineHidden(i, s)) {
-            // A line of code that would be hidden but for the user asking to
-            // see it. Counted, because the status bar has to admit to it.
-            if (s.overrides.get(i) === false) { shown++; }
-            continue;
-        }
+        if (!isHideable(l) || !isLineHidden(i, s)) { continue; }
 
         // For a mixed line we hide only the code and leave the comment showing.
         const end = l.kind.kind === 'mixed' ? l.kind.commentAt : doc.lineAt(i).text.length;
@@ -149,7 +141,7 @@ function redraw(editor: vscode.TextEditor | undefined): void {
     }
 
     editor.setDecorations(decorationType(), ranges);
-    updateStatusBar(editor, { hidden: ranges.length, shown, wholeFile: s.wholeFile });
+    updateStatusBar(editor, ranges.length);
 
     // "On" means something is covered up at this moment — not that a flag is
     // set somewhere. If every line has been asked back, nothing is hidden, so
@@ -167,30 +159,22 @@ function redraw(editor: vscode.TextEditor | undefined): void {
 
 let statusBar: vscode.StatusBarItem;
 
-interface Counts { hidden: number; shown: number; wholeFile: boolean; }
-
 /**
- * What the screen actually looks like, in words.
+ * On, or off. Nothing else.
  *
- * Four states, and the wording carries all the weight. An earlier attempt read
- * "2 lines shown" and "2 lines hidden" — opposite meanings, and the only thing
- * telling them apart was the last word. A glance cannot catch that.
+ * This did try to be more helpful — counting the hidden lines, and saying
+ * whether it was the whole file or a selection. Four wordings, and every one
+ * of them still had to be read to be understood. A status bar is glanced at,
+ * not read, so any wording that needs reading is wasted there.
  *
- * So: a bare "Reading" means everything is hidden. Anything after it means
- * something unusual is going on and is worth reading. "all but" and "only"
- * are far enough apart to tell at a glance.
+ * It is also telling people something they already know. They chose the lines
+ * and pressed the key a second ago, and the screen in front of them shows
+ * exactly what is hidden. This is a light, not a report.
  */
-function updateStatusBar(editor: vscode.TextEditor | undefined, c: Counts): void {
+function updateStatusBar(editor: vscode.TextEditor | undefined, hidden: number): void {
     if (!editor) { statusBar.hide(); return; }
 
-    const icon = currentIcon || '🙈';
-    const lines = (n: number) => `${n} line${n === 1 ? '' : 's'}`;
-    const keys =
-        '`Alt+X` show the code back  \n' +
-        '`Alt+M` keep it as notes  \n' +
-        '`Ctrl+C` copies only what you can see';
-
-    if (c.hidden === 0) {
+    if (hidden === 0) {
         // Nothing is covered up, whatever the flags happen to say.
         statusBar.text = '$(eye) Vibe Read';
         statusBar.tooltip = new vscode.MarkdownString(
@@ -198,24 +182,13 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, c: Counts): void
             '`Alt+X` hide the code, read the reasoning  \n' +
             'Select some lines first to hide only those.'
         );
-    } else if (c.wholeFile && c.shown === 0) {
-        statusBar.text = `${icon} Reading`;
-        statusBar.tooltip = new vscode.MarkdownString(
-            '**Vibe Read is on** — only the reasoning is showing.\n\n' + keys
-        );
-    } else if (c.wholeFile) {
-        // The whole file, less the lines that were asked back.
-        statusBar.text = `${icon} Reading · all but ${lines(c.shown)}`;
-        statusBar.tooltip = new vscode.MarkdownString(
-            `**The whole file, except ${lines(c.shown)} you asked to see.**\n\n` +
-            'Select them and press `Alt+X` to put them away again.\n\n' + keys
-        );
     } else {
-        statusBar.text = `${icon} Reading · ${lines(c.hidden)} only`;
+        statusBar.text = `${currentIcon || '🙈'} Reading`;
         statusBar.tooltip = new vscode.MarkdownString(
-            `**Only ${lines(c.hidden)} are hidden.**\n\n` +
-            'The rest of the file is untouched — that is why most of it still ' +
-            'shows its code. Press `Alt+X` with nothing selected to hide all of it.\n\n' + keys
+            '**Reading**\n\n' +
+            '`Alt+X` show the code back  \n' +
+            '`Alt+M` keep it as notes  \n' +
+            '`Ctrl+C` copies only what you can see'
         );
     }
 
