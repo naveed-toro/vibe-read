@@ -179,9 +179,17 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
 
     const icon = currentIcon || DEFAULT_MARK;
 
-    // The pencil is what says this is a control. On its own the mark reads as
-    // decoration, and nobody presses decoration.
-    markBar.text = `${icon} $(edit)`;
+    // The chevron is punctuation, not a second icon — it says nothing on its
+    // own, it only tells you a list opens here. The pencil said "this is a
+    // field to fill in", which is the language of forms; the mark is meant to
+    // be more like a sticker than a setting.
+    //
+    // And it earns its place. Elsewhere in the status bar VS Code shows bare
+    // values — UTF-8, Python, LF — and those read as controls because the
+    // words themselves are legible as settings. A lone emoji is not: without
+    // the chevron it reads as an indicator, something being reported to you
+    // rather than something you can press.
+    markBar.text = `${icon} $(chevron-down)`;
     markBar.tooltip = new vscode.MarkdownString('**Change the mark**');
     markBar.show();
 
