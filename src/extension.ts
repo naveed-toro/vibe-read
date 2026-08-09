@@ -705,15 +705,15 @@ function askForMark(current: string): Promise<string | undefined> {
         let answered = false;
 
         box.onDidChangeValue(value => {
-            const wrong = whatIsWrong(value);
-            box.validationMessage = wrong ?? '';
-            previewMark = wrong ? undefined : value.trim();
+            const said = howItStands(value);
+            box.validationMessage = said;
+            previewMark = said.severity === Bad ? undefined : value.trim();
             redraw(vscode.window.activeTextEditor);
         });
 
         box.onDidAccept(() => {
             const value = box.value.trim();
-            if (whatIsWrong(value)) { return; }
+            if (howItStands(value).severity === Bad) { return; }
             answered = true;
             box.hide();
             resolve(value);
@@ -746,15 +746,49 @@ function emojiKeyboardHint(): string {
     }
 }
 
-function whatIsWrong(value: string): string | undefined {
+const Fine = vscode.InputBoxValidationSeverity.Info;
+const Edge = vscode.InputBoxValidationSeverity.Warning;
+const Bad = vscode.InputBoxValidationSeverity.Error;
+
+/**
+ * What the line under the box says while somebody is typing.
+ *
+ * Twitter counted down rather than up, and it was right to: the number you
+ * act on is the room you have left, not the room you have spent. It also
+ * stayed quiet until you neared the end, then changed colour — never once
+ * taking the keyboard away from you.
+ *
+ * Here the countdown earns its place twice over. Eight characters of emoji
+ * cannot be counted by eye — 🙈🙉🙊 is three or six depending on how you
+ * count, 👨‍👩‍👧‍👦 is one or four — so this is not a convenience, it is the only
+ * way to know. And the limit is invisible everywhere else, so this is where
+ * it gets said.
+ *
+ * Three rungs, and only the top one stops you:
+ *
+ *   room to spare   Info      7 left      blue    enter works
+ *   right on eight  Warning   0 left      amber   enter works — eight is allowed
+ *   over            Error     too long    red     enter refused
+ *
+ * The amber is not a complaint. Eight is a perfectly good mark; the colour
+ * only says the wall is here.
+ */
+function howItStands(value: string): vscode.InputBoxValidationMessage {
     const text = value.trim();
-    if (text === '') { return 'Type or paste something.'; }
+    if (text === '') {
+        return { message: 'Type or paste something.', severity: Bad };
+    }
 
     const length = charactersIn(text);
-    if (length > MOST_CHARACTERS) {
-        return `A little shorter — ${MOST_CHARACTERS} at most, and that is ${length}.`;
+    const left = MOST_CHARACTERS - length;
+
+    if (left < 0) {
+        return {
+            message: `A little shorter — ${MOST_CHARACTERS} at most, and that is ${length}.`,
+            severity: Bad,
+        };
     }
-    return undefined;
+    return { message: `${left} left`, severity: left === 0 ? Edge : Fine };
 }
 
 /**
