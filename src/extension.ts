@@ -694,26 +694,46 @@ function showTheSlots(): Promise<{ use?: string; edit?: number } | undefined> {
     });
 }
 
-/** The box where the operating system's emoji keyboard does the real work. */
+/**
+ * The box where the operating system's emoji keyboard does the real work.
+ *
+ * There is one line of room under the field, and two things worth saying, so
+ * they take turns rather than share. Before a key is pressed there is nothing
+ * to count, and the only thing that is not obvious is where the emoji
+ * keyboard lives — so the line says that. From the first keystroke it becomes
+ * the countdown.
+ *
+ * `prompt` is not used at all. VS Code appends "(Press 'Enter' to confirm or
+ * 'Escape' to cancel)" to it, which turns any hint into a long grey sentence,
+ * and a long grey sentence is read by nobody. The validation line is short,
+ * coloured, and sits in the same place — and Enter and Escape are not news.
+ *
+ * What is left of "emoji, text, or both" lives in the placeholder, inside the
+ * empty field, where it answers the question at the moment it is asked and
+ * disappears the moment it is answered.
+ */
 function askForMark(current: string): Promise<string | undefined> {
     return new Promise(resolve => {
         const box = vscode.window.createInputBox();
         box.title = 'Your own mark';
         box.value = current;
-        box.prompt = emojiKeyboardHint();
+        box.placeholder = 'Emoji, text, or both';
+
+        const hint = emojiKeyboardHint();
+        const theHint = hint ? { message: hint, severity: Fine } : undefined;
+        box.validationMessage = theHint;
 
         let answered = false;
 
         box.onDidChangeValue(value => {
-            const said = howItStands(value);
-            box.validationMessage = said;
-            previewMark = said.severity === Bad ? undefined : value.trim();
+            box.validationMessage = lineUnder(value) ?? theHint;
+            previewMark = usable(value) ? value.trim() : undefined;
             redraw(vscode.window.activeTextEditor);
         });
 
         box.onDidAccept(() => {
             const value = box.value.trim();
-            if (howItStands(value).severity === Bad) { return; }
+            if (!usable(value)) { return; }
             answered = true;
             box.hide();
             resolve(value);
@@ -734,15 +754,19 @@ function askForMark(current: string): Promise<string | undefined> {
  * Every system has an emoji keyboard except, dependably, Linux — where the
  * shortcut belongs to the desktop rather than the system and differs on each
  * one. Naming a shortcut that does nothing is worse than naming none: they
- * press it, nothing happens, and the extension looks broken. Pasting works
- * everywhere, and so does typing.
+ * press it, nothing happens, and the extension looks broken. So on Linux this
+ * says nothing, and the placeholder inside the field carries the whole
+ * message on its own.
+ *
+ * The Mac line uses ⌃ ⌘ rather than the words. Mac users read those symbols
+ * faster than they read "Control" and "Command", and this branch only ever
+ * runs on a Mac, so there is nothing to render them wrongly.
  */
-function emojiKeyboardHint(): string {
-    const both = 'Emoji, text, or both.';
+function emojiKeyboardHint(): string | undefined {
     switch (process.platform) {
-        case 'win32': return `Win + .  opens the emoji keyboard. ${both}`;
-        case 'darwin': return `Control + Command + Space  opens the emoji keyboard. ${both}`;
-        default: return both;
+        case 'win32': return 'Win + .  opens the emoji keyboard';
+        case 'darwin': return '⌃ ⌘ Space  opens the emoji keyboard';
+        default: return undefined;
     }
 }
 
@@ -750,13 +774,18 @@ const Fine = vscode.InputBoxValidationSeverity.Info;
 const Edge = vscode.InputBoxValidationSeverity.Warning;
 const Bad = vscode.InputBoxValidationSeverity.Error;
 
+/** A mark you could actually keep: something is there, and it fits. */
+function usable(value: string): boolean {
+    const text = value.trim();
+    return text !== '' && charactersIn(text) <= MOST_CHARACTERS;
+}
+
 /**
  * What the line under the box says while somebody is typing.
  *
  * Twitter counted down rather than up, and it was right to: the number you
  * act on is the room you have left, not the room you have spent. It also
- * stayed quiet until you neared the end, then changed colour — never once
- * taking the keyboard away from you.
+ * never took the keyboard away from you — it changed colour and let you go on.
  *
  * Here the countdown earns its place twice over. Eight characters of emoji
  * cannot be counted by eye — 🙈🙉🙊 is three or six depending on how you
@@ -772,12 +801,15 @@ const Bad = vscode.InputBoxValidationSeverity.Error;
  *
  * The amber is not a complaint. Eight is a perfectly good mark; the colour
  * only says the wall is here.
+ *
+ * An empty box returns nothing at all, and the caller puts the emoji hint
+ * back. Empty is not a mistake — it is where everybody starts, and a red bar
+ * telling you off for not having typed yet is an insult with a colour on it.
+ * Enter still does nothing, which is the whole of what needed saying.
  */
-function howItStands(value: string): vscode.InputBoxValidationMessage {
+function lineUnder(value: string): vscode.InputBoxValidationMessage | undefined {
     const text = value.trim();
-    if (text === '') {
-        return { message: 'Type or paste something.', severity: Bad };
-    }
+    if (text === '') { return undefined; }
 
     const length = charactersIn(text);
     const left = MOST_CHARACTERS - length;
