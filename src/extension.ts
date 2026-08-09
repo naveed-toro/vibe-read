@@ -90,8 +90,26 @@ function activeMark(): string {
     return vscode.workspace.getConfiguration('vibeRead').get<string>('mark') || DEFAULT_MARK;
 }
 
+/**
+ * Every place a mark is drawn — the editor, the status bar, the list — is
+ * HTML underneath, and HTML throws away all but one of a run of spaces. So
+ * somebody who spaces their emoji out on purpose gets 🤫🤫 🤫 back however
+ * many spaces they put in, and it looks like the extension ate them.
+ *
+ * A no-break space is not collapsed, and is otherwise an ordinary space. Only
+ * what is drawn is changed; what is saved stays the plain spaces they typed,
+ * so the setting is readable and the count is honest.
+ *
+ * Only runs of two or more are swapped. A single space survives HTML on its
+ * own, and leaving it a real one means typing a space still matches the row
+ * when you filter the list — 🙈 hidden should stay findable by typing it.
+ */
+function asDrawn(mark: string): string {
+    return mark.replace(/ {2,}/g, run => ' '.repeat(run.length));
+}
+
 function decorationType(): vscode.TextEditorDecorationType {
-    const icon = activeMark();
+    const icon = asDrawn(activeMark());
 
     if (decoration && icon === currentIcon) { return decoration; }
 
@@ -621,7 +639,10 @@ function slotRows(): MarkRow[] {
             return { label: '$(add) Set your own…', slot, mark };
         }
         return {
-            label: mark,
+            // Drawn, not stored: the list is HTML too, and a row that shows
+            // fewer spaces than the mark really has is the list telling a lie
+            // about what picking it will do.
+            label: asDrawn(mark),
             // Ours, or theirs — and the note only belongs to ours.
             description: mark === FILLED_IN[slot] ? NOTES[slot] : 'yours',
             slot,
