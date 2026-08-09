@@ -19,7 +19,8 @@ Vibe Read hides the code so the reasoning is all that is left.
   of the time this is VS Code's own copy, untouched.
 - The mark is in the status bar. Click it and take 🤫, 💤💤, 💻 code or ⋯
   instead — or replace any of them with your own, where your system's emoji
-  keyboard does the choosing. Emoji, text, or both.
+  keyboard does the choosing. Emoji, text, or both, up to eight characters. A
+  mark is meant to be looked at, not read.
 
 There is no separate command for a single line, and that is deliberate. Select
 the line and press `Alt+X`.

@@ -128,7 +128,7 @@ the choosing.
 
 ```
 🤫              quiet
-🙈 not looking  emoji + text
+🙈 hidden       emoji + text
 💤💤            sleepy
 💻 code         there is code here
 ⋯               no emoji — best for reading

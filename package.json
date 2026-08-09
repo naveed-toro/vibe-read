@@ -122,28 +122,46 @@
             "id": "open",
             "title": "Open a file your AI wrote",
             "description": "Any code file works, as long as it has comments in it.\n[Open a sample file](command:vibeRead.openSample)",
-            "media": { "markdown": "media/1-open.md", "altText": "A commented function" }
+            "media": {
+              "markdown": "media/1-open.md",
+              "altText": "A commented function"
+            }
           },
           {
             "id": "hide",
             "title": "Press Alt+X",
             "description": "The code disappears, the reasoning stays. Press it again to bring it back.",
-            "media": { "markdown": "media/2-hide.md", "altText": "The same function with the code hidden" },
-            "completionEvents": ["onCommand:vibeRead.toggle"]
+            "media": {
+              "markdown": "media/2-hide.md",
+              "altText": "The same function with the code hidden"
+            },
+            "completionEvents": [
+              "onCommand:vibeRead.toggle"
+            ]
           },
           {
             "id": "select",
             "title": "Select a few lines, press Alt+X again",
             "description": "Sometimes you want one piece of code back. Select it, press Alt+X.",
-            "media": { "markdown": "media/3-select.md", "altText": "One line brought back" },
-            "completionEvents": ["onContext:vibeRead.learnedSelection"]
+            "media": {
+              "markdown": "media/3-select.md",
+              "altText": "One line brought back"
+            },
+            "completionEvents": [
+              "onContext:vibeRead.learnedSelection"
+            ]
           },
           {
             "id": "notes",
             "title": "Press Alt+M",
             "description": "Keeps it as notes — the reasoning as text, the code folded under it.",
-            "media": { "markdown": "media/4-notes.md", "altText": "The notes it writes" },
-            "completionEvents": ["onCommand:vibeRead.saveAsNotes"]
+            "media": {
+              "markdown": "media/4-notes.md",
+              "altText": "The notes it writes"
+            },
+            "completionEvents": [
+              "onCommand:vibeRead.saveAsNotes"
+            ]
           }
         ]
       }
@@ -158,8 +176,17 @@
         },
         "vibeRead.marks": {
           "type": "array",
-          "items": { "type": "string" },
-          "default": ["🤫", "🙈 not looking", "💤💤", "💻 code", "⋯", ""],
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "🤫",
+            "🙈 hidden",
+            "💤💤",
+            "💻 code",
+            "⋯",
+            ""
+          ],
           "markdownDescription": "The slots offered when you click the mark in the status bar.\n\nEasier to change there than here — the pencil on each row opens your system's emoji keyboard. Delete this setting to get these back."
         },
         "vibeRead.showEditorButton": {

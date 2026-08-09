@@ -548,9 +548,27 @@ async function saveAsNotes(editor: vscode.TextEditor): Promise<void> {
 // ---------------------------------------------------------------------------
 
 const DEFAULT_MARK = '🙈';
-const MOST_CHARACTERS = 15;
 
-const FILLED_IN = ['🤫', '🙈 not looking', '💤💤', '💻 code', '⋯', ''];
+/**
+ * Eight, and the number is not arbitrary.
+ *
+ * A mark is looked at; text is read. While it stays about the size of one
+ * short word the eye takes it as a shape — a column running down the left of
+ * the file. Past that it starts being read instead, and a thing you read
+ * forty times down one page is the noise Alt+X was pressed to be rid of.
+ *
+ * Everything worth having fits: one emoji, four emoji, three monkeys, an
+ * emoji and a word, [hidden], — code —. What it turns away is the loose
+ * version of something that already has a tighter one — sleeping becomes zzz,
+ * redacted becomes hidden — and the tighter one is the better mark anyway.
+ * The limit removes flab, not choices.
+ *
+ * The longest thing on offer below is exactly eight, so the ceiling can be
+ * seen without anybody being told a number.
+ */
+const MOST_CHARACTERS = 8;
+
+const FILLED_IN = ['🤫', '🙈 hidden', '💤💤', '💻 code', '⋯', ''];
 
 /**
  * What each of the five says about itself. Only shown while the slot still
