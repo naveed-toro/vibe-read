@@ -87,7 +87,7 @@ let previewMark: string | undefined;
 
 function activeMark(): string {
     if (previewMark) { return previewMark; }
-    return vscode.workspace.getConfiguration('vibeRead').get<string>('hiddenIcon') || DEFAULT_MARK;
+    return vscode.workspace.getConfiguration('vibeRead').get<string>('mark') || DEFAULT_MARK;
 }
 
 function decorationType(): vscode.TextEditorDecorationType {
@@ -563,7 +563,7 @@ function savedMarks(): string[] {
     return saved.map(m => (typeof m === 'string' ? m : ''));
 }
 
-async function keep(key: 'hiddenIcon' | 'marks', value: string | string[]): Promise<void> {
+async function keep(key: 'mark' | 'marks', value: string | string[]): Promise<void> {
     await vscode.workspace
         .getConfiguration('vibeRead')
         .update(key, value, vscode.ConfigurationTarget.Global);
@@ -574,7 +574,7 @@ async function pickMark(): Promise<void> {
     if (!answer) { return; }
 
     if (answer.use !== undefined) {
-        await keep('hiddenIcon', answer.use);
+        await keep('mark', answer.use);
         return;
     }
 
@@ -586,7 +586,7 @@ async function pickMark(): Promise<void> {
 
     marks[slot] = typed;
     await keep('marks', marks);
-    await keep('hiddenIcon', typed);
+    await keep('mark', typed);
 }
 
 function slotRows(): MarkRow[] {
@@ -613,7 +613,7 @@ function showTheSlots(): Promise<{ use?: string; edit?: number } | undefined> {
     return new Promise(resolve => {
         const box = vscode.window.createQuickPick<MarkRow>();
         const showing = vscode.workspace
-            .getConfiguration('vibeRead').get<string>('hiddenIcon') || DEFAULT_MARK;
+            .getConfiguration('vibeRead').get<string>('mark') || DEFAULT_MARK;
 
         box.title = 'What stands in for hidden code';
         box.placeholder = 'Pick one, or press the pencil to change it';
@@ -859,7 +859,7 @@ export function activate(context: vscode.ExtensionContext): void {
         vscode.workspace.onDidCloseTextDocument(doc => states.delete(doc.uri.toString())),
 
         vscode.workspace.onDidChangeConfiguration(e => {
-            if (e.affectsConfiguration('vibeRead.hiddenIcon')) {
+            if (e.affectsConfiguration('vibeRead.mark')) {
                 redraw(vscode.window.activeTextEditor);
             }
         })

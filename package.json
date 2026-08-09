@@ -151,7 +151,7 @@
     "configuration": {
       "title": "Vibe Read",
       "properties": {
-        "vibeRead.hiddenIcon": {
+        "vibeRead.mark": {
           "type": "string",
           "default": "🙈",
           "markdownDescription": "What stands in for hidden code.\n\nEasier to change from the status bar: click the mark at the bottom of the window."
