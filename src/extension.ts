@@ -260,11 +260,21 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
     if (hidden === 0) {
         // Nothing is covered up, whatever the flags happen to say.
         //
-        // No icon here, and that is the point. Nothing is being claimed while
-        // the code is on screen — this is only the name of the thing waiting
-        // to be used, and VS Code's own guidance is to use an icon only where
-        // one is needed.
-        statusBar.text = 'Vibe Read';
+        // 🙈 here, and it is doing two jobs at once.
+        //
+        // It is the face of the thing — the marketplace icon, the title of the
+        // page, the signature on every message. Every other item in that
+        // corner wears the mark of whatever put it there, and a bare "Vibe
+        // Read" sat among them looking like a label somebody forgot to finish.
+        // It is also the only colour down there, which is the whole of what an
+        // icon is for.
+        //
+        // And it happens to be true. A monkey with its eyes covered is exactly
+        // what somebody is while the code is on screen: not reading the
+        // reasoning, however much of it is sitting right there. Press the key
+        // and the eye opens. The pair says the entire idea in two frames, and
+        // neither frame is a lie.
+        statusBar.text = '🙈 Vibe Read';
         statusBar.tooltip = new vscode.MarkdownString(
             '**Vibe Read**\n\n' +
             // A blank line, not a line break: the key is one thing and the
