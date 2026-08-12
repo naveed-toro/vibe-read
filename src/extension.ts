@@ -210,7 +210,7 @@ const TOGETHER = 99;
 let statusBar: vscode.StatusBarItem;
 
 /**
- * The mark, and a word for what it is.
+ * The vibe, and a word for what it is.
  *
  * Two pictures were tried and both left it half-said. A pencil is the
  * metaphor for editing text — the language of forms — and nothing is being
@@ -222,11 +222,21 @@ let statusBar: vscode.StatusBarItem;
  * same way. VS Code's own guidance says as much — short text labels, icons
  * only where the metaphor is clear, and never a second icon beside the first.
  *
- * So: "Mark: ⋯". It is the shape the status bar already uses for a value you
- * can change — Spaces: 4, Ln 9, Col 12 — and everybody presses those without
- * being told to. And it teaches itself: the ⋯ down the file and the ⋯ in the
- * bar are the same character, so the pairing says what the word means without
- * anyone explaining it.
+ * So a word, in the shape the status bar already uses for a value you can
+ * change — Spaces: 4, Ln 9, Col 12 — because everybody presses those without
+ * being told to. And it teaches itself either way: the ⋯ down the file and the
+ * ⋯ in the bar are the same character, so the pairing says what the word means
+ * without anyone explaining it.
+ *
+ * The word is "Vibe", not "Mark". Mark was accurate and dead. It read as
+ * Spaces: 4 reads — a value being reported — and a thing that looks like a
+ * setting is a thing nobody touches. This one has to be touched or the whole
+ * feature never happens.
+ *
+ * Vibe is the word this was built out of. Stickers on a laptop, charms in a
+ * shoe, four emoji on a profile: none of it does anything, all of it is why
+ * people stay attached to their things. Nobody calls that a setting. And it
+ * costs nothing in accuracy that matters here — the emoji is the vibe.
  *
  * No chevron with it. The colon already says a value lives here; saying it
  * twice is the same hedging that made the first two attempts feel unfinished.
@@ -285,11 +295,22 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
     }
 
     // Shown in this order on purpose. Among items sharing a priority the one
-    // revealed first sits furthest left, so the state reads first and the mark
+    // revealed first sits furthest left, so the state reads first and the vibe
     // sits beside it — which is the order they are thought about in.
+    //
+    // The bar between them is here because side by side they read as one
+    // sentence. VS Code separates its own — Spaces: 4, UTF-8, LF — with a gap
+    // and nothing else, and that works because nobody expects UTF-8 and LF to
+    // be related. Ours are related, which is exactly why they need telling
+    // apart. It hangs off this item rather than the next one so that the vibe,
+    // the one meant to be pressed, stays clean.
+    // No-break spaces: plain ones would collapse to a single space here for
+    // the same reason they collapse in a vibe, and the bar would end up
+    // hugging the words instead of standing between the two items.
+    statusBar.text += '\u00a0\u00a0|';
     statusBar.show();
 
-    markBar.text = `Mark: ${currentIcon || DEFAULT_MARK}`;
+    markBar.text = `Vibe: ${currentIcon || DEFAULT_MARK}`;
     markBar.tooltip = new vscode.MarkdownString(
         '**What stands in for hidden code**\n\n' +
         'Click to change it. Emoji, text, or both.'

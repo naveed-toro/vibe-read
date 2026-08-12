@@ -105,14 +105,14 @@ again.
      People put stickers on laptops, charms in their Crocs, four emoji on
      a Telegram profile. None of it does anything. All of it is why they
      stay attached to the thing. And in an editor, other people see this:
-     a developer screen-shares several times a day, and the mark is down
+     a developer screen-shares several times a day, and the vibe is down
      the left of every hidden line.
 
      So this is not a settings screenshot. It is somebody making the tool
      theirs, and it should look like fun.
 
      RECORD
-       1. Code hidden. Click Mark: in the status bar.
+       1. Code hidden. Click Vibe: in the status bar.
        2. Arrow slowly down the list — the editor behind changes with
           each one. That change is the whole recording; let it land.
        3. Stop on one that is nothing like the default.
@@ -120,11 +120,11 @@ again.
      ABOUT 6 SECONDS.   SAVE AS  media/mark.gif
      ═══════════════════════════════════════════════════════════════════ -->
 
-![Pick the mark you want](https://raw.githubusercontent.com/naveed-toro/vibe-read/main/media/mark.gif)
+![Pick the vibe you want](https://raw.githubusercontent.com/naveed-toro/vibe-read/main/media/mark.gif)
 
 The default is an ellipsis, and that is the point — an emoji repeated down a
-whole page is the noise this exists to remove. But the mark is yours. Click
-**Mark:** at the bottom and take one of these, or put in anything you like —
+whole page is the noise this exists to remove. But the vibe is yours. Click
+**Vibe:** at the bottom and take one of these, or put in anything you like —
 emoji, text, or both. Your system's emoji keyboard does the choosing.
 
 ```
@@ -244,7 +244,7 @@ string used as data — a block of SQL, an HTML template — is code, and goes.
 is VS Code's own copy, untouched. An editor's defaults are not mine to take
 away.
 
-**The mark is seen by other people.** That is half the point of letting you
+**Your vibe is seen by other people.** That is half the point of letting you
 choose it. You screen-share, you pair, you paste a screenshot into a pull
 request — and it is down the left of every hidden line while you do. Nobody
 ever saw your tab width.
