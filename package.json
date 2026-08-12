@@ -3,6 +3,7 @@
   "displayName": "Vibe Read — Read My AI",
   "publisher": "naveed-toro",
   "description": "AI writes the code. Its comments explain the why. Hide the code, read the reasoning — then give better instructions. Save it as notes.",
+  "icon": "icon.png",
   "version": "0.1.0",
   "license": "MIT",
   "repository": {
@@ -62,6 +63,22 @@
         "title": "Vibe Read: Open a sample file"
       }
     ],
+    "icons": {
+      "vibe-read-resting": {
+        "description": "Vibe Read, resting — the code and the reasoning still mixed together",
+        "default": {
+          "fontPath": "media/vibe-read.woff",
+          "fontCharacter": "\\E001"
+        }
+      },
+      "vibe-read-reading": {
+        "description": "Vibe Read, reading — the code gone, the reasoning left",
+        "default": {
+          "fontPath": "media/vibe-read.woff",
+          "fontCharacter": "\\E002"
+        }
+      }
+    },
     "keybindings": [
       {
         "command": "vibeRead.toggle",

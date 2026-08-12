@@ -285,21 +285,20 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
     if (hidden === 0) {
         // Nothing is covered up, whatever the flags happen to say.
         //
-        // 🙈 here, and it is doing two jobs at once.
+        // Our own face, and it had to be ours. 🙈 was borrowed — half the
+        // marketplace has it — and worse, it sat one item away from a vibe
+        // that is very often an emoji too, so the two ran together into one
+        // row of little pictures with no way to tell which was the extension
+        // and which was the choice.
         //
-        // It is the face of the thing — the marketplace icon, the title of the
-        // page, the signature on every message. Every other item in that
-        // corner wears the mark of whatever put it there, and a bare "Vibe
-        // Read" sat among them looking like a label somebody forgot to finish.
-        // It is also the only colour down there, which is the whole of what an
-        // icon is for.
-        //
-        // And it happens to be true. A monkey with its eyes covered is exactly
-        // what somebody is while the code is on screen: not reading the
-        // reasoning, however much of it is sitting right there. Press the key
-        // and it uncovers them. The pair says the entire idea in two frames,
-        // and neither frame is a lie.
-        statusBar.text = '🙈 Vibe Read';
+        // The monkey was also saying the wrong thing. Hands over the eyes
+        // reads as refusing to look, and nobody here is refusing anything.
+        // What is true of this state is duller and more useful: the code and
+        // the reasoning are still mixed together, and none of it has been read
+        // yet. Three dots say that — an ellipsis has always meant "there is
+        // more here" — and they are the same three dots that stand in for
+        // hidden code once Alt+X is pressed.
+        statusBar.text = '$(vibe-read-resting) Vibe Read';
         statusBar.tooltip = new vscode.MarkdownString(
             '**Vibe Read**\n\n' +
             // A blank line, not a line break: the key is one thing and the
@@ -308,13 +307,11 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
             'Select some lines and press `Alt+X` to hide only those.'
         );
     } else {
-        // The same monkey, with its hands down.
+        // The same face, with its eyes open.
         //
-        // It was a codicon eye here, which said the right thing but said it as
-        // a different creature — two icons, two stories, and the pair had to
-        // be worked out rather than seen. One character in two states is read
-        // instantly, because that is how a face works. 🙈 and 🐵 are the same
-        // monkey; nothing needs explaining.
+        // One character in two states is read instantly, because that is how a
+        // face works. The dots become eyes; nothing else about it moves, and
+        // nothing needs explaining.
         //
         // The direction matters and I had it backwards once. An open eye used
         // to sit on the resting state, because I had the eye watching the
@@ -322,8 +319,8 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
         // screen nobody is reading the reasoning, and it is only once the code
         // goes that anybody sees anything. The eyes belong to the reader.
         statusBar.text = whys > 0
-            ? `🐵 Reading ${whys} why${whys === 1 ? '' : 's'}`
-            : '🐵 Reading';
+            ? `$(vibe-read-reading) Reading ${whys} why${whys === 1 ? '' : 's'}`
+            : '$(vibe-read-reading) Reading';
         statusBar.tooltip = new vscode.MarkdownString(
             "**The code is hidden. You're reading the why.**\n\n" +
             '`Alt+X` show the code back  \n' +
