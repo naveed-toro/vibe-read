@@ -176,21 +176,21 @@ function redraw(editor: vscode.TextEditor | undefined): void {
 // ---------------------------------------------------------------------------
 
 /**
- * One item, and it has to be one.
+ * Two items, and they sit together because they share a priority.
  *
- * There were two — the mode, and the mark beside it — and they drew the mark
- * twice over: "⋯ Reading 8 whys" and then "⋯ ⌄" again. Worse, they would not
- * stay together. VS Code orders the status bar by an absolute priority, so
- * ours at 100 and 99 leave room for anybody at 99.5 to walk between them, and
- * Go Live did exactly that. No pair of numbers can prevent it. One item can.
+ * They were 100 and 99, and Go Live walked between them. I concluded from that
+ * that adjacency was impossible and merged them into one — which was wrong,
+ * and cost more than it saved. VS Code sorts the bar by priority, so anybody
+ * at 99.5 fits between 100 and 99, but nobody at all fits between two items
+ * holding the same number: equal priorities form one block. Only another
+ * extension choosing exactly this number could get in.
  *
- * Its click opens the mark list rather than toggling. The toggle already has
- * four doors — Alt+X, the button above the editor, the right-click menu, the
- * command palette — and the mark had exactly this one. It is also what the
- * status bar means elsewhere: Spaces: 4, UTF-8, LF, Python all show a value
- * and open a list when pressed.
+ * Merging was worse than the drift it fixed. The state is the main thing here
+ * — that the code is hidden and there are eight explanations to read — and its
+ * click had to become "choose an emoji", which is the smaller thing wearing
+ * the bigger thing's clothes.
  */
-let statusBar: vscode.StatusBarItem;
+const TOGETHER = 99;
 
 /**
  * On, or off — and when on, how much there is to read.
@@ -203,16 +203,46 @@ let statusBar: vscode.StatusBarItem;
  * There is a second use for it, which may matter more than knowing where you
  * are. A low number means the AI barely explained itself, and that is worth
  * seeing, because the answer to it is to ask for better comments next time.
+ *
+ * The mark is not drawn here. It sits in the item next door, and one thing
+ * shown twice in one bar reads as two things.
  */
+let statusBar: vscode.StatusBarItem;
+
+/**
+ * The mark, and a word for what it is.
+ *
+ * Two pictures were tried and both left it half-said. A pencil is the
+ * metaphor for editing text — the language of forms — and nothing is being
+ * edited here; a list is being chosen from. A chevron is not a metaphor at
+ * all: it says a list opens, and never says a list of what.
+ *
+ * Neither could, because a picture cannot name a noun, and "this changes the
+ * mark" is a sentence with a noun in it. A third picture would have failed the
+ * same way. VS Code's own guidance says as much — short text labels, icons
+ * only where the metaphor is clear, and never a second icon beside the first.
+ *
+ * So: "Mark: ⋯". It is the shape the status bar already uses for a value you
+ * can change — Spaces: 4, Ln 9, Col 12 — and everybody presses those without
+ * being told to. And it teaches itself: the ⋯ down the file and the ⋯ in the
+ * bar are the same character, so the pairing says what the word means without
+ * anyone explaining it.
+ *
+ * No chevron with it. The colon already says a value lives here; saying it
+ * twice is the same hedging that made the first two attempts feel unfinished.
+ */
+let markBar: vscode.StatusBarItem;
+
 function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hidden: number): void {
-    if (!editor) { statusBar.hide(); return; }
+    if (!editor) { statusBar.hide(); markBar.hide(); return; }
 
-    const icon = currentIcon || DEFAULT_MARK;
+    markBar.text = `Mark: ${currentIcon || DEFAULT_MARK}`;
+    markBar.tooltip = new vscode.MarkdownString(
+        '**What stands in for hidden code**\n\n' +
+        'Click to change it. Emoji, text, or both.'
+    );
+    markBar.show();
 
-    // The chevron is punctuation, not a second icon — it says nothing on its
-    // own, it only tells you a list opens here. Without it the line reads as
-    // an indicator, something being reported to you rather than something you
-    // can press.
     // Both tooltips end the same way, one word apart — hide only those, show
     // only those. Nowhere does either of them use the word toggle; reading the
     // pair a minute apart teaches it better than the word would.
@@ -226,26 +256,27 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
     // along: select a few lines AND press Alt+X. These now say the same.
     if (hidden === 0) {
         // Nothing is covered up, whatever the flags happen to say.
-        statusBar.text = '$(eye) Vibe Read $(chevron-down)';
+        statusBar.text = '$(eye) Vibe Read';
         statusBar.tooltip = new vscode.MarkdownString(
             '**Vibe Read**\n\n' +
             // A blank line, not a line break: the key is one thing and the
             // advice underneath it is another, and they were reading as one.
             '`Alt+X` hide the code, read the reasoning\n\n' +
-            'Select some lines and press `Alt+X` to hide only those.\n\n' +
-            'Click to change the mark.'
+            'Select some lines and press `Alt+X` to hide only those.'
         );
     } else {
+        // An open eye means the code is there to see; a shut one means it is
+        // not. That is the one clear metaphor in the whole bar, and it is the
+        // only icon either item wears.
         statusBar.text = whys > 0
-            ? `${icon} Reading ${whys} why${whys === 1 ? '' : 's'} $(chevron-down)`
-            : `${icon} Reading $(chevron-down)`;
+            ? `$(eye-closed) Reading ${whys} why${whys === 1 ? '' : 's'}`
+            : '$(eye-closed) Reading';
         statusBar.tooltip = new vscode.MarkdownString(
             "**The code is hidden. You're reading the why.**\n\n" +
             '`Alt+X` show the code back  \n' +
             '`Alt+M` keep it as notes  \n' +
             '`Ctrl+C` copy only what you see\n\n' +
-            'Select some lines and press `Alt+X` to show only those.\n\n' +
-            'Click to change the mark.'
+            'Select some lines and press `Alt+X` to show only those.'
         );
     }
 
@@ -969,9 +1000,15 @@ export function activate(context: vscode.ExtensionContext): void {
     // anyone who learned it in an earlier session.
     if (learning().usedSelection) { markLearned(); }
 
-    statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
-    statusBar.command = 'vibeRead.pickMark';
+    // The same priority for both, so nothing can come between them. Created in
+    // this order, so the state reads first and the mark sits to its right.
+    statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, TOGETHER);
+    statusBar.command = 'vibeRead.toggle';
     context.subscriptions.push(statusBar);
+
+    markBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, TOGETHER);
+    markBar.command = 'vibeRead.pickMark';
+    context.subscriptions.push(markBar);
 
     // A key that quietly does nothing is worse than no key at all — the user
     // decides the extension is broken and never presses it again. So when there

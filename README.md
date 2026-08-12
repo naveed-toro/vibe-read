@@ -112,7 +112,7 @@ again.
      theirs, and it should look like fun.
 
      RECORD
-       1. Code hidden. Click Vibe Read in the status bar.
+       1. Code hidden. Click Mark: in the status bar.
        2. Arrow slowly down the list — the editor behind changes with
           each one. That change is the whole recording; let it land.
        3. Stop on one that is nothing like the default.
@@ -124,8 +124,8 @@ again.
 
 The default is an ellipsis, and that is the point — an emoji repeated down a
 whole page is the noise this exists to remove. But the mark is yours. Click
-**Vibe Read** at the bottom and take one of these, or put in anything you like
-— emoji, text, or both. Your system's emoji keyboard does the choosing.
+**Mark:** at the bottom and take one of these, or put in anything you like —
+emoji, text, or both. Your system's emoji keyboard does the choosing.
 
 ```
 ⋯               best for reading
