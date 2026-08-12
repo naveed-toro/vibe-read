@@ -222,11 +222,18 @@ let statusBar: vscode.StatusBarItem;
  * same way. VS Code's own guidance says as much — short text labels, icons
  * only where the metaphor is clear, and never a second icon beside the first.
  *
- * So a word, in the shape the status bar already uses for a value you can
- * change — Spaces: 4, Ln 9, Col 12 — because everybody presses those without
- * being told to. And it teaches itself either way: the ⋯ down the file and the
- * ⋯ in the bar are the same character, so the pairing says what the word means
- * without anyone explaining it.
+ * So a word, with the vibe in front of it — the shape every other item down
+ * there already has. Python, Sign In, Go Live, Prettier: the picture first,
+ * the name after. "Vibe: ⋯" put the value last and trailing, which is the one
+ * arrangement the corner never uses.
+ *
+ * It also puts the thing worth seeing where the eye lands first, and leaves
+ * the word holding the right-hand side, so there is always something solid to
+ * aim at however faint the vibe happens to be.
+ *
+ * And it teaches itself: the ⋯ down the file and the ⋯ in the bar are the same
+ * character, so the pairing says what the word means with nobody explaining
+ * it.
  *
  * The word is "Vibe", not "Mark". Mark was accurate and dead. It read as
  * Spaces: 4 reads — a value being reported — and a thing that looks like a
@@ -248,12 +255,16 @@ let statusBar: vscode.StatusBarItem;
  * it, so there is always something to aim at; only the value is quiet, and a
  * quiet value is the value working as intended.
  *
- * No chevron. The colon already says a value lives here, and saying it twice
- * is the hedging that made the pencil and the chevron feel unfinished.
+ * No chevron. A value sitting beside a name is already the whole sentence, and
+ * saying it twice is the hedging that made the pencil and the chevron feel
+ * unfinished.
  *
  * Colouring it is not on the table, for the record. VS Code allows exactly two
  * backgrounds — errorBackground and warningBackground — so the only way to
- * make this loud is to make it look permanently broken.
+ * make this loud is to make it look permanently broken. And the hover trick
+ * other extensions get is free but not ours to have here: it works by tinting
+ * a single-colour glyph, and an emoji brings its own colours from the system
+ * font. Nothing in the API can touch them.
  */
 let markBar: vscode.StatusBarItem;
 
@@ -338,7 +349,7 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
     statusBar.text += '\u00a0\u00a0|';
     statusBar.show();
 
-    markBar.text = `Vibe: ${currentIcon || DEFAULT_MARK}`;
+    markBar.text = `${currentIcon || DEFAULT_MARK} Vibe`;
     markBar.tooltip = new vscode.MarkdownString(
         '**What stands in for hidden code**\n\n' +
         'Click to change it. Emoji, text, or both.'
