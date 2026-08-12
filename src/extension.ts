@@ -236,13 +236,6 @@ let markBar: vscode.StatusBarItem;
 function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hidden: number): void {
     if (!editor) { statusBar.hide(); markBar.hide(); return; }
 
-    markBar.text = `Mark: ${currentIcon || DEFAULT_MARK}`;
-    markBar.tooltip = new vscode.MarkdownString(
-        '**What stands in for hidden code**\n\n' +
-        'Click to change it. Emoji, text, or both.'
-    );
-    markBar.show();
-
     // Both tooltips end the same way, one word apart — hide only those, show
     // only those. Nowhere does either of them use the word toggle; reading the
     // pair a minute apart teaches it better than the word would.
@@ -256,7 +249,12 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
     // along: select a few lines AND press Alt+X. These now say the same.
     if (hidden === 0) {
         // Nothing is covered up, whatever the flags happen to say.
-        statusBar.text = '$(eye) Vibe Read';
+        //
+        // No icon here, and that is the point. Nothing is being claimed while
+        // the code is on screen — this is only the name of the thing waiting
+        // to be used, and VS Code's own guidance is to use an icon only where
+        // one is needed.
+        statusBar.text = 'Vibe Read';
         statusBar.tooltip = new vscode.MarkdownString(
             '**Vibe Read**\n\n' +
             // A blank line, not a line break: the key is one thing and the
@@ -265,12 +263,18 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
             'Select some lines and press `Alt+X` to hide only those.'
         );
     } else {
-        // An open eye means the code is there to see; a shut one means it is
-        // not. That is the one clear metaphor in the whole bar, and it is the
-        // only icon either item wears.
+        // The eye opens here, and it took being told to see why.
+        //
+        // It used to be the other way round — an open eye while the code was
+        // showing, a shut one while reading — because I had the eye watching
+        // the code. That is the exact inverse of what this extension believes.
+        // While the code is on screen nobody is reading the reasoning; it is
+        // only once the code goes that anybody actually sees anything. So the
+        // eye watches the reader, not the code, and it opens at the moment
+        // reading starts.
         statusBar.text = whys > 0
-            ? `$(eye-closed) Reading ${whys} why${whys === 1 ? '' : 's'}`
-            : '$(eye-closed) Reading';
+            ? `$(eye) Reading ${whys} why${whys === 1 ? '' : 's'}`
+            : '$(eye) Reading';
         statusBar.tooltip = new vscode.MarkdownString(
             "**The code is hidden. You're reading the why.**\n\n" +
             '`Alt+X` show the code back  \n' +
@@ -280,7 +284,17 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
         );
     }
 
+    // Shown in this order on purpose. Among items sharing a priority the one
+    // revealed first sits furthest left, so the state reads first and the mark
+    // sits beside it — which is the order they are thought about in.
     statusBar.show();
+
+    markBar.text = `Mark: ${currentIcon || DEFAULT_MARK}`;
+    markBar.tooltip = new vscode.MarkdownString(
+        '**What stands in for hidden code**\n\n' +
+        'Click to change it. Emoji, text, or both.'
+    );
+    markBar.show();
 }
 
 // ---------------------------------------------------------------------------
