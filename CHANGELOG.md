@@ -18,7 +18,7 @@ Vibe Read hides the code so the reasoning is all that is left.
 - `Ctrl+C` — copy only what you see. Only while something is hidden; the rest
   of the time this is VS Code's own copy, untouched.
 - The vibe is an ellipsis by default, because an emoji repeated down a whole
-  page is the noise this extension exists to remove. Click **Vibe** in the
+  page is the noise this extension exists to remove. Click **Vibe:** in the
   status bar and take 🤫, 🙈 hidden, 💤💤 or 💻 code instead — or replace any of
   them with your own, where your system's emoji keyboard does the choosing.
   Emoji, text, or both, up to eight characters. A vibe is meant to be looked

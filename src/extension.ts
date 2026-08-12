@@ -238,26 +238,22 @@ let statusBar: vscode.StatusBarItem;
  * people stay attached to their things. Nobody calls that a setting. And it
  * costs nothing in accuracy that matters here — the emoji is the vibe.
  *
- * And it does not show the vibe itself, which took three goes to see.
+ * It shows the vibe, and it has to. I replaced it once with a fixed face,
+ * reasoning that ⋯ is chosen precisely because it disappears and so makes a
+ * disappearing button. That solved the wrong half. A button you can see but
+ * that will not tell you what is set is worse than a faint one that will —
+ * the whole point of choosing is seeing what you chose.
  *
- * "Vibe: ⋯" was invisible, and not by accident — ⋯ is chosen precisely because
- * it disappears into the page. A button whose whole content is a thing
- * designed to disappear is a button designed to disappear. The pencil and the
- * chevron before it failed for a different reason, but this one is worse: it
- * failed hardest for the very vibe that best fits what this extension is for.
+ * The word carries the visibility instead. "Vibe:" is there whatever is beside
+ * it, so there is always something to aim at; only the value is quiet, and a
+ * quiet value is the value working as intended.
  *
- * Colouring it was the obvious patch and the wrong one. VS Code allows exactly
- * two backgrounds, errorBackground and warningBackground, so the only way to
- * make it loud is to make it look permanently broken. And it would still only
- * be shouting a faint thing louder — anybody who picks a lone dot, or a space,
- * would be back where they started.
+ * No chevron. The colon already says a value lives here, and saying it twice
+ * is the hedging that made the pencil and the chevron feel unfinished.
  *
- * So the button stops depending on the vibe at all. A face means "emoji" on
- * every site anybody has ever used, and it is the same size every day whatever
- * is chosen. The vibe itself moves to the tooltip, and nothing is lost by
- * that: it is already on screen in large type down every hidden line, which is
- * the entire job it was hired for. The status bar was showing a second, worse
- * copy of something the file was already saying.
+ * Colouring it is not on the table, for the record. VS Code allows exactly two
+ * backgrounds — errorBackground and warningBackground — so the only way to
+ * make this loud is to make it look permanently broken.
  */
 let markBar: vscode.StatusBarItem;
 
@@ -342,10 +338,9 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
     statusBar.text += '\u00a0\u00a0|';
     statusBar.show();
 
-    markBar.text = '$(smiley) Vibe';
+    markBar.text = `Vibe: ${currentIcon || DEFAULT_MARK}`;
     markBar.tooltip = new vscode.MarkdownString(
-        `**Vibe: ${currentIcon || DEFAULT_MARK}**\n\n` +
-        'What stands in for hidden code.\n\n' +
+        '**What stands in for hidden code**\n\n' +
         'Click to change it. Emoji, text, or both.'
     );
     markBar.show();
