@@ -255,9 +255,18 @@ let statusBar: vscode.StatusBarItem;
  * it, so there is always something to aim at; only the value is quiet, and a
  * quiet value is the value working as intended.
  *
- * No chevron. A value sitting beside a name is already the whole sentence, and
- * saying it twice is the hedging that made the pencil and the chevron feel
- * unfinished.
+ * And a chevron after all, which I argued against twice and was wrong about
+ * the second time.
+ *
+ * The first two attempts put a picture there alone — a pencil, then a chevron
+ * — and both failed because a picture cannot name a noun, and "this changes
+ * the vibe" is a sentence with a noun in it. I took the right lesson and then
+ * over-applied it: having found the word, I decided the picture was the
+ * mistake, when the mistake was only ever asking the picture to do the naming.
+ *
+ * The word says what. The chevron says a list opens. Those are two different
+ * jobs and neither one does the other's. Together they are the whole sentence;
+ * apart, each is half of it.
  *
  * Colouring it is not on the table, for the record. VS Code allows exactly two
  * backgrounds — errorBackground and warningBackground — so the only way to
@@ -346,7 +355,7 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
     statusBar.text += '\u00a0\u00a0|';
     statusBar.show();
 
-    markBar.text = `${currentIcon || DEFAULT_MARK} Vibe`;
+    markBar.text = `${currentIcon || DEFAULT_MARK} Vibe $(chevron-down)`;
     markBar.tooltip = new vscode.MarkdownString(
         '**What stands in for hidden code**\n\n' +
         'Click to change it. Emoji, text, or both.'
