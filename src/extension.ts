@@ -238,8 +238,26 @@ let statusBar: vscode.StatusBarItem;
  * people stay attached to their things. Nobody calls that a setting. And it
  * costs nothing in accuracy that matters here — the emoji is the vibe.
  *
- * No chevron with it. The colon already says a value lives here; saying it
- * twice is the same hedging that made the first two attempts feel unfinished.
+ * And it does not show the vibe itself, which took three goes to see.
+ *
+ * "Vibe: ⋯" was invisible, and not by accident — ⋯ is chosen precisely because
+ * it disappears into the page. A button whose whole content is a thing
+ * designed to disappear is a button designed to disappear. The pencil and the
+ * chevron before it failed for a different reason, but this one is worse: it
+ * failed hardest for the very vibe that best fits what this extension is for.
+ *
+ * Colouring it was the obvious patch and the wrong one. VS Code allows exactly
+ * two backgrounds, errorBackground and warningBackground, so the only way to
+ * make it loud is to make it look permanently broken. And it would still only
+ * be shouting a faint thing louder — anybody who picks a lone dot, or a space,
+ * would be back where they started.
+ *
+ * So the button stops depending on the vibe at all. A face means "emoji" on
+ * every site anybody has ever used, and it is the same size every day whatever
+ * is chosen. The vibe itself moves to the tooltip, and nothing is lost by
+ * that: it is already on screen in large type down every hidden line, which is
+ * the entire job it was hired for. The status bar was showing a second, worse
+ * copy of something the file was already saying.
  */
 let markBar: vscode.StatusBarItem;
 
@@ -324,9 +342,10 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
     statusBar.text += '\u00a0\u00a0|';
     statusBar.show();
 
-    markBar.text = `Vibe: ${currentIcon || DEFAULT_MARK}`;
+    markBar.text = '$(smiley) Vibe';
     markBar.tooltip = new vscode.MarkdownString(
-        '**What stands in for hidden code**\n\n' +
+        `**Vibe: ${currentIcon || DEFAULT_MARK}**\n\n` +
+        'What stands in for hidden code.\n\n' +
         'Click to change it. Emoji, text, or both.'
     );
     markBar.show();
