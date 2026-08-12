@@ -272,8 +272,8 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
         // And it happens to be true. A monkey with its eyes covered is exactly
         // what somebody is while the code is on screen: not reading the
         // reasoning, however much of it is sitting right there. Press the key
-        // and the eye opens. The pair says the entire idea in two frames, and
-        // neither frame is a lie.
+        // and it uncovers them. The pair says the entire idea in two frames,
+        // and neither frame is a lie.
         statusBar.text = '🙈 Vibe Read';
         statusBar.tooltip = new vscode.MarkdownString(
             '**Vibe Read**\n\n' +
@@ -283,18 +283,22 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
             'Select some lines and press `Alt+X` to hide only those.'
         );
     } else {
-        // The eye opens here, and it took being told to see why.
+        // The same monkey, with its hands down.
         //
-        // It used to be the other way round — an open eye while the code was
-        // showing, a shut one while reading — because I had the eye watching
-        // the code. That is the exact inverse of what this extension believes.
-        // While the code is on screen nobody is reading the reasoning; it is
-        // only once the code goes that anybody actually sees anything. So the
-        // eye watches the reader, not the code, and it opens at the moment
-        // reading starts.
+        // It was a codicon eye here, which said the right thing but said it as
+        // a different creature — two icons, two stories, and the pair had to
+        // be worked out rather than seen. One character in two states is read
+        // instantly, because that is how a face works. 🙈 and 🐵 are the same
+        // monkey; nothing needs explaining.
+        //
+        // The direction matters and I had it backwards once. An open eye used
+        // to sit on the resting state, because I had the eye watching the
+        // code. This extension believes the opposite: while the code is on
+        // screen nobody is reading the reasoning, and it is only once the code
+        // goes that anybody sees anything. The eyes belong to the reader.
         statusBar.text = whys > 0
-            ? `$(eye) Reading ${whys} why${whys === 1 ? '' : 's'}`
-            : '$(eye) Reading';
+            ? `🐵 Reading ${whys} why${whys === 1 ? '' : 's'}`
+            : '🐵 Reading';
         statusBar.tooltip = new vscode.MarkdownString(
             "**The code is hidden. You're reading the why.**\n\n" +
             '`Alt+X` show the code back  \n' +
