@@ -17,11 +17,13 @@ Vibe Read hides the code so the reasoning is all that is left.
   text and the code sits collapsed underneath it.
 - `Ctrl+C` — copy only what you see. Only while something is hidden; the rest
   of the time this is VS Code's own copy, untouched.
-- The mark is in the status bar. Click it and take 🤫, 💤💤, 💻 code or ⋯
-  instead — or replace any of them with your own, where your system's emoji
-  keyboard does the choosing. Emoji, text, or both, up to eight characters. A
-  mark is meant to be looked at, not read. The box counts down as you type,
-  because nobody can tell by eye whether 🙈🙉🙊 is three characters or six.
+- The mark is an ellipsis by default, because an emoji repeated down a whole
+  page is the noise this extension exists to remove. Click **Vibe Read** in the
+  status bar and take 🤫, 🙈 hidden, 💤💤 or 💻 code instead — or replace any of
+  them with your own, where your system's emoji keyboard does the choosing.
+  Emoji, text, or both, up to eight characters. A mark is meant to be looked
+  at, not read. The box counts down as you type, because nobody can tell by eye
+  whether 🙈🙉🙊 is three characters or six.
 
 There is no separate command for a single line, and that is deliberate. Select
 the line and press `Alt+X`.

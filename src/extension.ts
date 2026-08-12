@@ -175,10 +175,22 @@ function redraw(editor: vscode.TextEditor | undefined): void {
 // almost certainly why it never went anywhere.
 // ---------------------------------------------------------------------------
 
+/**
+ * One item, and it has to be one.
+ *
+ * There were two — the mode, and the mark beside it — and they drew the mark
+ * twice over: "⋯ Reading 8 whys" and then "⋯ ⌄" again. Worse, they would not
+ * stay together. VS Code orders the status bar by an absolute priority, so
+ * ours at 100 and 99 leave room for anybody at 99.5 to walk between them, and
+ * Go Live did exactly that. No pair of numbers can prevent it. One item can.
+ *
+ * Its click opens the mark list rather than toggling. The toggle already has
+ * four doors — Alt+X, the button above the editor, the right-click menu, the
+ * command palette — and the mark had exactly this one. It is also what the
+ * status bar means elsewhere: Spaces: 4, UTF-8, LF, Python all show a value
+ * and open a list when pressed.
+ */
 let statusBar: vscode.StatusBarItem;
-
-/** The mark itself, sitting next to the mode. Click it to change it. */
-let markBar: vscode.StatusBarItem;
 
 /**
  * On, or off — and when on, how much there is to read.
@@ -198,25 +210,15 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
     const icon = currentIcon || DEFAULT_MARK;
 
     // The chevron is punctuation, not a second icon — it says nothing on its
-    // own, it only tells you a list opens here. The pencil said "this is a
-    // field to fill in", which is the language of forms; the mark is meant to
-    // be more like a sticker than a setting.
-    //
-    // And it earns its place. Elsewhere in the status bar VS Code shows bare
-    // values — UTF-8, Python, LF — and those read as controls because the
-    // words themselves are legible as settings. A lone emoji is not: without
-    // the chevron it reads as an indicator, something being reported to you
-    // rather than something you can press.
-    markBar.text = `${icon} $(chevron-down)`;
-    markBar.tooltip = new vscode.MarkdownString('**Change the mark**');
-    markBar.show();
-
+    // own, it only tells you a list opens here. Without it the line reads as
+    // an indicator, something being reported to you rather than something you
+    // can press.
     // Both tooltips end the same way, one word apart — hide only those, show
     // only those. Nowhere does either of them use the word toggle; reading the
     // pair a minute apart teaches it better than the word would.
     if (hidden === 0) {
         // Nothing is covered up, whatever the flags happen to say.
-        statusBar.text = '$(eye) Vibe Read';
+        statusBar.text = '$(eye) Vibe Read $(chevron-down)';
         statusBar.tooltip = new vscode.MarkdownString(
             '**Vibe Read**\n\n' +
             // A blank line, not a line break: the key is one thing and the
@@ -225,18 +227,20 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
             // The icon goes here and not in the other one, because here it is
             // a preview of what you are about to get. Over there they are
             // already on screen.
-            `${icon} Select some lines to hide only those.`
+            `${icon} Select some lines to hide only those.\n\n` +
+            'Click to change the mark.'
         );
     } else {
         statusBar.text = whys > 0
-            ? `${icon} Reading ${whys} why${whys === 1 ? '' : 's'}`
-            : `${icon} Reading`;
+            ? `${icon} Reading ${whys} why${whys === 1 ? '' : 's'} $(chevron-down)`
+            : `${icon} Reading $(chevron-down)`;
         statusBar.tooltip = new vscode.MarkdownString(
             "**The code is hidden. You're reading the why.**\n\n" +
             '`Alt+X` show the code back  \n' +
             '`Alt+M` keep it as notes  \n' +
             '`Ctrl+C` copy only what you see\n\n' +
-            'Select some lines to show only those.'
+            'Select some lines to show only those.\n\n' +
+            'Click to change the mark.'
         );
     }
 
@@ -321,9 +325,20 @@ function markLearned(): void {
     vscode.commands.executeCommand('setContext', 'vibeRead.learnedSelection', true);
 }
 
-/** A few seconds in the status bar. Not a popup — those have to be dismissed. */
+/**
+ * A few seconds in the status bar. Not a popup — those have to be dismissed.
+ *
+ * Always 🙈, never the chosen mark. The two are different things: the mark is
+ * what stands in for hidden code in this file, and 🙈 is who is talking. Every
+ * other message here already signs itself 🙈, and so do the welcome, the
+ * walkthrough and the notes — this one was the odd one out.
+ *
+ * It is also where the monkey belongs now. As a mark it was noise, because it
+ * repeated forty times down a page. As a signature it is paid once, six times
+ * in a lifetime, and it is the whole personality of the thing.
+ */
 function say(message: string): void {
-    vscode.window.setStatusBarMessage(`${currentIcon || '🙈'}  ${message}`, 6000);
+    vscode.window.setStatusBarMessage(`🙈  ${message}`, 6000);
 }
 
 // ---------------------------------------------------------------------------
@@ -565,7 +580,26 @@ async function saveAsNotes(editor: vscode.TextEditor): Promise<void> {
 // result.
 // ---------------------------------------------------------------------------
 
-const DEFAULT_MARK = '🙈';
+/**
+ * The quiet one, and it is the default on purpose.
+ *
+ * The whole promise is that the noise goes and the reasoning is left. An emoji
+ * repeated forty times down a page is noise — we would have taken away the
+ * code's and handed back our own. With ⋯ the page reads as prose, which is the
+ * thing being sold.
+ *
+ * It is also the honest symbol. An ellipsis has meant "something has been left
+ * out here" for as long as there has been typesetting, and that is exactly
+ * what happened.
+ *
+ * 🙈 is the better joke — a monkey with its eyes covered explains the feature
+ * without a word — but that is paid once, in the first five seconds, while the
+ * noise is paid every day forever. The joke has other places to live: the
+ * name, the marketplace page, the walkthrough, the notes. The teaching is
+ * covered too, three times over — half the page vanishes, the status bar says
+ * how many whys are left, and the welcome message spells it out.
+ */
+const DEFAULT_MARK = '⋯';
 
 /**
  * Eight, and the number is not arbitrary.
@@ -586,15 +620,18 @@ const DEFAULT_MARK = '🙈';
  */
 const MOST_CHARACTERS = 8;
 
-const FILLED_IN = ['🤫', '🙈 hidden', '💤💤', '💻 code', '⋯', ''];
+// The default sits first and is therefore in the list — which it was not
+// before. 🙈 was the default and was nowhere among these, so anybody who
+// changed it once could never find their way back to it.
+const FILLED_IN = ['⋯', '🤫', '🙈 hidden', '💤💤', '💻 code', ''];
 
 /**
  * What each of the five says about itself. Only shown while the slot still
  * holds what we put there — once somebody replaces it, our word for it is no
  * longer true, so it goes.
  */
-const NOTES = ['quiet', 'emoji + text', 'sleepy', 'there is code here',
-    'no emoji — best for reading', ''];
+const NOTES = ['best for reading', 'quiet', 'emoji + text', 'sleepy',
+    'there is code here', ''];
 
 interface MarkRow extends vscode.QuickPickItem {
     slot: number;
@@ -928,12 +965,8 @@ export function activate(context: vscode.ExtensionContext): void {
     if (learning().usedSelection) { markLearned(); }
 
     statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
-    statusBar.command = 'vibeRead.toggle';
+    statusBar.command = 'vibeRead.pickMark';
     context.subscriptions.push(statusBar);
-
-    markBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 99);
-    markBar.command = 'vibeRead.pickMark';
-    context.subscriptions.push(markBar);
 
     // A key that quietly does nothing is worse than no key at all — the user
     // decides the extension is broken and never presses it again. So when there
