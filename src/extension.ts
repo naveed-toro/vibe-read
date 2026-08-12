@@ -304,9 +304,13 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
         // reads as refusing to look, and nobody here is refusing anything.
         // What is true of this state is duller and more useful: the code and
         // the reasoning are still mixed together, and none of it has been read
-        // yet. Three dots say that — an ellipsis has always meant "there is
-        // more here" — and they are the same three dots that stand in for
-        // hidden code once Alt+X is pressed.
+        // yet. So the eyes are open here and simply not focused on anything.
+        //
+        // They were three dots for a day, which was an ellipsis stuck on a
+        // square rather than a face — three of anything is not a pair of eyes,
+        // so the two states read as two different objects instead of one thing
+        // with two expressions. Two eyes in both, and only the expression
+        // changes, which is the whole of how a face works.
         statusBar.text = '$(vibe-read-resting) Vibe Read';
         statusBar.tooltip = new vscode.MarkdownString(
             '**Vibe Read**\n\n' +

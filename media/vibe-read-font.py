@@ -3,9 +3,16 @@
 The shapes are rebuilt as clean geometry rather than traced from the PNG:
 they are a rounded square and some circles, and maths gives crisper curves
 and a smaller file than any tracer would. Proportions are measured off the
-drawing; the only liberty taken is making the eyes exactly symmetric, which
-the drawing was a pixel or two out on.
+drawing; the eyes are made exactly symmetric, which the drawing was a pixel
+or two out on.
+
+Both states have two eyes, and only the eyes change between them. The first
+draft gave the resting face three dots, which was an ellipsis stuck on a
+square rather than a face — three of anything is not a pair of eyes, so the
+two states were two different objects instead of one thing with two
+expressions.
 """
+
 from fontTools.fontBuilder import FontBuilder
 from fontTools.pens.ttGlyphPen import TTGlyphPen
 from fontTools.pens.cu2quPen import Cu2QuPen
@@ -54,31 +61,31 @@ def at(fx, fy):
 
 EYE_Y = 0.522
 
-def resting(pen):
-    """Three dots — the same ellipsis that stands in for hidden code."""
-    rounded_square(pen)
-    for fx in (0.288, 0.500, 0.712):
-        cx, cy = at(fx, EYE_Y)
-        circle(pen, cx, cy, 0.131 / 2 * S, hole=True)
+EYES = (0.300, 0.700)
+WIDE = 0.304          # how big an eye is, in both states
+PUPIL = 0.165         # the centre that only the reading face has
 
-def reading(pen, ring=True):
-    """The same face, looking."""
+def resting(pen):
+    """Eyes open, focused on nothing. The code and the reasoning still mixed."""
     rounded_square(pen)
-    for fx in (0.300, 0.700):
+    for fx in EYES:
         cx, cy = at(fx, EYE_Y)
-        if ring:
-            circle(pen, cx, cy, 0.304 / 2 * S, hole=True)     # the white of the eye
-            circle(pen, cx, cy, 0.165 / 2 * S, hole=False)    # the pupil
-        else:
-            circle(pen, cx, cy, 0.234 / 2 * S, hole=True)     # one solid opening
-    return pen
+        circle(pen, cx, cy, WIDE / 2 * S, hole=True)
+
+def reading(pen):
+    """The same eyes, with a centre. Focus is the only thing that changed."""
+    rounded_square(pen)
+    for fx in EYES:
+        cx, cy = at(fx, EYE_Y)
+        circle(pen, cx, cy, WIDE / 2 * S, hole=True)
+        circle(pen, cx, cy, PUPIL / 2 * S, hole=False)
 
 def draw(fn):
     tt = TTGlyphPen(None)
     fn(Cu2QuPen(tt, 0.2))
     return tt.glyph()
 
-def build(path, ring):
+def build(path):
     order = ['.notdef', 'vibeRead-resting', 'vibeRead-reading']
     fb = FontBuilder(EM, isTTF=True)
     fb.setupGlyphOrder(order)
@@ -86,7 +93,7 @@ def build(path, ring):
     empty = TTGlyphPen(None).glyph()
     fb.setupGlyf({'.notdef': empty,
                   'vibeRead-resting': draw(resting),
-                  'vibeRead-reading': draw(lambda p: reading(p, ring))})
+                  'vibeRead-reading': draw(reading)})
     fb.setupHorizontalMetrics({g: (EM, X0) for g in order})
     fb.setupHorizontalHeader(ascent=800, descent=-200)
     fb.setupNameTable({'familyName': 'Vibe Read', 'styleName': 'Regular',
@@ -96,6 +103,13 @@ def build(path, ring):
     fb.save(path)
     return path
 
-build('/tmp/vrfont/ring.ttf', True)
-build('/tmp/vrfont/solid.ttf', False)
-print('built')
+if __name__ == '__main__':
+    import os, sys
+    here = os.path.dirname(os.path.abspath(__file__))
+    ttf = os.path.join(here, 'vibe-read.ttf')
+    build(ttf)
+    from fontTools.ttLib import TTFont
+    f = TTFont(ttf); f.flavor = 'woff'      # WOFF1 is zlib, so no brotli needed
+    f.save(os.path.join(here, 'vibe-read.woff'))
+    os.remove(ttf)
+    print('media/vibe-read.woff written')
