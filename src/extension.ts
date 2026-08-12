@@ -216,6 +216,14 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
     // Both tooltips end the same way, one word apart — hide only those, show
     // only those. Nowhere does either of them use the word toggle; reading the
     // pair a minute apart teaches it better than the word would.
+    //
+    // And both name the key. They used to read "Select some lines to hide only
+    // those", which leaves out the half that does the work: a selection on its
+    // own does nothing at all until Alt+X is pressed. Somebody who selects and
+    // waits is left thinking it is broken — and an earlier version really did
+    // act on the selection by itself, so the wording is a leftover from a
+    // behaviour that no longer exists. The teaching tip had it right all
+    // along: select a few lines AND press Alt+X. These now say the same.
     if (hidden === 0) {
         // Nothing is covered up, whatever the flags happen to say.
         statusBar.text = '$(eye) Vibe Read $(chevron-down)';
@@ -224,10 +232,7 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
             // A blank line, not a line break: the key is one thing and the
             // advice underneath it is another, and they were reading as one.
             '`Alt+X` hide the code, read the reasoning\n\n' +
-            // The icon goes here and not in the other one, because here it is
-            // a preview of what you are about to get. Over there they are
-            // already on screen.
-            `${icon} Select some lines to hide only those.\n\n` +
+            'Select some lines and press `Alt+X` to hide only those.\n\n' +
             'Click to change the mark.'
         );
     } else {
@@ -239,7 +244,7 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
             '`Alt+X` show the code back  \n' +
             '`Alt+M` keep it as notes  \n' +
             '`Ctrl+C` copy only what you see\n\n' +
-            'Select some lines to show only those.\n\n' +
+            'Select some lines and press `Alt+X` to show only those.\n\n' +
             'Click to change the mark.'
         );
     }
