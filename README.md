@@ -1,4 +1,4 @@
-# 🙈 Vibe Read — Read My AI
+# Vibe Read — Read My AI
 
 Hide the code, read the reasoning — then give better instructions to AI.
 Save it as notes.
