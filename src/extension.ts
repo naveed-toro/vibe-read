@@ -1002,9 +1002,17 @@ function askForMark(current: string): Promise<string | undefined> {
 }
 
 /**
- * The shortcut goes last so that its full stop is also the sentence's. Written
- * the other way round — "Press Win + . for emoji" — the dot lands in the
- * middle and stops looking like a key at all.
+ * The keys are bracketed, and that is a substitute for something better that
+ * is not on offer. Everywhere else in this extension a key is set in code —
+ * `Alt+X` — because tooltips take a MarkdownString and render it. The line
+ * under the input box takes a plain string and nothing else, so the whole
+ * sentence arrives in one weight and Win + . sits in it looking like three
+ * more words of prose.
+ *
+ * Brackets are the oldest plain-text answer to that, and they fix a second
+ * thing on the way past. The shortcut ends in a full stop, so at the end of a
+ * sentence "press Win + ." reads as though the sentence simply finished — the
+ * key disappears into the punctuation. Inside brackets it cannot.
  *
  * It does not mention that words are allowed too, and that is the whole of the
  * rule this line follows: say the thing that cannot be found by looking.
@@ -1030,11 +1038,12 @@ function askForMark(current: string): Promise<string | undefined> {
  */
 function emojiKeyboardHint(): string | undefined {
     switch (process.platform) {
-        case 'win32': return 'For emoji, press Win + .';
-        case 'darwin': return 'For emoji, press ⌃ ⌘ Space';
-        // "picker" rather than "emoji keyboard", which would say emoji twice
-        // in one short line; "system" rather than "desktop", which reads as
-        // the thing with the wallpaper on it.
+        case 'win32': return 'For emoji, press [Win + .]';
+        case 'darwin': return 'For emoji, press [⌃ ⌘ Space]';
+        // No brackets here: there is no key to set apart. "picker" rather
+        // than "emoji keyboard", which would say emoji twice in one short
+        // line; "system" rather than "desktop", which reads as the thing with
+        // the wallpaper on it.
         default: return "For emoji, open your system's picker";
     }
 }
