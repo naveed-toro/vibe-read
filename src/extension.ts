@@ -862,20 +862,19 @@ function showTheSlots(): Promise<{ use?: string; edit?: number } | undefined> {
         const showing = vscode.workspace
             .getConfiguration('vibeRead').get<string>('mark') || DEFAULT_MARK;
 
-        // The instruction goes in the heading, and nothing at all goes in the
-        // filter box.
+        // A heading that names the thing, and an instruction in the box.
         //
-        // It sat in the box before, where it made a box that wants nothing out
-        // of you look like a box waiting to be filled in. VS Code will not let
-        // an extension hide that box — it has been an open request since 2020
-        // — so the next best thing is to leave it empty, where it reads as
-        // part of the frame instead of as a question.
+        // VS Code will not let an extension hide the filter box — an open
+        // request since 2020 — and an empty one looks like something failed to
+        // load, so it keeps the line telling you what to do. The heading names
+        // the screen instead, which is a heading's job.
         //
-        // The heading used to say "What stands in for hidden code", which was
-        // accurate and was also an idiom, and an idiom is where a reader whose
-        // first language is not English stops to work something out. This says
-        // what to do instead, in the place where a heading belongs.
-        box.title = 'Pick one, or press the pencil to change it';
+        // It used to read "What stands in for hidden code": accurate, and an
+        // idiom, and an abstraction on top of the idiom. Two words that need
+        // no working out say as much, because anybody reading them just
+        // clicked their vibe in the status bar to get here.
+        box.title = 'Your vibe';
+        box.placeholder = 'Pick one, or press the pencil to change it';
 
         // And since the box is there whether we like it or not, it may as well
         // work. Filtering matches the label by default, and every label here
@@ -954,7 +953,10 @@ function showTheSlots(): Promise<{ use?: string; edit?: number } | undefined> {
 function askForMark(current: string): Promise<string | undefined> {
     return new Promise(resolve => {
         const box = vscode.window.createInputBox();
-        box.title = 'Your own mark';
+        // "vibe", not "mark". The word changed everywhere else weeks ago and
+        // this one was left behind, which is how a product ends up with two
+        // names for one thing.
+        box.title = 'Your own vibe';
         box.value = current;
 
         // No placeholder, and the ghost had to be given up for the same reason
