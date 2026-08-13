@@ -35,6 +35,17 @@ interface Open {
      * the line itself, an echo is unmistakable: it is the number we just sent.
      */
     agreedLine: number | null;
+    /**
+     * Until when the file is only listening.
+     *
+     * Identity alone was not enough. A reveal does not land in one step — VS
+     * Code walks the editor there, and every step of that walk arrives as
+     * another scroll event carrying a line we never asked for. Each one was
+     * being answered, and the answers landed under the hand of whoever was
+     * scrolling the reader. So the pane that was moved keeps quiet for a
+     * moment afterwards, which is long enough for its own trail to pass.
+     */
+    quietUntil: number;
 }
 
 let open: Open | undefined;
@@ -86,6 +97,7 @@ export function showReader(
                 if (message.line === target.visibleRanges[0].start.line) { return; }
 
                 open.agreedLine = message.line;
+                open.quietUntil = Date.now() + 250;
                 target.revealRange(
                     new vscode.Range(message.line, 0, message.line, 0),
                     vscode.TextEditorRevealType.AtTop,
@@ -96,7 +108,7 @@ export function showReader(
 
     panel.title = `Reading ${input.fileName}`;
     panel.webview.html = pageFor(panel.webview, extensionUri, input);
-    open = { panel, source, sections: input.sections, agreedLine: null };
+    open = { panel, source, sections: input.sections, agreedLine: null, quietUntil: 0 };
     panel.reveal(panel.viewColumn, true);
 }
 
@@ -110,6 +122,8 @@ export function followEditor(event: vscode.TextEditorVisibleRangesChangeEvent): 
     if (!open) { return; }
     if (event.textEditor.document.uri.toString() !== open.source) { return; }
     if (event.visibleRanges.length === 0) { return; }
+
+    if (Date.now() < open.quietUntil) { return; }
 
     const line = event.visibleRanges[0].start.line;
     if (line === open.agreedLine) { return; }
@@ -304,6 +318,20 @@ let expectedY = -1;
 let target = null;
 let running = false;
 
+// The hand on the wheel wins. While somebody is scrolling this pane, the
+// file's answers are dropped rather than obeyed — otherwise the page is pulled
+// out from under them by the very movement they asked for.
+let drivingUntil = 0;
+let waitingToTell = false;
+
+// The last line this pane sent. When it comes back it is our own voice, and
+// it must be dropped however late it arrives — a stopwatch cannot tell an
+// echo from an answer, and this one was arriving after the clock ran out.
+// Obeying it undid every small scroll: the file rounds to a whole line, that
+// line maps back to where the note sits, and the page was dragged back to
+// exactly where it had started.
+let lastSent = null;
+
 // The file arrives in whole lines, so a step of one line can be a step of
 // eighty pixels here. Easing spreads that step over a few frames, which is
 // the difference between a page that follows and a page that flinches.
@@ -322,6 +350,10 @@ function ease() {
 
 window.addEventListener('message', event => {
     if (event.data.type !== 'goto') { return; }
+    if (event.data.line === lastSent) { return; }
+    if (Date.now() < drivingUntil) { return; }
+
+    lastSent = event.data.line;
 
     const wanted = between(event.data.line, 'line', 'y');
     // Already there: the file is answering a move we made ourselves.
@@ -335,10 +367,22 @@ window.addEventListener('scroll', () => {
     // Landed where we put it, so this is the tail of our own movement.
     if (Math.abs(window.scrollY - expectedY) < 2) { return; }
 
+    // Somebody has taken the wheel. Whatever we were doing is now stale.
     target = null;
     running = false;
+    drivingUntil = Date.now() + 250;
 
-    api.postMessage({ type: 'reveal', line: Math.round(between(window.scrollY, 'y', 'line')) });
+    // A wheel throws off scroll events far faster than a screen redraws, and
+    // each one crossing to the file is a line the editor is asked to walk to.
+    // One a frame is as often as any of it can be seen.
+    if (waitingToTell) { return; }
+    waitingToTell = true;
+    requestAnimationFrame(() => {
+        waitingToTell = false;
+        drivingUntil = Date.now() + 250;
+        lastSent = Math.round(between(window.scrollY, 'y', 'line'));
+        api.postMessage({ type: 'reveal', line: lastSent });
+    });
 });
 </script>
 </body>
