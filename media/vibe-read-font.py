@@ -27,9 +27,23 @@ X0, Y0 = 60, -130         # face bottom-left, so it sits like a codicon does
 R = 0.26 * S              # corner radius, measured off the drawing
 
 def rounded_square(pen):
-    """Clockwise, so it is the outside."""
-    x0, y0, x1, y1 = X0, Y0, X0 + S, Y0 + S
+    rounded_rect(pen, X0, Y0, X0 + S, Y0 + S, R)
+
+def rounded_rect(pen, x0, y0, x1, y1, R, hole=False):
+    """Clockwise is the outside of a shape; anticlockwise cuts a hole in one."""
     k = R * K
+    if hole:
+        pen.moveTo((x0 + R, y0))
+        pen.lineTo((x1 - R, y0))
+        pen.curveTo((x1 - R + k, y0), (x1, y0 + R - k), (x1, y0 + R))
+        pen.lineTo((x1, y1 - R))
+        pen.curveTo((x1, y1 - R + k), (x1 - R + k, y1), (x1 - R, y1))
+        pen.lineTo((x0 + R, y1))
+        pen.curveTo((x0 + R - k, y1), (x0, y1 - R + k), (x0, y1 - R))
+        pen.lineTo((x0, y0 + R))
+        pen.curveTo((x0, y0 + R - k), (x0 + R - k, y0), (x0 + R, y0))
+        pen.closePath()
+        return
     pen.moveTo((x0 + R, y1))
     pen.lineTo((x1 - R, y1))
     pen.curveTo((x1 - R + k, y1), (x1, y1 - R + k), (x1, y1 - R))
@@ -40,6 +54,33 @@ def rounded_square(pen):
     pen.lineTo((x0, y1 - R))
     pen.curveTo((x0, y1 - R + k), (x0 + R - k, y1), (x0 + R, y1))
     pen.closePath()
+
+# ── a page, in the same language as the faces ──────────────────────────────
+#
+# The notes button wore $(book), and it did not belong beside these two. Not
+# because it was somebody else's mark — because it was somebody else's weight.
+# The faces are solid shapes with holes cut in them; a codicon is a line
+# drawing. At sixteen pixels, side by side, they read as two different sets,
+# and they were.
+#
+# So: solid, the same corner radius, its detail cut out rather than drawn on,
+# exactly like the eyes. Three lines with the last one short, which has meant
+# "the paragraph ends here" for as long as anyone has drawn a page.
+#
+# Its own outline, though, not the face's. Sharing the square would have made
+# the strongest family and the weakest icon — two buttons side by side, both
+# the same rounded box, and a moment's work to tell them apart. Icon families
+# share their weight and their corners, not their silhouette.
+
+PAGE = (190, -130, 620, 880, 150)          # x, y, width, height, corner
+LINES = (1.0, 1.0, 0.58)                   # the last one is a short line
+
+def page(pen):
+    x0, y0, w, h, r = PAGE
+    rounded_rect(pen, x0, y0, x0 + w, y0 + h, r)
+    for i, run in enumerate(LINES):
+        y = y0 + h - 235 - i * 200
+        rounded_rect(pen, x0 + 110, y - 40, x0 + 110 + (w - 220) * run, y + 40, 40, hole=True)
 
 def circle(pen, cx, cy, r, hole):
     """A hole runs the other way round, which is what makes it a hole."""
@@ -170,15 +211,17 @@ def draw(fn):
     return tt.glyph()
 
 def build(path):
-    order = ['.notdef', 'vibeRead-resting', 'vibeRead-reading', 'vibeRead-reset']
+    order = ['.notdef', 'vibeRead-resting', 'vibeRead-reading', 'vibeRead-notes',
+             'vibeRead-reset']
     reset_glyph, reset_width = reset()
     fb = FontBuilder(EM, isTTF=True)
     fb.setupGlyphOrder(order)
     fb.setupCharacterMap({0xE001: 'vibeRead-resting', 0xE002: 'vibeRead-reading',
-                          0xE003: 'vibeRead-reset'})
+                          0xE003: 'vibeRead-reset', 0xE004: 'vibeRead-notes'})
     glyphs = {'.notdef': TTGlyphPen(None).glyph(),
               'vibeRead-resting': draw(resting),
               'vibeRead-reading': draw(reading),
+              'vibeRead-notes': draw(page),
               'vibeRead-reset': reset_glyph}
     for g in glyphs.values():
         g.recalcBounds(None)          # xMin is not filled in until this runs

@@ -48,7 +48,7 @@
       {
         "command": "vibeRead.saveAsNotes",
         "title": "Vibe Read: Save as notes",
-        "icon": "$(book)"
+        "icon": "$(vibe-read-notes)"
       },
       {
         "command": "vibeRead.pickMark",
@@ -76,6 +76,13 @@
         "default": {
           "fontPath": "media/vibe-read.woff",
           "fontCharacter": "\\E002"
+        }
+      },
+      "vibe-read-notes": {
+        "description": "Keep it as notes — a page in the same weight as the faces, because a line-drawn codicon beside them read as another set",
+        "default": {
+          "fontPath": "media/vibe-read.woff",
+          "fontCharacter": "\\E004"
         }
       },
       "vibe-read-reset": {

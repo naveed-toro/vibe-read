@@ -5,6 +5,9 @@ Two states of one character, drawn by Naveed.
     E003  reset     an arrow with the word "Reset" beside it, because a
                     title-bar button takes an icon and no label
 
+    E004  notes     a page — solid, same corners, lines cut out of it the
+                    way the eyes are
+
     E001  resting   eyes open, focused on nothing — the code and the
                     reasoning still mixed, and none of it read yet
     E002  reading   the same eyes, with a centre. Focus is the only
