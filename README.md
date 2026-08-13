@@ -131,8 +131,8 @@ emoji, text, or both. Your system's emoji keyboard does the choosing.
 ⋯          Mute      ← the default
 🤫         Shh
 🙈 🙉 🙊    Hide
-💤💤       Sleep
-💻 code    Code
+🌚         Vibe
+💻         Code
 ＋         Set your own…
 ```
 

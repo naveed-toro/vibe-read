@@ -748,7 +748,7 @@ const MOST_CHARACTERS = 8;
 // The default sits first and is therefore in the list — which it was not
 // before. 🙈 was the default and was nowhere among these, so anybody who
 // changed it once could never find their way back to it.
-const FILLED_IN = ['⋯', '🤫', '🙈 🙉 🙊', '💤💤', '💻 code', ''];
+const FILLED_IN = ['⋯', '🤫', '🙈 🙉 🙊', '🌚', '💻', ''];
 
 /**
  * A name for each slot, and it is not decoration — this is the word that goes
@@ -761,13 +761,18 @@ const FILLED_IN = ['⋯', '🤫', '🙈 🙉 🙊', '💤💤', '💻 code', '']
  * what you felt like using for it. Anything set in the last slot is just
  * yours, so it goes up as Vibe.
  *
+ * The last one is Yours rather than Vibe, because Vibe is now a slot of its
+ * own and two things cannot share a name. Anything not in the list at all —
+ * typed straight into the setting, say — goes up as Yours too, which is true
+ * of it.
+ *
  * The three monkeys are spaced rather than set solid. Emoji have almost no
  * side bearing, so 🙈🙉🙊 run into one dark blob at editor size, which is the
  * opposite of what a thing meant to be recognised at a glance should do. A dot
  * between them was the other option and it separates something that the gap
  * has already separated, so it only adds a mark that means nothing.
  */
-const NAMES = ['Mute', 'Shh', 'Hide', 'Sleep', 'Code', 'Vibe'];
+const NAMES = ['Mute', 'Shh', 'Hide', 'Vibe', 'Code', 'Yours'];
 const YOURS = NAMES[NAMES.length - 1];
 
 /** The word that goes beside the vibe. Falls back to Vibe for anything ours. */
