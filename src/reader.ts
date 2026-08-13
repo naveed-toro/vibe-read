@@ -18,7 +18,7 @@
 // ---------------------------------------------------------------------------
 
 import * as vscode from 'vscode';
-import { codeOf, type Section } from './notes';
+import { codeOf, commentsOf, type Section } from './notes';
 
 let panel: vscode.WebviewPanel | undefined;
 
@@ -78,6 +78,7 @@ function pageFor(
     const today = new Date().toISOString().slice(0, 10);
     const whys = input.sections.length;
     const code = codeOf(input.sections);
+    const comments = commentsOf(input.sections);
 
     // Each paragraph, and under it the code it was explaining — shut, one line
     // high. No number in front of it and no heading above it: those were what
@@ -149,36 +150,78 @@ hr {
 /*
  * The reading itself.
  *
- * Set smaller than the editor's own text rather than larger. Big type reads as
- * a headline and headlines are skimmed; this is meant to be read. The line
- * height is generous because the eye needs a rail to return along, and the
- * space between paragraphs does the work that a numbered heading was doing
- * badly.
+ * Set for somebody who finds reading hard, because a page that works for them
+ * works for everybody. The advice is old and consistent, and none of it is
+ * decoration:
+ *
+ *   Bigger than you think. Sixteen or seventeen pixels, not fourteen.
+ *   Lines far apart — half again the size of the type at least.
+ *   A short line, sixty to seventy characters, so the eye finds its way back.
+ *   Ragged right, never justified: even word spacing matters more than a
+ *     straight edge, and justification tears rivers of white through a
+ *     paragraph.
+ *   Letters and words given a little air, which stops them running together.
+ *   No italics for anything long, and no walls: paragraphs kept short and
+ *     clearly apart.
  */
 p {
-    font-size: 14.5px;
-    line-height: 1.75;
-    margin: 0 0 1.5em 0;
-    max-width: 34em;
+    font-size: 16.5px;
+    line-height: 1.85;
+    letter-spacing: .012em;
+    word-spacing: .06em;
+    margin: 0 0 1.7em 0;
+    max-width: 32em;
+    text-align: left;
+    hyphens: none;
 }
 
 details { margin: 1.1em 0; }
+
+/*
+ * The folds are meant to be seen.
+ *
+ * They were set at three quarters of the size and half the ink, and they
+ * vanished — a control nobody notices is a control that does not exist. A
+ * fold is an offer, and an offer has to be legible before it can be refused.
+ */
 summary {
     cursor: pointer; list-style: none;
-    font-family: var(--vscode-editor-font-family);
-    font-size: .78em; opacity: .45;
+    font-family: var(--vscode-font-family);
+    font-size: 13px;
+    opacity: .75;
 }
 summary::-webkit-details-marker { display: none; }
 summary::before { content: '▸ '; }
 details[open] > summary::before { content: '▾ '; }
-summary:hover { opacity: .85; }
+summary:hover { opacity: 1; }
 
-/* The three that hold the page together sit a little firmer than the rest. */
-summary.block { font-size: .82em; opacity: .6; margin-bottom: 1.2em; }
-details[open] > summary.block { margin-bottom: 1.6em; }
+/* The three that hold the page together stand a step above the rest. */
+summary.block {
+    font-size: 13.5px;
+    letter-spacing: .02em;
+    opacity: .8;
+    margin-bottom: 1.4em;
+}
+details[open] > summary.block { margin-bottom: 1.8em; }
 
-/* And a paragraph's own code steps back under it, out of the way. */
-details.inline { margin: -.9em 0 1.5em 0; }
+/*
+ * A paragraph's own code, stepped back under it and wearing a border so that
+ * it reads as something to press rather than something to read.
+ */
+details.inline { margin: -.9em 0 1.7em 0; }
+details.inline > summary {
+    display: inline-block;
+    padding: .2em .8em;
+    border: 1px solid var(--vscode-panel-border);
+    border-radius: 999px;
+    font-family: var(--vscode-editor-font-family);
+    font-size: 12px;
+    opacity: .7;
+}
+details.inline > summary:hover {
+    opacity: 1;
+    background: var(--vscode-list-hoverBackground);
+}
 
 pre {
     margin: .7em 0 0 0; padding: .85em 1.1em;
@@ -210,6 +253,11 @@ pre code {
 <details open>
 <summary class="block">the whole file · reasoning</summary>
 ${prose}
+</details>
+
+<details>
+<summary class="block">the whole file · comments · ${comments.length} lines</summary>
+<pre><code>${escape(comments.join('\n'))}</code></pre>
 </details>
 
 <details>

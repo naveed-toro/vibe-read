@@ -29,6 +29,14 @@ export interface NotesInput {
 export interface Section {
     /** The reasoning, already stripped of comment markers. */
     prose: string[];
+    /**
+     * The same comments as they stand in the file, markers and all.
+     *
+     * Prose is for reading; this is for looking at the file with the code
+     * taken out — which is what Alt+X shows, and now what one of the blocks
+     * shows too.
+     */
+    raw: string[];
     /** The code it was explaining. */
     code: string[];
     /** Where in the file this run of comments began. */
@@ -44,6 +52,7 @@ export function buildNotes(input: NotesInput): string | null {
     const today = new Date().toISOString().slice(0, 10);
     const whys = sections.length;
     const code = codeOf(sections);
+    const comments = commentsOf(sections);
     const out: string[] = [];
 
     out.push(`# ${input.fileName}`);
@@ -73,11 +82,33 @@ export function buildNotes(input: NotesInput): string | null {
 
     out.push('</details>');
     out.push('');
+    out.push(fold(`the whole file · comments · ${comments.length} lines`, comments, fence));
     out.push(fold(`the whole file · code · ${code.length} lines`, code, fence));
     out.push(fold(`the whole file · as it is · ${input.lineTexts.length} lines`, input.lineTexts, fence));
 
     return out.join('\n');
 }
+
+/**
+ * The file with the code taken out — the comments as they are written, and a
+ * single `⋯` wherever code was passed over.
+ *
+ * One mark per stretch, not one per line. In the editor the mark repeats down
+ * the margin because each hidden line still has to hold its place; here
+ * nothing is holding a place, so forty of them would be forty pieces of noise
+ * standing for one idea: something was here.
+ */
+export function commentsOf(sections: Section[]): string[] {
+    const out: string[] = [];
+    for (const section of sections) {
+        out.push(...section.raw);
+        if (section.code.length > 0) { out.push(SKIPPED); }
+    }
+    return out;
+}
+
+/** What stands where code was passed over. */
+export const SKIPPED = '⋯';
 
 /** Every line of code in the file, in order, with the reasoning taken out. */
 export function codeOf(sections: Section[]): string[] {
@@ -129,11 +160,12 @@ export function sectionsOf(input: NotesInput): Section[] {
             // Same rule as countWhys, so the number in the status bar and the
             // number of sections here can never disagree.
             if (!current || lastWasCode || runBroken) {
-                current = { prose: [], code: [], line: i };
+                current = { prose: [], code: [], raw: [], line: i };
                 sections.push(current);
             }
             const prose = input.toProse(text);
             if (prose !== '') { current.prose.push(prose); }
+            current.raw.push(text);
             lastWasCode = false;
             runBroken = false;
             continue;
@@ -144,7 +176,7 @@ export function sectionsOf(input: NotesInput): Section[] {
         // 'code' or 'mixed' — a trailing comment is kept with its own line,
         // since separating it from the statement would lose the point.
         if (!current) {
-            current = { prose: [], code: [], line: i };
+            current = { prose: [], code: [], raw: [], line: i };
             sections.push(current);
         }
         current.code.push(text);
@@ -155,7 +187,7 @@ export function sectionsOf(input: NotesInput): Section[] {
     // They belong to the file, not to the notes.
     return sections
         .filter(s => s.prose.length > 0)
-        .map(s => ({ prose: s.prose, code: trimTrailingBlanks(s.code), line: s.line }));
+        .map(s => ({ prose: s.prose, raw: s.raw, code: trimTrailingBlanks(s.code), line: s.line }));
 }
 
 function trimTrailingBlanks(lines: string[]): string[] {
