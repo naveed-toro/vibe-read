@@ -879,6 +879,11 @@ async function pickMark(): Promise<void> {
         if (typed === undefined) { return; }
 
         marks[slot] = typed;
+        // Whatever the reset threw away, it is not coming back now. The offer
+        // was to undo one particular reset, and the six it would restore are
+        // no longer the six that were there a moment ago — pressing it would
+        // quietly throw away the change just made instead of the reset.
+        thrownAway = undefined;
         await keep('marks', marks);
         await keep('mark', typed);
         return;
@@ -957,8 +962,7 @@ function plainRows(): MarkRow[] {
 function showTheSlots(): Promise<{ use?: string; edit?: number } | undefined> {
     return new Promise(resolve => {
         const box = vscode.window.createQuickPick<MarkRow>();
-        const showing = vscode.workspace
-            .getConfiguration('vibeRead').get<string>('mark') || DEFAULT_MARK;
+
 
         // A heading that names the thing, and an instruction in the box.
         //
@@ -980,10 +984,27 @@ function showTheSlots(): Promise<{ use?: string; edit?: number } | undefined> {
         // "No matching results" and a dead end. Matching the name too means
         // "sh" finds Shh.
         box.matchOnDescription = true;
-        box.items = slotRows();
+        /**
+         * Show the rows, and leave the highlight on the one being worn.
+         *
+         * Rebuilding the rows throws the highlight back to the top, and the
+         * live preview follows the highlight — so pressing Reset made the file
+         * behind flash into Mute, a vibe nobody had chosen. It came right on
+         * closing the list, which is worse rather than better: for as long as
+         * anybody was looking, the screen was showing them something untrue.
+         *
+         * Putting the highlight back where it belongs fixes the preview by
+         * fixing the thing the preview is reporting on.
+         */
+        const showRows = () => {
+            box.items = slotRows();
+            const worn = vscode.workspace
+                .getConfiguration('vibeRead').get<string>('mark') || DEFAULT_MARK;
+            const inUse = box.items.find(row => row.mark === worn);
+            if (inUse) { box.activeItems = [inUse]; }
+        };
 
-        const inUse = box.items.find(row => row.mark === showing);
-        if (inUse) { box.activeItems = [inUse]; }
+        showRows();
 
         let answered = false;
 
@@ -1022,12 +1043,12 @@ function showTheSlots(): Promise<{ use?: string; edit?: number } | undefined> {
             const slot = savedMarks().indexOf(using);
             await keep('marks', [...FILLED_IN]);
             if (slot !== -1) { await keep('mark', FILLED_IN[slot]); }
-            box.items = slotRows();
+            showRows();
             // If the list is still open when the offer runs out, take it off
             // the screen. An offer that has quietly expired is a worse lie
             // than no offer at all.
             setTimeout(() => {
-                if (!closed) { box.items = slotRows(); }
+                if (!closed) { showRows(); }
             }, LONG_ENOUGH_TO_REGRET_IT + 100);
         };
 
@@ -1038,7 +1059,7 @@ function showTheSlots(): Promise<{ use?: string; edit?: number } | undefined> {
                 await keep('marks', yours.marks);
                 await keep('mark', yours.using);
             }
-            box.items = slotRows();
+            showRows();
         };
 
         box.onDidTriggerItemButton(event => {
