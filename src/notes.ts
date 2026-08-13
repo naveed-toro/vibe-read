@@ -20,16 +20,25 @@ export interface NotesInput {
     includeFullSource: boolean;
 }
 
-interface Section {
+export interface Section {
     /** The reasoning, already stripped of comment markers. */
     prose: string[];
     /** The code it was explaining. */
     code: string[];
+    /**
+     * The line in the source file where this note begins.
+     *
+     * This is what ties the two panes together: scrolling the file finds the
+     * last note whose line has gone past, and scrolling the notes reveals the
+     * line they came from. Without it the reading pane is a separate document
+     * that merely happens to sit alongside.
+     */
+    line: number;
 }
 
 /** Returns null when the file has no comments — there is nothing worth keeping. */
 export function buildNotes(input: NotesInput): string | null {
-    const sections = collect(input);
+    const sections = sectionsOf(input);
     if (sections.length === 0) { return null; }
 
     const fence = fenceFor(input.languageId);
@@ -38,7 +47,7 @@ export function buildNotes(input: NotesInput): string | null {
 
     out.push(`# ${input.fileName}`);
     out.push('');
-    out.push(`> Read with 🙈 **Vibe Read** · ${today} · ${sections.length} note${sections.length === 1 ? '' : 's'}`);
+    out.push(`> Read with ◎ ◎ **Vibe Read** · ${today} · ${sections.length} note${sections.length === 1 ? '' : 's'}`);
     out.push('');
     out.push('---');
     out.push('');
@@ -56,7 +65,12 @@ export function buildNotes(input: NotesInput): string | null {
 
         if (section.code.length > 0) {
             out.push('<details>');
-            out.push('<summary>🙈 code</summary>');
+            // No mark here. The triangle beside it already says this opens,
+            // and a face repeated down the page is the noise the extension
+            // exists to remove. The count is worth saying instead: it cannot
+            // be seen while the fold is shut, and it decides whether opening
+            // is worth it. The reading pane says exactly the same thing.
+            out.push(`<summary>code · ${section.code.length} line${section.code.length === 1 ? '' : 's'}</summary>`);
             out.push('');
             out.push('```' + fence);
             out.push(trimIndent(section.code).join('\n'));
@@ -71,7 +85,7 @@ export function buildNotes(input: NotesInput): string | null {
         out.push('---');
         out.push('');
         out.push('<details>');
-        out.push(`<summary>🙈 the whole file — ${input.lineTexts.length} lines</summary>`);
+        out.push(`<summary>the whole file · ${input.lineTexts.length} lines</summary>`);
         out.push('');
         out.push('```' + fence);
         out.push(input.lineTexts.join('\n'));
@@ -88,7 +102,7 @@ export function buildNotes(input: NotesInput): string | null {
  * Walks the file gathering "a run of comments, then the code it introduced".
  * A new run of comments starts a new section.
  */
-function collect(input: NotesInput): Section[] {
+export function sectionsOf(input: NotesInput): Section[] {
     const sections: Section[] = [];
     let current: Section | null = null;
     let lastWasCode = false;
@@ -109,7 +123,7 @@ function collect(input: NotesInput): Section[] {
             // Same rule as countWhys, so the number in the status bar and the
             // number of sections here can never disagree.
             if (!current || lastWasCode || runBroken) {
-                current = { prose: [], code: [] };
+                current = { prose: [], code: [], line: i };
                 sections.push(current);
             }
             const prose = input.toProse(text);
@@ -124,7 +138,7 @@ function collect(input: NotesInput): Section[] {
         // 'code' or 'mixed' — a trailing comment is kept with its own line,
         // since separating it from the statement would lose the point.
         if (!current) {
-            current = { prose: [], code: [] };
+            current = { prose: [], code: [], line: i };
             sections.push(current);
         }
         current.code.push(text);
@@ -135,7 +149,7 @@ function collect(input: NotesInput): Section[] {
     // They belong to the file, not to the notes.
     return sections
         .filter(s => s.prose.length > 0)
-        .map(s => ({ prose: s.prose, code: trimTrailingBlanks(s.code) }));
+        .map(s => ({ prose: s.prose, code: trimTrailingBlanks(s.code), line: s.line }));
 }
 
 function trimTrailingBlanks(lines: string[]): string[] {

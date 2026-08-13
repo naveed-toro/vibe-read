@@ -12,7 +12,11 @@
 import * as vscode from 'vscode';
 import type { CommentSyntax, ScannedLine } from './comments';
 import { countWhys, scanLines, syntaxFor, toProse } from './comments';
-import { buildNotes } from './notes';
+import { buildNotes, sectionsOf } from './notes';
+import { followEditor, showReader } from './reader';
+
+/** Where the extension lives on disk. The reader needs it for its font. */
+let extensionUri: vscode.Uri;
 
 // ---------------------------------------------------------------------------
 // State
@@ -337,7 +341,6 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
         statusBar.tooltip = new vscode.MarkdownString(
             "**The code is hidden. You're reading the why.**\n\n" +
             '`Alt+X` show the code back  \n' +
-            '`Alt+M` keep it as notes  \n' +
             '`Ctrl+C` copy only what you see\n\n' +
             'Select some lines and press `Alt+X` to show only those.'
         );
@@ -652,21 +655,23 @@ function visibleTextOf(
 // Alt+M — keep it as notes
 // ---------------------------------------------------------------------------
 
-async function saveAsNotes(editor: vscode.TextEditor): Promise<void> {
+async function read(editor: vscode.TextEditor): Promise<void> {
     const doc = editor.document;
     const syntax = syntaxFor(doc.languageId);
     const lineTexts = textOf(doc);
 
-    const markdown = buildNotes({
+    const input = {
         fileName: doc.fileName.split(/[\\/]/).pop() || 'untitled',
         languageId: doc.languageId,
         lineTexts,
         scanned: scanLines(lineTexts, syntax),
-        toProse: text => toProse(text, syntax),
+        toProse: (text: string) => toProse(text, syntax),
         includeFullSource: vscode.workspace
             .getConfiguration('vibeRead')
             .get<boolean>('notesIncludeFullSource', true),
-    });
+    };
+
+    const markdown = buildNotes(input);
 
     if (markdown === null) {
         vscode.window.showInformationMessage(
@@ -676,7 +681,19 @@ async function saveAsNotes(editor: vscode.TextEditor): Promise<void> {
         return;
     }
 
-    // Opened, not written. Nothing lands on disk until the user says so.
+    // The reading room opens beside the code, and the two scroll together.
+    // The markdown is built either way, but it is only handed over when the
+    // reader asks for it — reading is the common case, keeping is not.
+    showReader(extensionUri, editor, {
+        fileName: input.fileName,
+        languageId: doc.languageId,
+        sections: sectionsOf(input),
+        onSave: () => { void keepAsMarkdown(markdown); },
+    });
+}
+
+/** Opened, not written. Nothing lands on disk until the user says so. */
+async function keepAsMarkdown(markdown: string): Promise<void> {
     const notes = await vscode.workspace.openTextDocument({
         content: markdown,
         language: 'markdown',
@@ -1390,13 +1407,19 @@ def apply_checkout(cart, tax_rate, coupon=None):
 
 export function activate(context: vscode.ExtensionContext): void {
     learningStore = context.globalState;
+    extensionUri = context.extensionUri;
 
     // Context keys do not survive a restart, so this has to be set again for
     // anyone who learned it in an earlier session.
     if (learning().usedSelection) { markLearned(); }
 
-    // The same priority for both, so nothing can come between them. Created in
-    // this order, so the state reads first and the mark sits to its right.
+    // The same priority for all three, so nothing can come between them.
+    // Created and shown in this order, which is the order they read in:
+    // reading, then hiding, then the vibe that belongs to hiding.
+    readBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, TOGETHER);
+    readBar.command = 'vibeRead.read';
+    context.subscriptions.push(readBar);
+
     statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, TOGETHER);
     statusBar.command = 'vibeRead.toggle';
     context.subscriptions.push(statusBar);
@@ -1416,13 +1439,16 @@ export function activate(context: vscode.ExtensionContext): void {
 
     context.subscriptions.push(
         vscode.commands.registerCommand('vibeRead.toggle', withEditor(toggle)),
-        vscode.commands.registerCommand('vibeRead.saveAsNotes', withEditor(saveAsNotes)),
+        vscode.commands.registerCommand('vibeRead.read', withEditor(read)),
         vscode.commands.registerCommand('vibeRead.smartCopy', withEditor(smartCopy)),
         vscode.commands.registerCommand('vibeRead.pickMark', pickMark),
         vscode.commands.registerCommand('vibeRead.openWalkthrough', openWalkthrough),
         vscode.commands.registerCommand('vibeRead.openSample', openSample),
 
         vscode.window.onDidChangeActiveTextEditor(redraw),
+
+        // Scroll the code and the reading pane comes along.
+        vscode.window.onDidChangeTextEditorVisibleRanges(followEditor),
 
         vscode.workspace.onDidChangeTextDocument(e => {
             const editor = vscode.window.activeTextEditor;
