@@ -888,9 +888,19 @@ function showTheSlots(): Promise<{ use?: string; edit?: number } | undefined> {
         // "No matching results" and a dead end. Matching the name too means
         // "sh" finds Shh.
         box.matchOnDescription = true;
+        // The icon carries its own label — it draws "↺ Reset", not just the
+        // arrow. VS Code gives a title-bar button an icon and a tooltip and
+        // nothing else, and a tooltip only speaks to somebody who already
+        // found the thing, so a bare arrow in a corner explains itself to
+        // nobody. That is the pencil and the chevron all over again: a picture
+        // cannot name a noun.
+        //
+        // A glyph can be any shape and any width, and letters are shapes. So
+        // the word went inside the icon, and VS Code has no way of knowing it
+        // is rendering a sentence. The tooltip is free to say something else.
         box.buttons = [{
-            iconPath: new vscode.ThemeIcon('discard'),
-            tooltip: 'Back to the originals',
+            iconPath: new vscode.ThemeIcon('vibe-read-reset'),
+            tooltip: 'Back to the six we started with',
         }];
         box.items = slotRows();
 

@@ -77,6 +77,13 @@
           "fontPath": "media/vibe-read.woff",
           "fontCharacter": "\\E002"
         }
+      },
+      "vibe-read-reset": {
+        "description": "Back to the six we started with — the arrow carries its own label, because a title-bar button cannot",
+        "default": {
+          "fontPath": "media/vibe-read.woff",
+          "fontCharacter": "\\E003"
+        }
       }
     },
     "keybindings": [
