@@ -46,8 +46,8 @@
         "icon": "$(vibe-read-reading)"
       },
       {
-        "command": "vibeRead.saveAsNotes",
-        "title": "Vibe Read: Save as notes",
+        "command": "vibeRead.read",
+        "title": "Vibe Read: Read the reasoning",
         "icon": "$(vibe-read-notes)"
       },
       {
@@ -101,7 +101,7 @@
         "when": "editorIsOpen && !terminalFocus"
       },
       {
-        "command": "vibeRead.saveAsNotes",
+        "command": "vibeRead.read",
         "key": "alt+m",
         "mac": "alt+m",
         "when": "editorIsOpen && !terminalFocus"
@@ -116,23 +116,23 @@
     "menus": {
       "editor/title": [
         {
-          "command": "vibeRead.toggle",
+          "command": "vibeRead.read",
           "group": "navigation@1",
-          "when": "vibeRead.active && config.vibeRead.showEditorButton"
+          "when": "config.vibeRead.showEditorButton"
         },
         {
-          "command": "vibeRead.saveAsNotes",
+          "command": "vibeRead.toggle",
           "group": "navigation@2",
-          "when": "vibeRead.active && config.vibeRead.showEditorButton"
+          "when": "config.vibeRead.showEditorButton"
         }
       ],
       "editor/context": [
         {
-          "command": "vibeRead.toggle",
+          "command": "vibeRead.read",
           "group": "vibeRead@1"
         },
         {
-          "command": "vibeRead.saveAsNotes",
+          "command": "vibeRead.toggle",
           "group": "vibeRead@2"
         }
       ],
@@ -191,7 +191,7 @@
               "altText": "The notes it writes"
             },
             "completionEvents": [
-              "onCommand:vibeRead.saveAsNotes"
+              "onCommand:vibeRead.read"
             ]
           }
         ]
