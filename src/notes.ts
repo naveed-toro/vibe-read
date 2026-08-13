@@ -65,8 +65,10 @@ export function buildNotes(input: NotesInput): string | null {
     out.push('');
 
     for (const section of sections) {
-        out.push(section.prose.join(' '));
-        out.push('');
+        for (const paragraph of paragraphsOf(section.prose)) {
+            out.push(paragraph.text);
+            out.push('');
+        }
         if (section.code.length > 0) {
             out.push(fold(`code · ${section.code.length} line${section.code.length === 1 ? '' : 's'}`, section.code, fence));
         }
@@ -79,6 +81,54 @@ export function buildNotes(input: NotesInput): string | null {
     out.push(fold(`the whole file · as it is · ${input.lineTexts.length} lines`, input.lineTexts, fence));
 
     return out.join('\n');
+}
+
+/** A run of comment lines, gathered into how it was meant to be read. */
+export interface Paragraph {
+    text: string;
+    /** A line that was a list item, and has to stay on its own line. */
+    list: boolean;
+}
+
+/** Anything that opens a line the way a list opens a line. */
+const LIST = /^\s*([-*•+‣·]|\d+[.)]|[a-zA-Z][.)])\s+/;
+
+/**
+ * Lines into paragraphs.
+ *
+ * A comment does not break its lines where the thought ends; it breaks them
+ * where the eightieth column arrives. That margin is the editor's rule, not
+ * the writer's, and this page has no such margin — so the lines are run back
+ * together into the sentences they were before somebody wrapped them.
+ *
+ * Two breaks are the writer's own and are kept. A bare comment marker with
+ * nothing after it is a paragraph break, and a line that begins the way a list
+ * item begins stays on its own line, because a list rolled into a paragraph
+ * stops being a list.
+ */
+export function paragraphsOf(prose: string[]): Paragraph[] {
+    const out: Paragraph[] = [];
+    let current = '';
+
+    const flush = () => {
+        if (current !== '') { out.push({ text: current, list: false }); }
+        current = '';
+    };
+
+    for (const line of prose) {
+        if (line === '') { flush(); continue; }
+
+        if (LIST.test(line)) {
+            flush();
+            out.push({ text: line, list: true });
+            continue;
+        }
+
+        current = current === '' ? line : `${current} ${line}`;
+    }
+
+    flush();
+    return out;
 }
 
 /**
@@ -159,8 +209,10 @@ export function sectionsOf(input: NotesInput): Section[] {
                 current = { prose: [], code: [], line: i };
                 sections.push(current);
             }
-            const prose = input.toProse(text);
-            if (prose !== '') { current.prose.push(prose); }
+            // Empty ones are kept, not dropped. A bare `#` between two runs of
+            // comment is the writer's own paragraph break, and throwing it away
+            // welds two thoughts into one.
+            current.prose.push(input.toProse(text));
             lastWasCode = false;
             runBroken = false;
             continue;
@@ -181,8 +233,19 @@ export function sectionsOf(input: NotesInput): Section[] {
     // Sections that never got any prose are just code with no explanation.
     // They belong to the file, not to the notes.
     return sections
-        .filter(s => s.prose.length > 0)
-        .map(s => ({ prose: s.prose, code: trimTrailingBlanks(s.code), line: s.line }));
+        .filter(s => s.prose.some(line => line !== ''))
+        .map(s => ({
+            prose: trimBlankEnds(s.prose),
+            code: trimTrailingBlanks(s.code),
+            line: s.line,
+        }));
+}
+
+function trimBlankEnds(lines: string[]): string[] {
+    const out = [...lines];
+    while (out.length > 0 && out[0] === '') { out.shift(); }
+    while (out.length > 0 && out[out.length - 1] === '') { out.pop(); }
+    return out;
 }
 
 function trimTrailingBlanks(lines: string[]): string[] {

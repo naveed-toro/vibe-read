@@ -18,7 +18,7 @@
 // ---------------------------------------------------------------------------
 
 import * as vscode from 'vscode';
-import { codeOf, commentsOf, type Section } from './notes';
+import { codeOf, commentsOf, paragraphsOf, type Section } from './notes';
 
 let panel: vscode.WebviewPanel | undefined;
 
@@ -84,11 +84,14 @@ function pageFor(
     // high. No number in front of it and no heading above it: those were what
     // turned a page into a filing cabinet.
     const prose = input.sections.map(section => {
-        const paragraph = `<p>${escape(section.prose.join(' '))}</p>`;
-        if (section.code.length === 0) { return paragraph; }
+        const paragraphs = paragraphsOf(section.prose)
+            .map(p => `<p${p.list ? ' class="item"' : ''}>${escape(p.text)}</p>`)
+            .join('');
+
+        if (section.code.length === 0) { return paragraphs; }
 
         const count = section.code.length;
-        return paragraph +
+        return paragraphs +
             `<details class="inline"><summary>code · ${count} line${count === 1 ? '' : 's'}</summary>` +
             `<pre><code>${escape(section.code.join('\n'))}</code></pre></details>`;
     }).join('');
@@ -178,6 +181,13 @@ p {
     text-align: left;
     hyphens: none;
 }
+
+/* A list line stays a list line: close under the one above, and stepped in. */
+p.item {
+    margin: 0 0 .5em 1.4em;
+    text-indent: -1.4em;
+}
+p.item + p:not(.item) { margin-top: 1.4em; }
 
 details { margin: 1.1em 0; }
 
