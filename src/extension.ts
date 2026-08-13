@@ -13,7 +13,7 @@ import * as vscode from 'vscode';
 import type { CommentSyntax, ScannedLine } from './comments';
 import { countWhys, scanLines, syntaxFor, toProse } from './comments';
 import { buildNotes, sectionsOf } from './notes';
-import { followEditor, showReader } from './reader';
+import { showReader } from './reader';
 
 /** Where the extension lives on disk. The reader needs it for its font. */
 let extensionUri: vscode.Uri;
@@ -717,9 +717,6 @@ async function read(editor: vscode.TextEditor): Promise<void> {
         lineTexts,
         scanned: scanLines(lineTexts, syntax),
         toProse: (text: string) => toProse(text, syntax),
-        includeFullSource: vscode.workspace
-            .getConfiguration('vibeRead')
-            .get<boolean>('notesIncludeFullSource', true),
     };
 
     const markdown = buildNotes(input);
@@ -732,13 +729,15 @@ async function read(editor: vscode.TextEditor): Promise<void> {
         return;
     }
 
-    // The reading room opens beside the code, and the two scroll together.
-    // The markdown is built either way, but it is only handed over when the
-    // reader asks for it — reading is the common case, keeping is not.
-    showReader(extensionUri, editor, {
+    // Its own tab, the width of the window. The markdown is built either way,
+    // but it is only handed over when the reader asks for it — reading is the
+    // common case, keeping is not.
+    showReader(extensionUri, {
         fileName: input.fileName,
         languageId: doc.languageId,
+        lineTexts,
         sections: sectionsOf(input),
+        source: doc.uri,
         onSave: () => { void keepAsMarkdown(markdown); },
     });
 }
@@ -1497,9 +1496,6 @@ export function activate(context: vscode.ExtensionContext): void {
         vscode.commands.registerCommand('vibeRead.openSample', openSample),
 
         vscode.window.onDidChangeActiveTextEditor(redraw),
-
-        // Scroll the code and the reading pane comes along.
-        vscode.window.onDidChangeTextEditorVisibleRanges(followEditor),
 
         vscode.workspace.onDidChangeTextDocument(e => {
             const editor = vscode.window.activeTextEditor;

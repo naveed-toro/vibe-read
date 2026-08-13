@@ -224,11 +224,6 @@
           "type": "boolean",
           "default": true,
           "description": "Show the Vibe Read buttons above the editor while the code is hidden."
-        },
-        "vibeRead.notesIncludeFullSource": {
-          "type": "boolean",
-          "default": true,
-          "description": "Add the complete file, collapsed, at the end of the saved notes."
         }
       }
     }
