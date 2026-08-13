@@ -862,7 +862,17 @@ function showTheSlots(): Promise<{ use?: string; edit?: number } | undefined> {
         const showing = vscode.workspace
             .getConfiguration('vibeRead').get<string>('mark') || DEFAULT_MARK;
 
-        box.title = 'What stands in for hidden code';
+        // No title. It read "What stands in for hidden code", which is
+        // accurate and is also an idiom — "to stand in for" — and idioms are
+        // where a reader whose first language is not English stops and works
+        // something out. Nobody should have to work anything out here.
+        //
+        // Nothing is lost by dropping it, because the list explains itself
+        // better than the sentence did: arrow down the rows and the file
+        // behind changes with every one. A definition demonstrated beats a
+        // definition written. And anyone who wants it in words still has it —
+        // the tooltip on the status bar says exactly this, which is where they
+        // were standing a moment ago.
         box.placeholder = 'Pick one, or press the pencil to change it';
         box.buttons = [{
             iconPath: new vscode.ThemeIcon('discard'),
