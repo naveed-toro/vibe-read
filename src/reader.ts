@@ -122,30 +122,34 @@ main {
     padding: 0 1.6em 40vh 1.6em;
 }
 
+/*
+ * The line at the top says whose page this is, what it came from and how much
+ * there was to say. It was set at four fifths of the size and two thirds of
+ * the ink, and it disappeared. A page needs a name.
+ */
 header {
-    display: flex; align-items: baseline; gap: .7em;
+    display: flex; align-items: baseline; gap: .6em;
     max-width: 36em; margin: 0 auto;
-    padding: 2em 1.6em 1em 1.6em;
-    font-size: .82em;
-    opacity: .65;
+    padding: 2.2em 1.6em 1.4em 1.6em;
+    font-size: 14px;
 }
-header .face { font-family: 'vibe-read'; font-size: 1.6em; opacity: .9; }
+header .face { font-family: 'vibe-read'; font-size: 1.7em; opacity: .85; }
+header .name {
+    cursor: pointer; text-decoration: none;
+    color: var(--vscode-foreground);
+    font-weight: 600;
+}
+header .name:hover { text-decoration: underline; }
+header .about { opacity: .6; }
 header .grow { flex: 1; }
-header .name { cursor: pointer; text-decoration: none; color: inherit; }
-header .name:hover { text-decoration: underline; opacity: 1; }
 header button {
     font: inherit; cursor: pointer; white-space: nowrap;
     color: var(--vscode-button-secondaryForeground, var(--vscode-foreground));
     background: var(--vscode-button-secondaryBackground, transparent);
     border: 1px solid var(--vscode-panel-border);
-    border-radius: 3px; padding: .25em .8em;
+    border-radius: 4px; padding: .3em .9em;
 }
 header button:hover { background: var(--vscode-button-secondaryHoverBackground, var(--vscode-list-hoverBackground)); }
-
-hr {
-    max-width: 36em; margin: 0 auto 1.6em auto;
-    border: 0; border-top: 1px solid var(--vscode-panel-border);
-}
 
 /*
  * The reading itself.
@@ -195,14 +199,38 @@ summary::before { content: '▸ '; }
 details[open] > summary::before { content: '▾ '; }
 summary:hover { opacity: 1; }
 
-/* The three that hold the page together stand a step above the rest. */
+/*
+ * The blocks that hold the page together.
+ *
+ * They were the same grey whisper as everything else and read as a stray line
+ * of the reasoning rather than as the lid of a box. A block needs to look like
+ * a block: its own weight, its own outline, and — for the three at the bottom
+ * — a rule and a stretch of empty page above them, so that the eye knows the
+ * reading has ended and the shelf has begun.
+ */
 summary.block {
+    display: inline-block;
+    font-family: var(--vscode-font-family);
     font-size: 13.5px;
-    letter-spacing: .02em;
-    opacity: .8;
-    margin-bottom: 1.4em;
+    font-weight: 600;
+    letter-spacing: .01em;
+    opacity: .85;
+    padding: .35em .9em;
+    border: 1px solid var(--vscode-panel-border);
+    border-radius: 5px;
 }
-details[open] > summary.block { margin-bottom: 1.8em; }
+summary.block:hover {
+    opacity: 1;
+    background: var(--vscode-list-hoverBackground);
+}
+details.reading > summary.block { margin-bottom: 2em; }
+
+.more {
+    margin-top: 3.5em;
+    padding-top: 2em;
+    border-top: 1px solid var(--vscode-panel-border);
+}
+.more > details { margin: 0 0 1em 0; }
 
 /*
  * A paragraph's own code, stepped back under it and wearing a border so that
@@ -244,17 +272,17 @@ pre code {
 <header>
     <span class="face">&#xe002;</span>
     <a class="name" id="open" title="Back to the file">${escape(input.fileName)}</a>
-    <span>· ${today} · ${whys} why${whys === 1 ? '' : 's'}</span>
+    <span class="about">${today} · ${whys} why${whys === 1 ? '' : 's'}</span>
     <span class="grow"></span>
     <button id="save">Save as Markdown</button>
 </header>
-<hr>
 <main>
-<details open>
+<details open class="reading">
 <summary class="block">the whole file · reasoning</summary>
 ${prose}
 </details>
 
+<section class="more">
 <details>
 <summary class="block">the whole file · comments · ${comments.length} lines</summary>
 <pre><code>${escape(comments.join('\n'))}</code></pre>
@@ -269,6 +297,7 @@ ${prose}
 <summary class="block">the whole file · as it is · ${input.lineTexts.length} lines</summary>
 <pre><code>${escape(input.lineTexts.join('\n'))}</code></pre>
 </details>
+</section>
 </main>
 <script nonce="${nonce}">
 const api = acquireVsCodeApi();

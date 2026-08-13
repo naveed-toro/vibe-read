@@ -742,16 +742,31 @@ async function read(editor: vscode.TextEditor): Promise<void> {
     });
 }
 
-/** Opened, not written. Nothing lands on disk until the user says so. */
+/**
+ * Opened, not written. Nothing lands on disk until the user says so.
+ *
+ * And opened rendered, not as markdown source. Somebody who has just spent
+ * five minutes reading a page does not want the next thing they see to be
+ * angle brackets and backticks — that is the syntax this extension exists to
+ * take away, handed back at the last moment. The source is a click behind the
+ * preview's own Show Source button for anybody who wants to edit it.
+ */
 async function keepAsMarkdown(markdown: string): Promise<void> {
     const notes = await vscode.workspace.openTextDocument({
         content: markdown,
         language: 'markdown',
     });
-    await vscode.window.showTextDocument(notes, {
-        viewColumn: vscode.ViewColumn.Beside,
-        preview: false,
-    });
+
+    try {
+        await vscode.commands.executeCommand('markdown.showPreviewToSide', notes.uri);
+    } catch {
+        // The built-in markdown extension can be turned off. Plain notes beat
+        // no notes.
+        await vscode.window.showTextDocument(notes, {
+            viewColumn: vscode.ViewColumn.Beside,
+            preview: false,
+        });
+    }
 }
 
 // ---------------------------------------------------------------------------

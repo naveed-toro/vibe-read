@@ -29,14 +29,6 @@ export interface NotesInput {
 export interface Section {
     /** The reasoning, already stripped of comment markers. */
     prose: string[];
-    /**
-     * The same comments as they stand in the file, markers and all.
-     *
-     * Prose is for reading; this is for looking at the file with the code
-     * taken out — which is what Alt+X shows, and now what one of the blocks
-     * shows too.
-     */
-    raw: string[];
     /** The code it was explaining. */
     code: string[];
     /** Where in the file this run of comments began. */
@@ -101,7 +93,11 @@ export function buildNotes(input: NotesInput): string | null {
 export function commentsOf(sections: Section[]): string[] {
     const out: string[] = [];
     for (const section of sections) {
-        out.push(...section.raw);
+        // The words, not the markers. A `#` at the head of every line is the
+        // language talking to its compiler, and this block is the file talking
+        // to a person. The editor has to keep the markers because the file is
+        // still a file; here there is nothing to compile.
+        out.push(...section.prose);
         if (section.code.length > 0) { out.push(SKIPPED); }
     }
     return out;
@@ -160,12 +156,11 @@ export function sectionsOf(input: NotesInput): Section[] {
             // Same rule as countWhys, so the number in the status bar and the
             // number of sections here can never disagree.
             if (!current || lastWasCode || runBroken) {
-                current = { prose: [], code: [], raw: [], line: i };
+                current = { prose: [], code: [], line: i };
                 sections.push(current);
             }
             const prose = input.toProse(text);
             if (prose !== '') { current.prose.push(prose); }
-            current.raw.push(text);
             lastWasCode = false;
             runBroken = false;
             continue;
@@ -176,7 +171,7 @@ export function sectionsOf(input: NotesInput): Section[] {
         // 'code' or 'mixed' — a trailing comment is kept with its own line,
         // since separating it from the statement would lose the point.
         if (!current) {
-            current = { prose: [], code: [], raw: [], line: i };
+            current = { prose: [], code: [], line: i };
             sections.push(current);
         }
         current.code.push(text);
@@ -187,7 +182,7 @@ export function sectionsOf(input: NotesInput): Section[] {
     // They belong to the file, not to the notes.
     return sections
         .filter(s => s.prose.length > 0)
-        .map(s => ({ prose: s.prose, raw: s.raw, code: trimTrailingBlanks(s.code), line: s.line }));
+        .map(s => ({ prose: s.prose, code: trimTrailingBlanks(s.code), line: s.line }));
 }
 
 function trimTrailingBlanks(lines: string[]): string[] {
