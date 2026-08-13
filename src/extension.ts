@@ -938,16 +938,42 @@ function askForMark(current: string): Promise<string | undefined> {
         const box = vscode.window.createInputBox();
         box.title = 'Your own mark';
         box.value = current;
-        box.placeholder = 'Emoji, text, or both';
+
+        // What was here when the box opened, left showing faintly once the
+        // field is cleared — the way a search box shows a suggestion you can
+        // take. Clearing something is not the same as deciding against it, and
+        // an empty grey box makes people feel they have destroyed their old
+        // one and must remember it from memory.
+        box.placeholder = current || 'Emoji, text, or both';
 
         const hint = emojiKeyboardHint();
         const theHint = hint ? { message: hint, severity: Fine } : undefined;
         box.validationMessage = theHint;
 
+        // Space brings the ghost back, and space is the only key that can.
+        // Tab would be the web habit, but an InputBox hands an extension
+        // nothing but value changes — no key events at all — so a key that
+        // types nothing is a key we never hear about. Space types something,
+        // which is exactly why it reaches us.
+        //
+        // Only a lone space in an empty field counts, so spacing emoji out
+        // inside a mark goes on working.
+        const putItBack = current
+            ? { message: `Space puts ${current} back`, severity: Fine }
+            : theHint;
+
         let answered = false;
 
-        box.onDidChangeValue(value => {
-            box.validationMessage = lineUnder(value) ?? theHint;
+        box.onDidChangeValue(typed => {
+            // No early return here. Writing to box.value fires this again in
+            // VS Code but not in every host, and leaving the line saying "space
+            // puts it back" underneath a field that now holds it would be a
+            // small lie. Working out the value first and carrying on is right
+            // either way, and the second pass changes nothing.
+            const value = typed === ' ' && current ? current : typed;
+            if (value !== typed) { box.value = value; }
+
+            box.validationMessage = lineUnder(value) ?? putItBack;
             previewMark = usable(value) ? value.trim() : undefined;
             redraw(vscode.window.activeTextEditor);
         });
@@ -984,10 +1010,14 @@ function askForMark(current: string): Promise<string | undefined> {
  * runs on a Mac, so there is nothing to render them wrongly.
  */
 function emojiKeyboardHint(): string | undefined {
+    // "or type anything" is carrying a second job. The list used to hold
+    // 🙈 hidden and 💻 code, so it showed by example that words were allowed;
+    // every slot is emoji now, and nothing else says so.
+    const both = 'for emoji, or type anything';
     switch (process.platform) {
-        case 'win32': return 'Win + .  opens the emoji keyboard';
-        case 'darwin': return '⌃ ⌘ Space  opens the emoji keyboard';
-        default: return undefined;
+        case 'win32': return `Win + .  ${both}`;
+        case 'darwin': return `⌃ ⌘ Space  ${both}`;
+        default: return 'Emoji, text, or both';
     }
 }
 
