@@ -56,6 +56,26 @@ function isLineHidden(line: number, s: DocState): boolean {
     return override === undefined ? s.wholeFile : override;
 }
 
+/**
+ * Did an edit reach any line that is currently covered?
+ *
+ * The whole range counts, not just where the cursor was. Deleting a selection
+ * that starts on a visible comment and ends four hidden lines below arrives as
+ * one change spanning all five, and the four are exactly what nobody saw go.
+ */
+function touchesHidden(range: vscode.Range, s: DocState, lines: ScannedLine[]): boolean {
+    for (let line = range.start.line; line <= range.end.line; line++) {
+        // Off the end of the file: the edit removed lines that were there when
+        // it began, which is the very case this exists to catch.
+        if (!lines[line]) { return true; }
+
+        // A comment is never covered, whatever the state says. Somebody fixing
+        // a typo in the reasoning is reading, not writing over anything.
+        if (isHideable(lines[line]) && isLineHidden(line, s)) { return true; }
+    }
+    return false;
+}
+
 // ---------------------------------------------------------------------------
 // Reading the document
 // ---------------------------------------------------------------------------
@@ -1485,10 +1505,40 @@ export function activate(context: vscode.ExtensionContext): void {
             const editor = vscode.window.activeTextEditor;
             if (!editor || e.document !== editor.document) { return; }
 
+            const s = stateFor(e.document);
+
+            // An edit that reached hidden code puts the code back, at once.
+            //
+            // Hidden is not gone. Those lines are still in the file, still
+            // inside any selection drawn across them, and still deleted by the
+            // next keystroke — except the user cannot see what they lost,
+            // because the thing they lost was invisible before it went. That
+            // happened here on the first day of use, and it will happen to
+            // anybody who selects a paragraph of reasoning and types.
+            //
+            // There is no way to refuse a keystroke, and refusing would be the
+            // wrong answer anyway: this is the user's own file. So the answer
+            // is honesty instead of prevention. The moment an edit touches
+            // covered ground the covering comes off, the file is shown exactly
+            // as it now stands, and Ctrl+Z is one key away with everything in
+            // plain sight. Reading is for reading; the instant somebody writes,
+            // they are not reading any more.
+            //
+            // An edit that stays inside the reasoning — fixing a typo in a
+            // comment — touches nothing hidden and is left alone. Nobody wants
+            // the file re-shuffled for that.
+            const lines = scan(e.document, syntaxFor(e.document.languageId));
+            if (isEngaged(s) && e.contentChanges.some(c => touchesHidden(c.range, s, lines))) {
+                s.wholeFile = false;
+                s.overrides.clear();
+                say('The code is back — you were editing under it.');
+                redraw(editor);
+                return;
+            }
+
             // Peeks are remembered by line number. Once an edit adds or removes
             // lines those numbers point at the wrong places, so they are dropped
             // rather than left to show the wrong thing.
-            const s = stateFor(e.document);
             if (s.overrides.size > 0 && e.contentChanges.some(c => c.text.includes('\n') || !c.range.isSingleLine)) {
                 s.overrides.clear();
             }
