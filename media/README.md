@@ -36,3 +36,20 @@ ships inside an extension.
 
     Fonts are (c) Bitstream (see below). DejaVu changes are in public domain.
     https://dejavu-fonts.github.io/License.html
+
+## If you widen the word, mind the metrics
+
+The reset glyph hangs about thirty pixels to the left of its own box. A
+title-bar button in VS Code is a fixed little square and takes no label, so
+the label has to be part of the icon and has to hang outside it.
+
+That only works if `hmtx` tells the truth. `hmtx` declares where a glyph's ink
+begins and `glyf` is where it actually begins, nothing checks that they agree,
+and when they disagree a rasteriser trusts the declaration and slides the
+outline over until they do. Get it wrong by 2168 units and the word appears
+thirty-five pixels to the right of where you drew it, sitting on the button
+and spilling past it — which looks exactly like a sizing problem and is not
+one.
+
+The script sets the bearing from the glyph's own `xMin`, after calling
+`recalcBounds`. Leave it that way.

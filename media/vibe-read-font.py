@@ -114,11 +114,11 @@ def reading(pen):
 
 DEJAVU = '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
 ARROW_R, ARROW_C = 300, (330, 300)
-# Smaller and further off than the first attempt. The word is a label, not a
-# second button, so it should not weigh as much as the arrow; and the gap has
-# to clear the highlight box that VS Code paints round the button on hover,
-# or the last letter sits inside a lit rectangle it has nothing to do with.
-WORD, WORD_SIZE, WORD_GAP = 'Reset', 0.54, 460
+# The word is a label, not a second button, so it does not weigh as much as
+# the arrow. The gap clears the rounded box VS Code paints behind the button
+# on hover, so the last letter is not sitting inside a lit rectangle it has
+# nothing to do with.
+WORD, WORD_SIZE, WORD_GAP = 'Reset', 0.54, 260
 
 def ring(pen, cx, cy, outer, inner, a0, a1, steps=40):
     """One thick arc: out along the far edge, back along the near one."""
@@ -176,13 +176,27 @@ def build(path):
     fb.setupGlyphOrder(order)
     fb.setupCharacterMap({0xE001: 'vibeRead-resting', 0xE002: 'vibeRead-reading',
                           0xE003: 'vibeRead-reset'})
-    empty = TTGlyphPen(None).glyph()
-    fb.setupGlyf({'.notdef': empty,
-                  'vibeRead-resting': draw(resting),
-                  'vibeRead-reading': draw(reading),
-                  'vibeRead-reset': reset_glyph})
+    glyphs = {'.notdef': TTGlyphPen(None).glyph(),
+              'vibeRead-resting': draw(resting),
+              'vibeRead-reading': draw(reading),
+              'vibeRead-reset': reset_glyph}
+    for g in glyphs.values():
+        g.recalcBounds(None)          # xMin is not filled in until this runs
+    fb.setupGlyf(glyphs)
+    # The left side bearing has to be the truth, not a guess.
+    #
+    # hmtx declares where a glyph's ink begins; glyf is where it actually
+    # begins. Nothing checks that they agree, and when they disagree a
+    # rasteriser trusts the declaration and slides the outline over until they
+    # do. This glyph's ink starts 2138 units to the LEFT of its origin and the
+    # declaration said 30 to the right, so every renderer dutifully shoved it
+    # 2168 units — thirty-five pixels — to the right, and the word that was
+    # meant to hang in empty title bar landed on the button and past it.
+    #
+    # Three attempts at moving it were three attempts at treating the symptom.
+    # The number was never wrong; the font was lying about it.
     metrics = {g: (EM, X0) for g in order}
-    metrics['vibeRead-reset'] = (reset_width, 30)
+    metrics['vibeRead-reset'] = (reset_width, glyphs['vibeRead-reset'].xMin)
     fb.setupHorizontalMetrics(metrics)
     fb.setupHorizontalHeader(ascent=800, descent=-200)
     fb.setupNameTable({'familyName': 'Vibe Read', 'styleName': 'Regular',
