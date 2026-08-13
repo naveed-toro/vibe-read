@@ -14,7 +14,9 @@ Vibe Read hides the code so the reasoning is all that is left.
 
 - `Alt+X` — hide the code. Select some lines to hide only those.
 - `Alt+M` — keep it as notes: a Markdown document where the reasoning is the
-  text and the code sits collapsed underneath it.
+  text and the code sits collapsed underneath it. It opens rendered, not as
+  markdown source, because reading is what it is for — the source is one click
+  away behind the preview's own Show Source button.
 - `Ctrl+C` — copy only what you see. Only while something is hidden; the rest
   of the time this is VS Code's own copy, untouched.
 - The vibe is an ellipsis by default, because an emoji repeated down a whole
