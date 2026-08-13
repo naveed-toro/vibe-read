@@ -929,8 +929,8 @@ function showTheSlots(): Promise<{ use?: string; edit?: number } | undefined> {
  * and a long grey sentence is read by nobody. The validation line is short,
  * coloured, and sits in the same place — and Enter and Escape are not news.
  *
- * "Emoji, text, or both" rides along with the keyboard hint rather than
- * sitting in the field, because the field has to be able to look empty.
+ * Nothing sits in the field but what you put there. The field has to be able
+ * to look empty, and every sentence that could go in it has a better home.
  */
 function askForMark(current: string): Promise<string | undefined> {
     return new Promise(resolve => {
@@ -1002,25 +1002,33 @@ function askForMark(current: string): Promise<string | undefined> {
 }
 
 /**
- * Every system has an emoji keyboard except, dependably, Linux — where the
+ * The shortcut goes last so that its full stop is also the sentence's. Written
+ * the other way round — "Press Win + . for emoji" — the dot lands in the
+ * middle and stops looking like a key at all.
+ *
+ * It does not mention that words are allowed too, and that is the whole of the
+ * rule this line follows: say the thing that cannot be found by looking.
+ * Win + . cannot be found by looking. That you may type in a text box, with
+ * the cursor already blinking in it, can. Anybody who wants a word will type
+ * one; everybody else would have read a longer line forever, with the one
+ * unguessable fact diluted in it.
+ *
+ * Every system has an emoji keyboard except, dependably, Linux, where the
  * shortcut belongs to the desktop rather than the system and differs on each
  * one. Naming a shortcut that does nothing is worse than naming none: they
- * press it, nothing happens, and the extension looks broken. So on Linux the
- * shortcut is dropped and only what may go in the field is said.
+ * press it, nothing happens, and the extension looks broken. So on Linux this
+ * says nothing at all, because there is nothing here it could say that the
+ * field is not already saying.
  *
  * The Mac line uses ⌃ ⌘ rather than the words. Mac users read those symbols
  * faster than they read "Control" and "Command", and this branch only ever
  * runs on a Mac, so there is nothing to render them wrongly.
  */
 function emojiKeyboardHint(): string | undefined {
-    // "or type anything" is carrying a second job. The list used to hold
-    // 🙈 hidden and 💻 code, so it showed by example that words were allowed;
-    // every slot is emoji now, and nothing else says so.
-    const both = 'for emoji, or type anything';
     switch (process.platform) {
-        case 'win32': return `Win + .  ${both}`;
-        case 'darwin': return `⌃ ⌘ Space  ${both}`;
-        default: return 'Emoji, text, or both';   // no shortcut worth naming
+        case 'win32': return 'For emoji, press Win + .';
+        case 'darwin': return 'For emoji, press ⌃ ⌘ Space';
+        default: return undefined;
     }
 }
 
