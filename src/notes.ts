@@ -1,16 +1,16 @@
 // ---------------------------------------------------------------------------
 // Turning a file into something to read.
 //
-// Three pieces, not a hundred. The reasoning, whole and unbroken; then the
-// code; then the file as it stands. Everything the extension promised is in
-// the first of those, and the other two are there so that nothing has been
-// taken away.
+// Three blocks: the reasoning, the code, and the file as it stands. The first
+// is open, and inside it each paragraph keeps its own code shut underneath.
 //
-// It was a hundred pieces for a while — every run of comments a numbered
-// heading with its own fold underneath. On the file it was built against that
-// looked tidy. On a real one it made thirty-eight headings, several of them a
-// row of equals signs, and the page became the very thing this extension
-// exists to remove. Fragments are noise, whoever wrote them.
+// What made an earlier version unreadable was never those small folds. It was
+// the numbering and the headings: every run of comments became "### 12." with
+// a title lifted from its first line, and on a real file several of those
+// titles were rows of equals signs. Thirty-eight headings where there should
+// have been a page. The folds were doing honest work all along — a shut fold
+// says "this was here" and offers to show it, which is this whole extension in
+// miniature.
 //
 // <details> is used because it collapses in GitHub, VS Code's preview,
 // Obsidian and Notion alike — no plugin, no special viewer.
@@ -43,6 +43,7 @@ export function buildNotes(input: NotesInput): string | null {
     const fence = fenceFor(input.languageId);
     const today = new Date().toISOString().slice(0, 10);
     const whys = sections.length;
+    const code = codeOf(sections);
     const out: string[] = [];
 
     out.push(`# ${input.fileName}`);
@@ -52,40 +53,31 @@ export function buildNotes(input: NotesInput): string | null {
     out.push('---');
     out.push('');
 
-    for (const paragraph of reasoning(sections)) {
-        out.push(paragraph);
-        out.push('');
-    }
-
-    out.push('---');
+    // Three blocks, and the reasoning is the one that is open. Inside it the
+    // code still sits where it belongs — under the paragraph that explains it,
+    // shut, one line high. Those small folds were taken out once and it was a
+    // mistake: what made the page unreadable was the numbering and the great
+    // headings, not the folds. A shut fold says "this was here" and offers to
+    // show it. That is the shape of the whole idea, in miniature.
+    out.push('<details open>');
+    out.push('<summary>the whole file · reasoning</summary>');
     out.push('');
-    out.push(fold(`the code · ${codeOf(sections).length} lines`, codeOf(sections), fence));
-    out.push(fold(`the whole file · ${input.lineTexts.length} lines`, input.lineTexts, fence));
-
-    return out.join('\n');
-}
-
-/**
- * The reasoning, in the order it was written, with the code taken out.
- *
- * Where code was passed over, a `⋯` stands in its place — the same mark that
- * stands in for it in the editor. It is not decoration: without it the page
- * reads as one unbroken argument, and the pauses in the file's thinking are
- * exactly where a reader needs to breathe.
- */
-export function reasoning(sections: Section[]): string[] {
-    const out: string[] = [];
 
     for (const section of sections) {
         out.push(section.prose.join(' '));
-        if (section.code.length > 0) { out.push(SKIPPED); }
+        out.push('');
+        if (section.code.length > 0) {
+            out.push(fold(`code · ${section.code.length} line${section.code.length === 1 ? '' : 's'}`, section.code, fence));
+        }
     }
 
-    return out;
-}
+    out.push('</details>');
+    out.push('');
+    out.push(fold(`the whole file · code · ${code.length} lines`, code, fence));
+    out.push(fold(`the whole file · as it is · ${input.lineTexts.length} lines`, input.lineTexts, fence));
 
-/** What stands where code was passed over. */
-export const SKIPPED = '⋯';
+    return out.join('\n');
+}
 
 /** Every line of code in the file, in order, with the reasoning taken out. */
 export function codeOf(sections: Section[]): string[] {

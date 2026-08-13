@@ -18,7 +18,7 @@
 // ---------------------------------------------------------------------------
 
 import * as vscode from 'vscode';
-import { codeOf, reasoning, SKIPPED, type Section } from './notes';
+import { codeOf, type Section } from './notes';
 
 let panel: vscode.WebviewPanel | undefined;
 
@@ -79,11 +79,18 @@ function pageFor(
     const whys = input.sections.length;
     const code = codeOf(input.sections);
 
-    const prose = reasoning(input.sections)
-        .map(paragraph => paragraph === SKIPPED
-            ? `<p class="skipped">${SKIPPED}</p>`
-            : `<p>${escape(paragraph)}</p>`)
-        .join('');
+    // Each paragraph, and under it the code it was explaining — shut, one line
+    // high. No number in front of it and no heading above it: those were what
+    // turned a page into a filing cabinet.
+    const prose = input.sections.map(section => {
+        const paragraph = `<p>${escape(section.prose.join(' '))}</p>`;
+        if (section.code.length === 0) { return paragraph; }
+
+        const count = section.code.length;
+        return paragraph +
+            `<details class="inline"><summary>code · ${count} line${count === 1 ? '' : 's'}</summary>` +
+            `<pre><code>${escape(section.code.join('\n'))}</code></pre></details>`;
+    }).join('');
 
     return `<!DOCTYPE html>
 <html lang="en">
@@ -103,24 +110,23 @@ body {
 /*
  * A column, not a page.
  *
- * The tab is as wide as the window and the window can be very wide. Text run
- * across all of it cannot be read: the eye loses the line it was on every time
- * it comes back to the left. Somewhere around sixty characters is where prose
- * has always been set, and the empty space either side is doing as much work
- * as the words.
+ * The tab is as wide as the window and a window can be very wide. Prose run
+ * across all of it cannot be read: the eye loses its line on the way back to
+ * the left margin. Around sixty characters is where books settled centuries
+ * ago, and the empty space either side is doing as much work as the words.
  */
 main {
-    max-width: 34em;
+    max-width: 36em;
     margin: 0 auto;
-    padding: 0 1.5em 40vh 1.5em;
+    padding: 0 1.6em 40vh 1.6em;
 }
 
 header {
     display: flex; align-items: baseline; gap: .7em;
-    max-width: 34em; margin: 0 auto;
-    padding: 2em 1.5em 1em 1.5em;
-    font-size: .85em;
-    opacity: .7;
+    max-width: 36em; margin: 0 auto;
+    padding: 2em 1.6em 1em 1.6em;
+    font-size: .82em;
+    opacity: .65;
 }
 header .face { font-family: 'vibe-read'; font-size: 1.6em; opacity: .9; }
 header .grow { flex: 1; }
@@ -136,41 +142,46 @@ header button {
 header button:hover { background: var(--vscode-button-secondaryHoverBackground, var(--vscode-list-hoverBackground)); }
 
 hr {
-    max-width: 34em; margin: 0 auto 2em auto;
+    max-width: 36em; margin: 0 auto 1.6em auto;
     border: 0; border-top: 1px solid var(--vscode-panel-border);
 }
 
-p {
-    font-size: 1.05em;
-    line-height: 1.75;
-    margin: 0 0 1.4em 0;
-}
-
 /*
- * Where code was passed over. The same mark the editor leaves behind, doing
- * the same job: it says something was here, without saying it loudly.
+ * The reading itself.
+ *
+ * Set smaller than the editor's own text rather than larger. Big type reads as
+ * a headline and headlines are skimmed; this is meant to be read. The line
+ * height is generous because the eye needs a rail to return along, and the
+ * space between paragraphs does the work that a numbered heading was doing
+ * badly.
  */
-p.skipped {
-    text-align: center;
-    opacity: .3;
-    letter-spacing: .3em;
-    margin: 1.8em 0 2.2em 0;
-    user-select: none;
+p {
+    font-size: 14.5px;
+    line-height: 1.75;
+    margin: 0 0 1.5em 0;
+    max-width: 34em;
 }
 
-details { margin: 1.2em 0; }
+details { margin: 1.1em 0; }
 summary {
     cursor: pointer; list-style: none;
-    font-size: .85em; opacity: .5;
     font-family: var(--vscode-editor-font-family);
+    font-size: .78em; opacity: .45;
 }
 summary::-webkit-details-marker { display: none; }
 summary::before { content: '▸ '; }
-details[open] summary::before { content: '▾ '; }
-summary:hover { opacity: .9; }
+details[open] > summary::before { content: '▾ '; }
+summary:hover { opacity: .85; }
+
+/* The three that hold the page together sit a little firmer than the rest. */
+summary.block { font-size: .82em; opacity: .6; margin-bottom: 1.2em; }
+details[open] > summary.block { margin-bottom: 1.6em; }
+
+/* And a paragraph's own code steps back under it, out of the way. */
+details.inline { margin: -.9em 0 1.5em 0; }
 
 pre {
-    margin: .8em 0 0 0; padding: .9em 1.1em;
+    margin: .7em 0 0 0; padding: .85em 1.1em;
     background: var(--vscode-textCodeBlock-background, var(--vscode-editor-background));
     border: 1px solid var(--vscode-widget-border, var(--vscode-panel-border));
     border-radius: 5px;
@@ -196,13 +207,18 @@ pre code {
 </header>
 <hr>
 <main>
+<details open>
+<summary class="block">the whole file · reasoning</summary>
 ${prose}
+</details>
+
 <details>
-<summary>the code · ${code.length} lines</summary>
+<summary class="block">the whole file · code · ${code.length} lines</summary>
 <pre><code>${escape(code.join('\n'))}</code></pre>
 </details>
+
 <details>
-<summary>the whole file · ${input.lineTexts.length} lines</summary>
+<summary class="block">the whole file · as it is · ${input.lineTexts.length} lines</summary>
 <pre><code>${escape(input.lineTexts.join('\n'))}</code></pre>
 </details>
 </main>
