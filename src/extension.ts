@@ -978,12 +978,12 @@ function askForMark(current: string): Promise<string | undefined> {
             if (value !== typed) { box.value = value; }
 
             box.validationMessage = lineUnder(value) ?? putItBack;
-            previewMark = usable(value) ? value.trim() : undefined;
+            previewMark = usable(value) ? value : undefined;
             redraw(vscode.window.activeTextEditor);
         });
 
         box.onDidAccept(() => {
-            const value = box.value.trim();
+            const value = box.value;
             if (!usable(value)) { return; }
             answered = true;
             box.hide();
@@ -1028,10 +1028,26 @@ const Fine = vscode.InputBoxValidationSeverity.Info;
 const Edge = vscode.InputBoxValidationSeverity.Warning;
 const Bad = vscode.InputBoxValidationSeverity.Error;
 
-/** A mark you could actually keep: something is there, and it fits. */
+/**
+ * A mark you could actually keep: something is there, and it fits.
+ *
+ * Counted as typed, spaces and all. It used to be trimmed first, which was
+ * quietly wrong and looked like a broken counter: 🙈 🙉 🙊 counts its two
+ * inner spaces, so somebody adding a space at the end watched the number sit
+ * still and reasonably concluded the thing had stopped working. A space is a
+ * character wherever it happens to be standing.
+ *
+ * Trailing ones do nothing on screen, but they cost a character and the count
+ * now says so, which is the only promise worth making here: what you see in
+ * the field is what you are spending. Leading ones are not even useless —
+ * they shift the mark to the right, which is a perfectly good arrangement.
+ *
+ * Nothing but spaces is still not a mark. A file where the code turned
+ * invisible with nothing in its place looks like a file where nothing
+ * happened.
+ */
 function usable(value: string): boolean {
-    const text = value.trim();
-    return text !== '' && charactersIn(text) <= MOST_CHARACTERS;
+    return value.trim() !== '' && charactersIn(value) <= MOST_CHARACTERS;
 }
 
 /**
@@ -1062,10 +1078,9 @@ function usable(value: string): boolean {
  * Enter still does nothing, which is the whole of what needed saying.
  */
 function lineUnder(value: string): vscode.InputBoxValidationMessage | undefined {
-    const text = value.trim();
-    if (text === '') { return undefined; }
+    if (value.trim() === '') { return undefined; }
 
-    const length = charactersIn(text);
+    const length = charactersIn(value);
     const left = MOST_CHARACTERS - length;
 
     if (left < 0) {
