@@ -820,24 +820,41 @@ async function keep(key: 'mark' | 'marks', value: string | string[]): Promise<vo
         .update(key, value, vscode.ConfigurationTarget.Global);
 }
 
-async function pickMark(): Promise<void> {
-    const answer = await showTheSlots();
-    if (!answer) { return; }
+/** What the box behind the pencil can come back with, besides a vibe. */
+const BACK = Symbol('back to the list');
 
-    if (answer.use !== undefined) {
-        await keep('mark', answer.use);
+/**
+ * The list and the box behind the pencil, as two steps of one thing.
+ *
+ * It loops, because the box has a way back. Without one, changing your mind in
+ * there means dismissing the whole thing, going back down to the status bar,
+ * clicking it, and finding your row again — four moves to undo one wrong click
+ * on a pencil. Every multi-step quick input in VS Code carries this arrow for
+ * the same reason, and the one it hands out is the standard one, so it looks
+ * and sits where people already expect to find it.
+ */
+async function pickMark(): Promise<void> {
+    for (;;) {
+        const answer = await showTheSlots();
+        if (!answer) { return; }
+
+        if (answer.use !== undefined) {
+            await keep('mark', answer.use);
+            return;
+        }
+
+        const slot = answer.edit as number;
+        const marks = savedMarks();
+
+        const typed = await askForMark(marks[slot]);
+        if (typed === BACK) { continue; }
+        if (typed === undefined) { return; }
+
+        marks[slot] = typed;
+        await keep('marks', marks);
+        await keep('mark', typed);
         return;
     }
-
-    const slot = answer.edit as number;
-    const marks = savedMarks();
-
-    const typed = await askForMark(marks[slot]);
-    if (typed === undefined) { return; }
-
-    marks[slot] = typed;
-    await keep('marks', marks);
-    await keep('mark', typed);
 }
 
 function slotRows(): MarkRow[] {
@@ -973,9 +990,13 @@ function showTheSlots(): Promise<{ use?: string; edit?: number } | undefined> {
  * Nothing sits in the field but what you put there. The field has to be able
  * to look empty, and every sentence that could go in it has a better home.
  */
-function askForMark(current: string): Promise<string | undefined> {
+function askForMark(current: string): Promise<string | typeof BACK | undefined> {
     return new Promise(resolve => {
         const box = vscode.window.createInputBox();
+
+        // VS Code's own back arrow, in VS Code's own corner. A way back that
+        // looks like everybody else's is one nobody has to be shown.
+        box.buttons = [vscode.QuickInputButtons.Back];
         // "vibe", not "mark". The word changed everywhere else weeks ago and
         // this one was left behind, which is how a product ends up with two
         // names for one thing.
@@ -1032,6 +1053,12 @@ function askForMark(current: string): Promise<string | undefined> {
             answered = true;
             box.hide();
             resolve(value);
+        });
+
+        box.onDidTriggerButton(() => {
+            answered = true;
+            box.hide();
+            resolve(BACK);
         });
 
         box.onDidHide(() => {
