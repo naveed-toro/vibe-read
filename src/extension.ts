@@ -366,13 +366,13 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
     const vibe = activeMark();
     markBar.text = `${asDrawn(vibe)} ${nameFor(vibe)} $(chevron-down)`;
     markBar.tooltip = new vscode.MarkdownString(
-        // Plain, because a tooltip is where somebody comes to ask "what is
-        // this?" and the answer should not need a second reading. It said
-        // "What stands in for hidden code", which is an idiom sitting on an
-        // abstraction. The heading over the list says the same two words now,
-        // so hovering and clicking agree with each other.
+        // Two words and what to do with them. It opened with "What stands in
+        // for hidden code" — an idiom on an abstraction — and I replaced that
+        // with a plainer version of the same sentence, which was still a
+        // sentence explaining a thing that is already on screen. Anybody
+        // hovering this can see their vibe down the whole file behind it.
+        // Hovering and clicking now say the same two words.
         '**Your vibe**\n\n' +
-        'You see it wherever the code is hidden.\n\n' +
         'Click to change it. Emoji, text, or both.'
     );
     markBar.show();
