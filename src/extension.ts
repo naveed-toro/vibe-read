@@ -810,6 +810,31 @@ interface MarkRow extends vscode.QuickPickItem {
 }
 
 const RESET = -1;
+const UNDO = -2;
+
+/**
+ * What a reset threw away, and when — so it can be handed back.
+ *
+ * A reset is the one move in here that destroys work: six vibes somebody
+ * chose, gone on a keystroke, with nothing to catch them. It is also the move
+ * most likely to be pressed by somebody poking about rather than deciding,
+ * which is the worst combination there is.
+ *
+ * So the row does not vanish the moment it is pressed. It becomes the way back
+ * for a few seconds, in the same place, wearing the same arrow.
+ *
+ * The offer outlives the list on purpose. Regret arrives after the list has
+ * closed and the file behind it looks wrong — that is when somebody reaches
+ * for this, and if it only lived while the list was open they would reach for
+ * nothing.
+ */
+let thrownAway: { marks: string[]; at: number } | undefined;
+const LONG_ENOUGH_TO_REGRET_IT = 10_000;
+
+function canBeUndone(): boolean {
+    return thrownAway !== undefined
+        && Date.now() - thrownAway.at < LONG_ENOUGH_TO_REGRET_IT;
+}
 
 function savedMarks(): string[] {
     const saved = vscode.workspace.getConfiguration('vibeRead').get<string[]>('marks');
@@ -884,16 +909,17 @@ async function pickMark(): Promise<void> {
  */
 function slotRows(): MarkRow[] {
     const rows = plainRows();
-    if (savedMarks().every((mark, slot) => mark === FILLED_IN[slot])) { return rows; }
+    const untouched = savedMarks().every((mark, slot) => mark === FILLED_IN[slot]);
+
+    const last = canBeUndone()
+        ? { label: '$(vibe-read-reset) Undo that', description: 'Brings yours back', slot: UNDO }
+        : untouched ? undefined
+            : { label: '$(vibe-read-reset) Reset', description: 'Puts them all back', slot: RESET };
+    if (!last) { return rows; }
 
     return [...rows,
         { label: '', kind: vscode.QuickPickItemKind.Separator, slot: RESET, mark: '' },
-        {
-            label: '$(vibe-read-reset) Reset',
-            description: 'Puts them all back',
-            slot: RESET,
-            mark: '',
-        }];
+        { ...last, mark: '' }];
 }
 
 function plainRows(): MarkRow[] {
@@ -963,8 +989,24 @@ function showTheSlots(): Promise<{ use?: string; edit?: number } | undefined> {
         // The list stays open — you watch them come back rather than being
         // thrown out and left wondering whether anything happened. And the row
         // that did it goes, because there is nothing left to undo.
+        let closed = false;
+
         const putThemAllBack = async () => {
+            thrownAway = { marks: savedMarks(), at: Date.now() };
             await keep('marks', [...FILLED_IN]);
+            box.items = slotRows();
+            // If the list is still open when the offer runs out, take it off
+            // the screen. An offer that has quietly expired is a worse lie
+            // than no offer at all.
+            setTimeout(() => {
+                if (!closed) { box.items = slotRows(); }
+            }, LONG_ENOUGH_TO_REGRET_IT + 100);
+        };
+
+        const bringYoursBack = async () => {
+            const yours = thrownAway?.marks;
+            thrownAway = undefined;
+            if (yours) { await keep('marks', yours); }
             box.items = slotRows();
         };
 
@@ -978,6 +1020,7 @@ function showTheSlots(): Promise<{ use?: string; edit?: number } | undefined> {
             const row = box.activeItems[0];
             if (!row) { return; }
             if (row.slot === RESET) { void putThemAllBack(); return; }
+            if (row.slot === UNDO) { void bringYoursBack(); return; }
             answered = true;
             box.hide();
             // An empty slot has nothing to use, so accepting it means fill it.
@@ -985,6 +1028,7 @@ function showTheSlots(): Promise<{ use?: string; edit?: number } | undefined> {
         });
 
         box.onDidHide(() => {
+            closed = true;
             previewMark = undefined;
             redraw(vscode.window.activeTextEditor);
             box.dispose();
