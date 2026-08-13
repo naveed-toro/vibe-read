@@ -929,9 +929,8 @@ function showTheSlots(): Promise<{ use?: string; edit?: number } | undefined> {
  * and a long grey sentence is read by nobody. The validation line is short,
  * coloured, and sits in the same place — and Enter and Escape are not news.
  *
- * What is left of "emoji, text, or both" lives in the placeholder, inside the
- * empty field, where it answers the question at the moment it is asked and
- * disappears the moment it is answered.
+ * "Emoji, text, or both" rides along with the keyboard hint rather than
+ * sitting in the field, because the field has to be able to look empty.
  */
 function askForMark(current: string): Promise<string | undefined> {
     return new Promise(resolve => {
@@ -939,12 +938,17 @@ function askForMark(current: string): Promise<string | undefined> {
         box.title = 'Your own mark';
         box.value = current;
 
-        // What was here when the box opened, left showing faintly once the
-        // field is cleared — the way a search box shows a suggestion you can
-        // take. Clearing something is not the same as deciding against it, and
-        // an empty grey box makes people feel they have destroyed their old
-        // one and must remember it from memory.
-        box.placeholder = current || 'Emoji, text, or both';
+        // No placeholder, and the ghost had to be given up for the same reason
+        // the hover tint had to be: VS Code dims a placeholder by setting a
+        // foreground colour, and a colour emoji brings its own colours and
+        // ignores it. So 🤫 sitting there as a ghost looked exactly like 🤫
+        // sitting there as the value — somebody presses backspace, sees it
+        // unchanged, and concludes the key did nothing.
+        //
+        // A ghost that cannot be faint is worse than no ghost at all, because
+        // it lies about what the field contains. The offer moves to the line
+        // underneath, which is blue, carries an icon, and could not be mistaken
+        // for something you typed. The field is empty because it is empty.
 
         const hint = emojiKeyboardHint();
         const theHint = hint ? { message: hint, severity: Fine } : undefined;
@@ -1001,9 +1005,8 @@ function askForMark(current: string): Promise<string | undefined> {
  * Every system has an emoji keyboard except, dependably, Linux — where the
  * shortcut belongs to the desktop rather than the system and differs on each
  * one. Naming a shortcut that does nothing is worse than naming none: they
- * press it, nothing happens, and the extension looks broken. So on Linux this
- * says nothing, and the placeholder inside the field carries the whole
- * message on its own.
+ * press it, nothing happens, and the extension looks broken. So on Linux the
+ * shortcut is dropped and only what may go in the field is said.
  *
  * The Mac line uses ⌃ ⌘ rather than the words. Mac users read those symbols
  * faster than they read "Control" and "Command", and this branch only ever
@@ -1017,7 +1020,7 @@ function emojiKeyboardHint(): string | undefined {
     switch (process.platform) {
         case 'win32': return `Win + .  ${both}`;
         case 'darwin': return `⌃ ⌘ Space  ${both}`;
-        default: return 'Emoji, text, or both';
+        default: return 'Emoji, text, or both';   // no shortcut worth naming
     }
 }
 
