@@ -199,12 +199,12 @@
           "default": [
             "⋯",
             "🤫",
-            "🙈 hidden",
+            "🙈 🙉 🙊",
             "💤💤",
             "💻 code",
             ""
           ],
-          "markdownDescription": "The slots offered when you click **Vibe** in the status bar.\n\nEasier to change there than here — the pencil on each row opens your system's emoji keyboard. Delete this setting to get these back."
+          "markdownDescription": "The slots offered when you click your vibe in the status bar. Their names — Mute, Shh, Hide, Sleep, Code — belong to the slots, so putting something else in the Shh slot still leaves it your Shh.\n\nEasier to change there than here: the pencil on each row opens your system's emoji keyboard. Delete this setting to get these back."
         },
         "vibeRead.showEditorButton": {
           "type": "boolean",

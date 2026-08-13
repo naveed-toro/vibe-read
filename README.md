@@ -128,15 +128,21 @@ whole page is the noise this exists to remove. But the vibe is yours. Click
 emoji, text, or both. Your system's emoji keyboard does the choosing.
 
 ```
-⋯               best for reading
-🤫              quiet
-🙈 hidden       emoji + text
-💤💤            sleepy
-💻 code         there is code here
-＋              Set your own…
+⋯          Mute      ← the default
+🤫         Shh
+🙈 🙉 🙊    Hide
+💤💤       Sleep
+💻 code    Code
+＋         Set your own…
 ```
 
-Every row has a pencil. They are a starting point, not a cage.
+The name is not decoration. It goes up in the status bar beside whatever you
+picked, so the corner reads **🤫 Shh** or **🙈 🙉 🙊 Hide** — the mood, not just
+the mark.
+
+And the name belongs to the slot, not the character. Put something else in the
+Shh slot and it is still your Shh. Every row has a pencil. They are a starting
+point, not a cage.
 
 ---
 

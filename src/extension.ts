@@ -359,7 +359,12 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
     statusBar.text += '\u00a0\u00a0|';
     statusBar.show();
 
-    markBar.text = `${currentIcon || DEFAULT_MARK} Vibe $(chevron-down)`;
+    // activeMark, not currentIcon: currentIcon holds the drawn form, whose
+    // spaces have been swapped for no-break ones, and that will not match
+    // anything in the saved list. The name has to be looked up by what was
+    // actually saved.
+    const vibe = activeMark();
+    markBar.text = `${asDrawn(vibe)} ${nameFor(vibe)} $(chevron-down)`;
     markBar.tooltip = new vscode.MarkdownString(
         '**What stands in for hidden code**\n\n' +
         'Click to change it. Emoji, text, or both.'
@@ -743,15 +748,33 @@ const MOST_CHARACTERS = 8;
 // The default sits first and is therefore in the list — which it was not
 // before. 🙈 was the default and was nowhere among these, so anybody who
 // changed it once could never find their way back to it.
-const FILLED_IN = ['⋯', '🤫', '🙈 hidden', '💤💤', '💻 code', ''];
+const FILLED_IN = ['⋯', '🤫', '🙈 🙉 🙊', '💤💤', '💻 code', ''];
 
 /**
- * What each of the five says about itself. Only shown while the slot still
- * holds what we put there — once somebody replaces it, our word for it is no
- * longer true, so it goes.
+ * A name for each slot, and it is not decoration — this is the word that goes
+ * up in the status bar beside whatever the slot holds. Pick Shh and the corner
+ * reads "🤫 Shh"; pick Hide and it reads "🙈 🙉 🙊 Hide".
+ *
+ * They are moods rather than descriptions, and they belong to the slot rather
+ * than to the character in it. Put something else in the Mute slot and it is
+ * still your mute — the name says what the slot is for, and the character says
+ * what you felt like using for it. Anything set in the last slot is just
+ * yours, so it goes up as Vibe.
+ *
+ * The three monkeys are spaced rather than set solid. Emoji have almost no
+ * side bearing, so 🙈🙉🙊 run into one dark blob at editor size, which is the
+ * opposite of what a thing meant to be recognised at a glance should do. A dot
+ * between them was the other option and it separates something that the gap
+ * has already separated, so it only adds a mark that means nothing.
  */
-const NOTES = ['best for reading', 'quiet', 'emoji + text', 'sleepy',
-    'there is code here', ''];
+const NAMES = ['Mute', 'Shh', 'Hide', 'Sleep', 'Code', 'Vibe'];
+const YOURS = NAMES[NAMES.length - 1];
+
+/** The word that goes beside the vibe. Falls back to Vibe for anything ours. */
+function nameFor(vibe: string): string {
+    const slot = savedMarks().indexOf(vibe);
+    return slot === -1 ? YOURS : NAMES[slot];
+}
 
 interface MarkRow extends vscode.QuickPickItem {
     slot: number;
@@ -800,8 +823,7 @@ function slotRows(): MarkRow[] {
             // fewer spaces than the mark really has is the list telling a lie
             // about what picking it will do.
             label: asDrawn(mark),
-            // Ours, or theirs — and the note only belongs to ours.
-            description: mark === FILLED_IN[slot] ? NOTES[slot] : 'yours',
+            description: NAMES[slot],
             slot,
             mark,
             buttons: [{
