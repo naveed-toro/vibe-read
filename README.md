@@ -133,7 +133,7 @@ emoji, text, or both. Your system's emoji keyboard does the choosing.
 🙈 🙉 🙊    Hide
 🌚         Vibe
 💻         Code
-＋         Set your own…
+🦆 ☕       Yours
 ```
 
 The name is not decoration. It goes up in the status bar beside whatever you
@@ -141,7 +141,8 @@ picked, so the corner reads **🤫 Shh** or **🙈 🙉 🙊 Hide** — the mood
 the mark.
 
 And the name belongs to the slot, not the character. Put something else in the
-Shh slot and it is still your Shh. Every row has a pencil. They are a starting
+Shh slot and it is still your Shh. Every row has a pencil, and the last row is
+a duck and a coffee only because somebody had to go first. They are a starting
 point, not a cage.
 
 ---

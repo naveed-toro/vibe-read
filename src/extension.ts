@@ -748,7 +748,7 @@ const MOST_CHARACTERS = 8;
 // The default sits first and is therefore in the list — which it was not
 // before. 🙈 was the default and was nowhere among these, so anybody who
 // changed it once could never find their way back to it.
-const FILLED_IN = ['⋯', '🤫', '🙈 🙉 🙊', '🌚', '💻', ''];
+const FILLED_IN = ['⋯', '🤫', '🙈 🙉 🙊', '🌚', '💻', '🦆 ☕'];
 
 /**
  * A name for each slot, and it is not decoration — this is the word that goes
@@ -765,6 +765,22 @@ const FILLED_IN = ['⋯', '🤫', '🙈 🙉 🙊', '🌚', '💻', ''];
  * own and two things cannot share a name. Anything not in the list at all —
  * typed straight into the setting, say — goes up as Yours too, which is true
  * of it.
+ *
+ * That slot used to be empty, offering "Set your own…", and an empty slot is a
+ * blank canvas — which is the surest way to make somebody close a list without
+ * touching anything. It holds a duck and a coffee now.
+ *
+ * The duck is not a random pick. Explaining your reasoning out loud to a
+ * rubber duck is the oldest joke in the trade and the closest thing it has to
+ * this extension's whole argument: you understand a thing at the moment you
+ * hear yourself explain it. The coffee beside it is there to say that this is
+ * somebody's taste rather than a rule — two things that do not belong together
+ * read as a choice, and a choice invites another one.
+ *
+ * Losing the "Set your own…" row costs nothing that was not already covered.
+ * The line above the list has always said "Pick one, or press the pencil to
+ * change it", and now every row behaves the same way: Enter uses it, the
+ * pencil changes it. The odd one out was the old empty row.
  *
  * The three monkeys are spaced rather than set solid. Emoji have almost no
  * side bearing, so 🙈🙉🙊 run into one dark blob at editor size, which is the
