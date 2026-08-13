@@ -95,6 +95,14 @@ def reading(pen):
 # "Reset" together, and VS Code has no way of knowing it is looking at a
 # sentence.
 #
+# The word is set to the LEFT of the arrow, and hangs outside the glyph's own
+# width. A title-bar button is a fixed little square: anything wider spills out
+# of it, and only what lands inside stays clickable. Spilling to the right ran
+# the word straight over VS Code's own buttons. Spilling to the left runs it
+# into the empty half of the title bar, where there is nothing to collide with
+# — so the arrow sits in the square and stays the target, and the word hangs
+# beside it as a label, exactly as a label does anywhere else.
+#
 # The arc is sampled as a polygon rather than fitted with curves. At sixteen
 # pixels nobody can see the facets, and it is one loop instead of four pages of
 # bezier arithmetic.
@@ -106,7 +114,7 @@ def reading(pen):
 
 DEJAVU = '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
 ARROW_R, ARROW_C = 300, (330, 300)
-WORD, WORD_SIZE, WORD_GAP = 'Reset', 0.62, 170
+WORD, WORD_SIZE, WORD_GAP = 'Reset', 0.62, 150
 
 def ring(pen, cx, cy, outer, inner, a0, a1, steps=40):
     """One thick arc: out along the far edge, back along the near one."""
@@ -138,13 +146,19 @@ def reset():
     ring(pen, cx, cy, ARROW_R, ARROW_R - 105, math.radians(118), math.radians(410))
     arrowhead(pen, cx, cy, ARROW_R - 52, math.radians(112), 130)
 
+    # Measure the word, then set it ending just before the arrow — which puts
+    # all of it at negative x, hanging to the left of the glyph's own box.
     scale = WORD_SIZE * EM / upm
-    x = 2 * ARROW_R + WORD_GAP
+    width = sum(shapes[cmap[ord(ch)]].width for ch in WORD) * scale
+    x = -width - WORD_GAP
     for ch in WORD:
         letter = shapes[cmap[ord(ch)]]
         letter.draw(TransformPen(pen, (scale, 0, 0, scale, x, 0)))
         x += letter.width * scale
-    return pen.glyph(), int(x + 60)
+
+    # The advance is one ordinary square. Everything to the left of it is
+    # overhang, and overhang is the whole trick.
+    return pen.glyph(), EM
 
 def draw(fn):
     tt = TTGlyphPen(None)
