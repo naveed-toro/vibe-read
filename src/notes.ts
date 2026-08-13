@@ -34,6 +34,14 @@ export interface Section {
      * that merely happens to sit alongside.
      */
     line: number;
+    /**
+     * Where this note's code starts, or -1 when it explains nothing.
+     *
+     * A second known meeting point between the two panes. One point per note
+     * left seventy lines of code to be crossed by guesswork; this puts a peg
+     * in the middle of that crossing.
+     */
+    codeLine: number;
 }
 
 /** Returns null when the file has no comments — there is nothing worth keeping. */
@@ -123,7 +131,7 @@ export function sectionsOf(input: NotesInput): Section[] {
             // Same rule as countWhys, so the number in the status bar and the
             // number of sections here can never disagree.
             if (!current || lastWasCode || runBroken) {
-                current = { prose: [], code: [], line: i };
+                current = { prose: [], code: [], line: i, codeLine: -1 };
                 sections.push(current);
             }
             const prose = input.toProse(text);
@@ -138,9 +146,10 @@ export function sectionsOf(input: NotesInput): Section[] {
         // 'code' or 'mixed' — a trailing comment is kept with its own line,
         // since separating it from the statement would lose the point.
         if (!current) {
-            current = { prose: [], code: [], line: i };
+            current = { prose: [], code: [], line: i, codeLine: -1 };
             sections.push(current);
         }
+        if (current.codeLine === -1) { current.codeLine = i; }
         current.code.push(text);
         lastWasCode = true;
     }
@@ -149,7 +158,12 @@ export function sectionsOf(input: NotesInput): Section[] {
     // They belong to the file, not to the notes.
     return sections
         .filter(s => s.prose.length > 0)
-        .map(s => ({ prose: s.prose, code: trimTrailingBlanks(s.code), line: s.line }));
+        .map(s => ({
+            prose: s.prose,
+            code: trimTrailingBlanks(s.code),
+            line: s.line,
+            codeLine: s.codeLine,
+        }));
 }
 
 function trimTrailingBlanks(lines: string[]): string[] {

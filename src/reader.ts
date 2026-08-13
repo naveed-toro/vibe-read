@@ -78,7 +78,12 @@ export function showReader(
             if (message.type === 'reveal' && typeof message.line === 'number') {
                 const target = vscode.window.visibleTextEditors
                     .find(e => e.document.uri.toString() === open?.source);
-                if (!target) { return; }
+                if (!target || target.visibleRanges.length === 0) { return; }
+
+                // The reader names the note it has reached; the file puts that
+                // note's own comment at the top. Both sides land on the same
+                // thing, which is the only alignment either of them can promise.
+                if (message.line === target.visibleRanges[0].start.line) { return; }
 
                 open.agreedLine = message.line;
                 target.revealRange(
@@ -109,6 +114,11 @@ export function followEditor(event: vscode.TextEditorVisibleRangesChangeEvent): 
     const line = event.visibleRanges[0].start.line;
     if (line === open.agreedLine) { return; }
 
+    // Only which line the file has reached. Working out where on screen a
+    // comment has got to was tried and abandoned: VS Code counts in lines, not
+    // pixels, and a wrapped line counts as one — so the answer was an average
+    // that was wrong by a little all the time. A note arriving at the top of
+    // both panes is a thing that can actually be kept.
     open.agreedLine = line;
     open.panel.webview.postMessage({ type: 'goto', line });
 }
@@ -133,16 +143,23 @@ function pageFor(
     const today = new Date().toISOString().slice(0, 10);
     const count = input.sections.length;
 
+    // Every element that can name a line in the file names it. These are the
+    // points where the two panes are known to agree, and the scrolling is
+    // nothing but the straight line drawn between one and the next — so the
+    // more of them there are, the truer it is everywhere in between.
     const notes = input.sections.map((section, index) => {
         const [heading, ...rest] = section.prose;
-        const body = rest.length > 0 ? `<p>${escape(rest.join(' '))}</p>` : '';
+        const body = rest.length > 0
+            ? `<p data-line="${section.line + 1}">${escape(rest.join(' '))}</p>`
+            : '';
         const code = section.code.length > 0
-            ? `<details><summary>code · ${section.code.length} line${section.code.length === 1 ? '' : 's'}</summary>` +
+            ? `<details data-line="${section.codeLine}">` +
+              `<summary>code · ${section.code.length} line${section.code.length === 1 ? '' : 's'}</summary>` +
               `<pre><code>${escape(trimIndent(section.code).join('\n'))}</code></pre></details>`
             : '';
 
-        return `<section data-line="${section.line}">` +
-            `<h2><span class="n">${index + 1}</span>${escape(heading)}</h2>` +
+        return `<section>` +
+            `<h2 data-line="${section.line}"><span class="n">${index + 1}</span>${escape(heading)}</h2>` +
             body + code +
             `</section>`;
     }).join('');
@@ -234,61 +251,67 @@ pre code {
 ${notes}
 <script nonce="${nonce}">
 const api = acquireVsCodeApi();
-const notes = Array.from(document.querySelectorAll('section[data-line]'));
-const lines = notes.map(n => Number(n.dataset.line));
-const PAD = 14;
 
 document.getElementById('save').addEventListener('click', () => api.postMessage({ type: 'save' }));
 
-// Our own scrolling must not be mistaken for the user's, or the two panes
-// spend the afternoon pushing each other.
-// Two panes, two scrollbars, and every move one makes is reported to the
-// other. Timers were not enough: a line maps back to a slightly different
-// pixel than the one it came from, so the reader kept drifting back and could
-// not be scrolled at all. So nothing is judged by the clock — a message that
-// carries the line we ourselves just sent is our own echo and is dropped, and
-// a scroll that lands where we put it is our own doing and is not reported.
-let lastLine = null;
+// Where the two panes are known to meet: a comment and its heading, the rest
+// of a comment and its paragraph, a stretch of code and its fold. Between two
+// of these, position is worked out by straight proportion, and at each one it
+// is exact. This is how VS Code's own markdown preview follows its source, and
+// it is the only arrangement here with nothing in it to tune — the shape of
+// the file decides everything, rather than some number chosen by hand that
+// suits one file and ruins the next.
+/** A little breathing room above whatever is being lined up. */
+const PAD = 14;
+
+const anchors = Array.from(document.querySelectorAll('[data-line]'))
+    .filter(el => Number(el.dataset.line) >= 0);
+
+let marks = [];
+
+// Opening a fold moves everything below it, so the measurements are taken
+// again rather than trusted from load. Cheap, and the alternative is a page
+// that quietly points at where things used to be.
+function measure() {
+    marks = anchors
+        .map(el => ({ line: Number(el.dataset.line), y: el.offsetTop - PAD }))
+        .sort((a, b) => a.line - b.line)
+        .filter((m, i, all) => i === 0 || m.line > all[i - 1].line);
+}
+
+measure();
+window.addEventListener('resize', measure);
+for (const fold of document.querySelectorAll('details')) {
+    fold.addEventListener('toggle', measure);
+}
+
+/** Straight-line reading between the two marks a value falls between. */
+function between(value, from, to) {
+    if (marks.length === 0) { return 0; }
+    if (marks.length === 1 || value <= marks[0][from]) { return marks[0][to]; }
+
+    for (let i = 1; i < marks.length; i++) {
+        if (value <= marks[i][from]) {
+            const span = marks[i][from] - marks[i - 1][from];
+            const part = span > 0 ? (value - marks[i - 1][from]) / span : 0;
+            return marks[i - 1][to] + part * (marks[i][to] - marks[i - 1][to]);
+        }
+    }
+    return marks[marks.length - 1][to];
+}
+
 let expectedY = -1;
 let target = null;
 let running = false;
 
-function topOf(index) { return notes[index].offsetTop - PAD; }
-
-// A note is not a line, it is a stretch of lines. Landing on the note would
-// jump; travelling through it at the same rate as the file does not. This is
-// the closest we get to a diff's locked scrollbars, where both sides are the
-// same document and no mapping is needed at all.
-function offsetForLine(line) {
-    if (notes.length === 0) { return 0; }
-    let i = 0;
-    while (i + 1 < notes.length && lines[i + 1] <= line) { i++; }
-    if (i + 1 >= notes.length) { return topOf(i); }
-
-    const span = lines[i + 1] - lines[i];
-    const part = span > 0 ? Math.min(1, Math.max(0, (line - lines[i]) / span)) : 0;
-    return topOf(i) + part * (topOf(i + 1) - topOf(i));
-}
-
-function lineForOffset(y) {
-    if (notes.length === 0) { return 0; }
-    let i = 0;
-    while (i + 1 < notes.length && topOf(i + 1) <= y) { i++; }
-    if (i + 1 >= notes.length) { return lines[i]; }
-
-    const span = topOf(i + 1) - topOf(i);
-    const part = span > 0 ? (y - topOf(i)) / span : 0;
-    return Math.round(lines[i] + part * (lines[i + 1] - lines[i]));
-}
-
-// One note can be two lines of code and half a screen of reasoning, so even a
-// perfect mapping arrives in jumps. Easing turns each jump into a movement —
-// the eye keeps its place instead of having to find it again.
+// The file arrives in whole lines, so a step of one line can be a step of
+// eighty pixels here. Easing spreads that step over a few frames, which is
+// the difference between a page that follows and a page that flinches.
 function ease() {
     if (target === null) { running = false; return; }
 
     const distance = target - window.scrollY;
-    const next = Math.abs(distance) < 0.5 ? target : window.scrollY + distance * 0.22;
+    const next = Math.abs(distance) < 0.5 ? target : window.scrollY + distance * 0.25;
 
     window.scrollTo(0, next);
     expectedY = window.scrollY;
@@ -297,27 +320,25 @@ function ease() {
     requestAnimationFrame(ease);
 }
 
+window.addEventListener('message', event => {
+    if (event.data.type !== 'goto') { return; }
+
+    const wanted = between(event.data.line, 'line', 'y');
+    // Already there: the file is answering a move we made ourselves.
+    if (Math.abs(wanted - window.scrollY) < 2) { return; }
+
+    target = wanted;
+    if (!running) { running = true; requestAnimationFrame(ease); }
+});
+
 window.addEventListener('scroll', () => {
-    // Landed where we put it, so this is the tail of our own animation.
+    // Landed where we put it, so this is the tail of our own movement.
     if (Math.abs(window.scrollY - expectedY) < 2) { return; }
 
-    // Somebody has taken the wheel. Whatever we were doing is now stale.
     target = null;
     running = false;
 
-    const line = lineForOffset(window.scrollY);
-    if (line === lastLine) { return; }
-    lastLine = line;
-    api.postMessage({ type: 'reveal', line });
-});
-
-window.addEventListener('message', event => {
-    if (event.data.type !== 'goto') { return; }
-    if (event.data.line === lastLine) { return; }
-
-    lastLine = event.data.line;
-    target = offsetForLine(event.data.line);
-    if (!running) { running = true; requestAnimationFrame(ease); }
+    api.postMessage({ type: 'reveal', line: Math.round(between(window.scrollY, 'y', 'line')) });
 });
 </script>
 </body>
