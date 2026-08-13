@@ -1002,17 +1002,25 @@ function askForMark(current: string): Promise<string | undefined> {
 }
 
 /**
- * The keys are bracketed, and that is a substitute for something better that
- * is not on offer. Everywhere else in this extension a key is set in code —
- * `Alt+X` — because tooltips take a MarkdownString and render it. The line
- * under the input box takes a plain string and nothing else, so the whole
- * sentence arrives in one weight and Win + . sits in it looking like three
- * more words of prose.
+ * Windows says it in a different order from the other two, and only because
+ * its shortcut ends in a full stop.
  *
- * Brackets are the oldest plain-text answer to that, and they fix a second
- * thing on the way past. The shortcut ends in a full stop, so at the end of a
- * sentence "press Win + ." reads as though the sentence simply finished — the
- * key disappears into the punctuation. Inside brackets it cannot.
+ * "For emoji, press Win + ." lets that dot double as the sentence's
+ * punctuation, so the key disappears into it. Brackets fixed that — "[Win + .]"
+ * — but crushed the dot against the bracket, and a dot is the least visible
+ * character there is. Both problems come from the same place: a full stop at
+ * the end of a line has nowhere to be a key.
+ *
+ * Put it in the middle and neither problem exists. A full stop never has a
+ * space in front of it and is never followed by a lowercase word, so " . for"
+ * cannot be read as punctuation, and the dot has air on both sides instead of
+ * a bracket pressed against it. The brackets were only ever fixing something
+ * the word order was causing.
+ *
+ * Mac and Linux keep the other order, because neither of them has a dot to go
+ * wrong — and "Press ⌃ ⌘ Space for emoji" would hand a reader the phrase
+ * "space for emoji", which is a real thing to say and the wrong one. Fix the
+ * problem where the problem is.
  *
  * It does not mention that words are allowed too, and that is the whole of the
  * rule this line follows: say the thing that cannot be found by looking.
@@ -1038,12 +1046,11 @@ function askForMark(current: string): Promise<string | undefined> {
  */
 function emojiKeyboardHint(): string | undefined {
     switch (process.platform) {
-        case 'win32': return 'For emoji, press [Win + .]';
-        case 'darwin': return 'For emoji, press [⌃ ⌘ Space]';
-        // No brackets here: there is no key to set apart. "picker" rather
-        // than "emoji keyboard", which would say emoji twice in one short
-        // line; "system" rather than "desktop", which reads as the thing with
-        // the wallpaper on it.
+        case 'win32': return 'Press Win + . for emoji';
+        case 'darwin': return 'For emoji, press ⌃ ⌘ Space';
+        // "picker" rather than "emoji keyboard", which would say emoji twice
+        // in one short line; "system" rather than "desktop", which reads as
+        // the thing with the wallpaper on it.
         default: return "For emoji, open your system's picker";
     }
 }
