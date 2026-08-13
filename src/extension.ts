@@ -897,10 +897,17 @@ function showTheSlots(): Promise<{ use?: string; edit?: number } | undefined> {
         //
         // A glyph can be any shape and any width, and letters are shapes. So
         // the word went inside the icon, and VS Code has no way of knowing it
-        // is rendering a sentence. The tooltip is free to say something else.
+        // is rendering a sentence.
+        //
+        // Which leaves the tooltip one job: how far the reset reaches. Not
+        // this row — all of them. It says it in the words the input box
+        // already uses for the small version of the same idea, "Space puts 🤫
+        // back", so the second one is recognised rather than learned. An
+        // earlier draft counted them — "the original six" — which asks
+        // somebody to count a list they have not counted.
         box.buttons = [{
             iconPath: new vscode.ThemeIcon('vibe-read-reset'),
-            tooltip: 'Back to the six we started with',
+            tooltip: 'Puts them all back',
         }];
         box.items = slotRows();
 
