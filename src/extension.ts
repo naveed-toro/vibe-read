@@ -862,18 +862,27 @@ function showTheSlots(): Promise<{ use?: string; edit?: number } | undefined> {
         const showing = vscode.workspace
             .getConfiguration('vibeRead').get<string>('mark') || DEFAULT_MARK;
 
-        // No title. It read "What stands in for hidden code", which is
-        // accurate and is also an idiom — "to stand in for" — and idioms are
-        // where a reader whose first language is not English stops and works
-        // something out. Nobody should have to work anything out here.
+        // The instruction goes in the heading, and nothing at all goes in the
+        // filter box.
         //
-        // Nothing is lost by dropping it, because the list explains itself
-        // better than the sentence did: arrow down the rows and the file
-        // behind changes with every one. A definition demonstrated beats a
-        // definition written. And anyone who wants it in words still has it —
-        // the tooltip on the status bar says exactly this, which is where they
-        // were standing a moment ago.
-        box.placeholder = 'Pick one, or press the pencil to change it';
+        // It sat in the box before, where it made a box that wants nothing out
+        // of you look like a box waiting to be filled in. VS Code will not let
+        // an extension hide that box — it has been an open request since 2020
+        // — so the next best thing is to leave it empty, where it reads as
+        // part of the frame instead of as a question.
+        //
+        // The heading used to say "What stands in for hidden code", which was
+        // accurate and was also an idiom, and an idiom is where a reader whose
+        // first language is not English stops to work something out. This says
+        // what to do instead, in the place where a heading belongs.
+        box.title = 'Pick one, or press the pencil to change it';
+
+        // And since the box is there whether we like it or not, it may as well
+        // work. Filtering matches the label by default, and every label here
+        // is an emoji that nobody can type — so anybody who tried typing got
+        // "No matching results" and a dead end. Matching the name too means
+        // "sh" finds Shh.
+        box.matchOnDescription = true;
         box.buttons = [{
             iconPath: new vscode.ThemeIcon('discard'),
             tooltip: 'Back to the originals',
