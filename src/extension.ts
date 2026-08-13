@@ -911,10 +911,20 @@ function slotRows(): MarkRow[] {
     const rows = plainRows();
     const untouched = savedMarks().every((mark, slot) => mark === FILLED_IN[slot]);
 
+    // No description on this row, unlike the six above it. That column means
+    // one thing up there — the name the slot goes by, the word that ends up in
+    // the status bar — and an explanation in the same column is a second thing
+    // wearing the first one's clothes.
+    //
+    // It was also the longest text in the list, sitting on the row that
+    // matters least. The eye goes to whatever has the most written on it.
+    //
+    // Nothing is lost. The row is below the line and has no vibe of its own,
+    // so it reads as belonging to none of them and therefore to all of them.
     const last = canBeUndone()
-        ? { label: '$(vibe-read-reset) Undo that', description: 'Brings yours back', slot: UNDO }
+        ? { label: '$(vibe-read-reset) Undo that', slot: UNDO }
         : untouched ? undefined
-            : { label: '$(vibe-read-reset) Reset', description: 'Puts them all back', slot: RESET };
+            : { label: '$(vibe-read-reset) Reset', slot: RESET };
     if (!last) { return rows; }
 
     return [...rows,
