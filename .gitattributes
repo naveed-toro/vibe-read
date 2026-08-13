@@ -1,0 +1,11 @@
+# Line endings are decided here, once, rather than by whichever editor and
+# operating system a contributor happens to have. Without this a Windows save
+# rewrites every line of a file with CRLF, and the whole file shows up as
+# changed when a single word moved — which happened here and cost an afternoon
+# working out that nothing had really changed at all.
+* text=auto eol=lf
+
+# Nothing to normalise in these, and trying would corrupt them.
+*.png binary
+*.woff binary
+*.vsix binary
