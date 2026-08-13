@@ -189,7 +189,7 @@
         "vibeRead.mark": {
           "type": "string",
           "default": "⋯",
-          "markdownDescription": "What stands in for hidden code — the **Vibe** in the status bar. The default is an ellipsis on purpose: an emoji repeated down a whole page is the noise this extension exists to remove.\n\nEasier to change from the status bar than from here."
+          "markdownDescription": "Your vibe — what you see wherever the code is hidden, and the one shown in the status bar. An ellipsis by default, on purpose: an emoji repeated down a whole page is the noise this extension exists to remove.\n\nEasier to change from the status bar than from here."
         },
         "vibeRead.marks": {
           "type": "array",
