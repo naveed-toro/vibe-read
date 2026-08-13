@@ -1,5 +1,42 @@
 # Changelog
 
+## 0.2.0 — the reading room
+
+`Alt+M` no longer hands you a markdown document. It opens a pane beside the
+file where the reasoning is the text, the code sits folded underneath it, and
+the two scroll together — move the code and the reasoning follows, move the
+reasoning and the code follows.
+
+The two panes meet at every point that can name a line: a comment and its
+heading, the rest of a comment and its paragraph, a stretch of code and its
+fold. Between those points the position is straight proportion. Nothing in it
+is tuned by hand, so it behaves the same in a file with a comment every five
+lines and one with them seventy apart.
+
+The markdown has not gone anywhere. **Save as Markdown** in the corner of the
+reading pane writes the same document as before, and that one opens in GitHub,
+Obsidian, Notion or anywhere else.
+
+**Reading and hiding now stand side by side.** Both have a chip in the status
+bar, a button above the editor and a line in the right-click menu, and neither
+waits for the other. The notes button used to appear only once the code was
+already hidden, which taught everybody that `Alt+M` was a step you take
+afterwards. It never was. The command is called **Read the reasoning** now;
+*Save as notes* always sounded like the step after some other step.
+
+The vibe appears only while something is hidden. A vibe stands in for covered
+code, so with nothing covered it was a control that could not do anything,
+holding a place in the bar for the whole session.
+
+**An edit that reaches hidden code puts the code back.** Hidden is not gone:
+those lines are still in the file, still inside a selection drawn across them,
+and still deleted by the next keystroke — and you cannot see what you lost,
+because it was invisible before it went. The covering now comes off the moment
+an edit touches it, so the file is in plain sight with undo one key away. An
+edit inside the reasoning is left alone.
+
+---
+
 ## 0.1.0 — first release
 
 Vibe Read starts here.
