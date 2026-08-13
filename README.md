@@ -1,4 +1,4 @@
-# Vibe Read — Read My AI
+# <img src="https://raw.githubusercontent.com/naveed-toro/vibe-read/main/icon.png" width="28" alt=""> Vibe Read — Read My AI
 
 Hide the code, read the reasoning — then give better instructions to AI.
 Save it as notes.
