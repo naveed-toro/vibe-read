@@ -43,7 +43,7 @@
       {
         "command": "vibeRead.toggle",
         "title": "Vibe Read: Hide / show the code",
-        "icon": "$(eye-closed)"
+        "icon": "$(vibe-read-reading)"
       },
       {
         "command": "vibeRead.saveAsNotes",
@@ -111,7 +111,7 @@
         {
           "command": "vibeRead.toggle",
           "group": "navigation@1",
-          "when": "editorIsOpen && config.vibeRead.showEditorButton"
+          "when": "vibeRead.active && config.vibeRead.showEditorButton"
         },
         {
           "command": "vibeRead.saveAsNotes",
@@ -216,7 +216,7 @@
         "vibeRead.showEditorButton": {
           "type": "boolean",
           "default": true,
-          "description": "Show the Vibe Read buttons above the editor."
+          "description": "Show the Vibe Read buttons above the editor while the code is hidden."
         },
         "vibeRead.notesIncludeFullSource": {
           "type": "boolean",
