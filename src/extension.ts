@@ -804,12 +804,9 @@ function nameFor(vibe: string): string {
 }
 
 interface MarkRow extends vscode.QuickPickItem {
-    /** Which of the six, or RESET for the row at the bottom. */
     slot: number;
     mark: string;
 }
-
-const RESET = -1;
 
 function savedMarks(): string[] {
     const saved = vscode.workspace.getConfiguration('vibeRead').get<string[]>('marks');
@@ -843,42 +840,7 @@ async function pickMark(): Promise<void> {
     await keep('mark', typed);
 }
 
-/**
- * The six, and — only once something has been changed — a way back.
- *
- * The way back used to be a button in the title-bar corner, and it could not
- * be made to work. A title-bar button takes an icon and no words, so the word
- * had to be drawn inside the icon; and a title-bar button is a fixed little
- * square, so anything wide enough to read hangs outside it and lands on
- * whatever happens to be there at that window width. It fitted on one screen
- * and collided on the next. A trick that depends on the size of somebody's
- * window is not a solution.
- *
- * A row takes a label, an icon and a description, all of them properly. So
- * that is where it went, under a line so it does not read as a seventh vibe.
- *
- * And it only exists when it can do something. Nobody who has never changed a
- * slot needs a way back to slots they have never left — for them the list is
- * six rows, as it always was. This is also how VS Code marks a changed setting
- * in its own settings editor, and it means the row appearing is itself the
- * news, while the row vanishing afterwards is the only confirmation the reset
- * ever gets.
- */
 function slotRows(): MarkRow[] {
-    const rows = plainRows();
-    if (savedMarks().every((mark, slot) => mark === FILLED_IN[slot])) { return rows; }
-
-    return [...rows,
-        { label: '', kind: vscode.QuickPickItemKind.Separator, slot: RESET, mark: '' },
-        {
-            label: '$(discard) Reset',
-            description: 'Puts them all back',
-            slot: RESET,
-            mark: '',
-        }];
-}
-
-function plainRows(): MarkRow[] {
     return savedMarks().map((mark, slot) => {
         if (mark === '') {
             return { label: '$(add) Set your own…', slot, mark };
@@ -926,6 +888,27 @@ function showTheSlots(): Promise<{ use?: string; edit?: number } | undefined> {
         // "No matching results" and a dead end. Matching the name too means
         // "sh" finds Shh.
         box.matchOnDescription = true;
+        // The icon carries its own label — it draws "↺ Reset", not just the
+        // arrow. VS Code gives a title-bar button an icon and a tooltip and
+        // nothing else, and a tooltip only speaks to somebody who already
+        // found the thing, so a bare arrow in a corner explains itself to
+        // nobody. That is the pencil and the chevron all over again: a picture
+        // cannot name a noun.
+        //
+        // A glyph can be any shape and any width, and letters are shapes. So
+        // the word went inside the icon, and VS Code has no way of knowing it
+        // is rendering a sentence.
+        //
+        // Which leaves the tooltip one job: how far the reset reaches. Not
+        // this row — all of them. It says it in the words the input box
+        // already uses for the small version of the same idea, "Space puts 🤫
+        // back", so the second one is recognised rather than learned. An
+        // earlier draft counted them — "the original six" — which asks
+        // somebody to count a list they have not counted.
+        box.buttons = [{
+            iconPath: new vscode.ThemeIcon('vibe-read-reset'),
+            tooltip: 'Puts them all back',
+        }];
         box.items = slotRows();
 
         const inUse = box.items.find(row => row.mark === showing);
@@ -940,13 +923,12 @@ function showTheSlots(): Promise<{ use?: string; edit?: number } | undefined> {
             redraw(vscode.window.activeTextEditor);
         });
 
-        // The list stays open — you see them come back rather than being
-        // thrown out and left to wonder whether anything happened. And the
-        // row that did it disappears, because there is nothing left to undo.
-        const putThemAllBack = async () => {
+        // The list stays open — you see the originals come back rather than
+        // being thrown out and left to wonder whether anything happened.
+        box.onDidTriggerButton(async () => {
             await keep('marks', [...FILLED_IN]);
             box.items = slotRows();
-        };
+        });
 
         box.onDidTriggerItemButton(event => {
             answered = true;
@@ -957,7 +939,6 @@ function showTheSlots(): Promise<{ use?: string; edit?: number } | undefined> {
         box.onDidAccept(() => {
             const row = box.activeItems[0];
             if (!row) { return; }
-            if (row.slot === RESET) { void putThemAllBack(); return; }
             answered = true;
             box.hide();
             // An empty slot has nothing to use, so accepting it means fill it.
