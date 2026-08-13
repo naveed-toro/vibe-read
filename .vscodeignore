@@ -1,13 +1,31 @@
+# Everything an extension needs to run, and nothing it needed to be made.
+
 .vscode/**
 .vscode-test/**
-src/**
-out/**/*.map
+.git/**
+.gitignore
 node_modules/**
+
+# TypeScript is compiled into out/. The sources are on GitHub for anyone
+# who wants them, and shipping them twice helps nobody.
+src/**
+**/*.ts
 **/tsconfig.json
 **/.eslintrc.json
-**/*.ts
-.gitignore
-.git/**
+out/**/*.map
+
+# The sample the walkthrough opens is a string inside extension.ts, so the
+# folder itself is only here for pressing F5 against.
+samples/**
+
+# How the icon font was made, rather than the font. The drawing alone is
+# 861 KB — most of the package, for a file nobody installing it can use.
+media/vibe-read-faces.png
+media/vibe-read-font.py
+media/README.md
+media/__pycache__/**
+media/icon-violet.png
+media/icon-ink.png
+
 PLAN.md
 README-draft.md
-samples/**
