@@ -77,13 +77,6 @@
           "fontPath": "media/vibe-read.woff",
           "fontCharacter": "\\E002"
         }
-      },
-      "vibe-read-reset": {
-        "description": "Puts all the vibes back — the arrow carries its own label, because a title-bar button takes an icon and no words",
-        "default": {
-          "fontPath": "media/vibe-read.woff",
-          "fontCharacter": "\\E003"
-        }
       }
     },
     "keybindings": [

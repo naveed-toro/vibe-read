@@ -16,9 +16,6 @@ expressions.
 from fontTools.fontBuilder import FontBuilder
 from fontTools.pens.ttGlyphPen import TTGlyphPen
 from fontTools.pens.cu2quPen import Cu2QuPen
-from fontTools.pens.transformPen import TransformPen
-from fontTools.ttLib import TTFont
-import math
 
 EM = 1000
 K = 0.5522847498          # circle-through-beziers constant
@@ -83,103 +80,21 @@ def reading(pen):
         circle(pen, cx, cy, WIDE / 2 * S, hole=True)
         circle(pen, cx, cy, PUPIL / 2 * S, hole=False)
 
-# ── the third glyph: an arrow with its own label ────────────────────────────
-#
-# VS Code lets a title-bar button carry an icon and nothing else. No label, no
-# text, only a tooltip that appears once you have already found the thing. So
-# a lone arrow in a corner explains itself to nobody — the same wall the pencil
-# and the chevron ran into, because a picture cannot name a noun.
-#
-# A glyph, though, can be any shape and any width, and letters are shapes. So
-# the label goes inside the icon: this character is the arrow and the word
-# "Reset" together, and VS Code has no way of knowing it is looking at a
-# sentence.
-#
-# The word is set to the LEFT of the arrow, and hangs outside the glyph's own
-# width. A title-bar button is a fixed little square: anything wider spills out
-# of it, and only what lands inside stays clickable. Spilling to the right ran
-# the word straight over VS Code's own buttons. Spilling to the left runs it
-# into the empty half of the title bar, where there is nothing to collide with
-# — so the arrow sits in the square and stays the target, and the word hangs
-# beside it as a label, exactly as a label does anywhere else.
-#
-# The arc is sampled as a polygon rather than fitted with curves. At sixteen
-# pixels nobody can see the facets, and it is one loop instead of four pages of
-# bezier arithmetic.
-#
-# The letters come from DejaVu Sans Bold, which survives being shrunk better
-# than a UI face does — tall x-height, open apertures, sturdy stems. Its
-# licence allows this provided the result is not called DejaVu. It is called
-# Vibe Read. See media/README.md.
-
-DEJAVU = '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
-ARROW_R, ARROW_C = 300, (330, 300)
-WORD, WORD_SIZE, WORD_GAP = 'Reset', 0.62, 150
-
-def ring(pen, cx, cy, outer, inner, a0, a1, steps=40):
-    """One thick arc: out along the far edge, back along the near one."""
-    def along(r, first, last):
-        return [(cx + r * math.cos(first + (last - first) * i / steps),
-                 cy + r * math.sin(first + (last - first) * i / steps))
-                for i in range(steps + 1)]
-    points = along(outer, a0, a1) + along(inner, a1, a0)
-    pen.moveTo(points[0])
-    for p in points[1:]:
-        pen.lineTo(p)
-    pen.closePath()
-
-def arrowhead(pen, cx, cy, r, angle, size):
-    pen.moveTo((cx + r * math.cos(angle - 0.42), cy + r * math.sin(angle - 0.42)))
-    pen.lineTo((cx + (r + size) * math.cos(angle + 0.16),
-                cy + (r + size) * math.sin(angle + 0.16)))
-    pen.lineTo((cx + (r - size) * math.cos(angle + 0.16),
-                cy + (r - size) * math.sin(angle + 0.16)))
-    pen.closePath()
-
-def reset():
-    """Returns the glyph and how wide it needs to be."""
-    src = TTFont(DEJAVU)
-    upm, shapes, cmap = src['head'].unitsPerEm, src.getGlyphSet(), src.getBestCmap()
-
-    pen = TTGlyphPen(None)
-    cx, cy = ARROW_C
-    ring(pen, cx, cy, ARROW_R, ARROW_R - 105, math.radians(118), math.radians(410))
-    arrowhead(pen, cx, cy, ARROW_R - 52, math.radians(112), 130)
-
-    # Measure the word, then set it ending just before the arrow — which puts
-    # all of it at negative x, hanging to the left of the glyph's own box.
-    scale = WORD_SIZE * EM / upm
-    width = sum(shapes[cmap[ord(ch)]].width for ch in WORD) * scale
-    x = -width - WORD_GAP
-    for ch in WORD:
-        letter = shapes[cmap[ord(ch)]]
-        letter.draw(TransformPen(pen, (scale, 0, 0, scale, x, 0)))
-        x += letter.width * scale
-
-    # The advance is one ordinary square. Everything to the left of it is
-    # overhang, and overhang is the whole trick.
-    return pen.glyph(), EM
-
 def draw(fn):
     tt = TTGlyphPen(None)
     fn(Cu2QuPen(tt, 0.2))
     return tt.glyph()
 
 def build(path):
-    order = ['.notdef', 'vibeRead-resting', 'vibeRead-reading', 'vibeRead-reset']
-    reset_glyph, reset_width = reset()
+    order = ['.notdef', 'vibeRead-resting', 'vibeRead-reading']
     fb = FontBuilder(EM, isTTF=True)
     fb.setupGlyphOrder(order)
-    fb.setupCharacterMap({0xE001: 'vibeRead-resting', 0xE002: 'vibeRead-reading',
-                          0xE003: 'vibeRead-reset'})
+    fb.setupCharacterMap({0xE001: 'vibeRead-resting', 0xE002: 'vibeRead-reading'})
     empty = TTGlyphPen(None).glyph()
     fb.setupGlyf({'.notdef': empty,
                   'vibeRead-resting': draw(resting),
-                  'vibeRead-reading': draw(reading),
-                  'vibeRead-reset': reset_glyph})
-    metrics = {g: (EM, X0) for g in order}
-    metrics['vibeRead-reset'] = (reset_width, 30)
-    fb.setupHorizontalMetrics(metrics)
+                  'vibeRead-reading': draw(reading)})
+    fb.setupHorizontalMetrics({g: (EM, X0) for g in order})
     fb.setupHorizontalHeader(ascent=800, descent=-200)
     fb.setupNameTable({'familyName': 'Vibe Read', 'styleName': 'Regular',
                        'psName': 'VibeRead-Regular', 'version': 'Version 1.0'})
