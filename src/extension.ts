@@ -828,7 +828,7 @@ const UNDO = -2;
  * for this, and if it only lived while the list was open they would reach for
  * nothing.
  */
-let thrownAway: { marks: string[]; at: number } | undefined;
+let thrownAway: { marks: string[]; using: string; at: number } | undefined;
 const LONG_ENOUGH_TO_REGRET_IT = 10_000;
 
 function canBeUndone(): boolean {
@@ -1002,8 +1002,26 @@ function showTheSlots(): Promise<{ use?: string; edit?: number } | undefined> {
         let closed = false;
 
         const putThemAllBack = async () => {
-            thrownAway = { marks: savedMarks(), at: Date.now() };
+            const using = activeMark();
+            thrownAway = { marks: savedMarks(), using, at: Date.now() };
+
+            // The one in use goes back to its slot's original too.
+            //
+            // It used to be left alone, on the reasoning that a reset should
+            // not change what is on screen under somebody. That was wrong in a
+            // way that only showed up in use: the vibe stayed, and its name
+            // changed. Somebody sitting in Hide with a Hide of their own
+            // pressed Reset and found themselves in "Yours", because the thing
+            // they were using was no longer in the list and a name is looked
+            // up by asking the list.
+            //
+            // A silent renaming is worse than a visible change, and the
+            // visible change is the one they asked for: "puts them all back"
+            // means all of them, the one you are wearing included. Stay in the
+            // same slot, wearing what that slot came with.
+            const slot = savedMarks().indexOf(using);
             await keep('marks', [...FILLED_IN]);
+            if (slot !== -1) { await keep('mark', FILLED_IN[slot]); }
             box.items = slotRows();
             // If the list is still open when the offer runs out, take it off
             // the screen. An offer that has quietly expired is a worse lie
@@ -1014,9 +1032,12 @@ function showTheSlots(): Promise<{ use?: string; edit?: number } | undefined> {
         };
 
         const bringYoursBack = async () => {
-            const yours = thrownAway?.marks;
+            const yours = thrownAway;
             thrownAway = undefined;
-            if (yours) { await keep('marks', yours); }
+            if (yours) {
+                await keep('marks', yours.marks);
+                await keep('mark', yours.using);
+            }
             box.items = slotRows();
         };
 
