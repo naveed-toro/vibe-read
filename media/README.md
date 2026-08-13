@@ -5,6 +5,7 @@ Two states of one character, drawn by Naveed.
     E003  reset     an arrow with the word "Reset" beside it, because a
                     title-bar button takes an icon and no label
 
+    E003  reset     the arrow only — the word beside it lives in the row
     E004  notes     a page — solid, same corners, lines cut out of it the
                     way the eyes are
 
@@ -27,32 +28,17 @@ writes the `.woff` here itself. Nothing else needs touching — the two names in
 `icon.png` at the root is the marketplace icon, and comes from the same
 shapes. Two other colourways sit here in case the amber one wears thin.
 
-## The letters
+## The word that could not be pressed
 
-`Reset` is set in DejaVu Sans Bold, whose outlines are copied into the glyph
-by the script. DejaVu is used rather than a UI face because it survives being
-shrunk to sixteen pixels — tall x-height, open apertures, sturdy stems.
+For an afternoon the reset glyph carried the word "Reset" drawn beside the
+arrow, so that a title-bar button could have a label VS Code will not give it.
+It rendered. It was still wrong, and it took three goes to see why.
 
-Its licence permits this so long as the result is not called DejaVu, and is
-not sold on its own. Neither applies: the font is called Vibe Read and it
-ships inside an extension.
+The hover highlight and the click both belong to the action item's box, and
+that box is sixteen pixels wide. Everything hanging outside it is paint. So
+the word was there, and could not be pressed — and a label that asks to be
+clicked and does nothing is worse than no label at all, because the first one
+teaches somebody the button is broken.
 
-    Fonts are (c) Bitstream (see below). DejaVu changes are in public domain.
-    https://dejavu-fonts.github.io/License.html
-
-## If you widen the word, mind the metrics
-
-The reset glyph hangs about thirty pixels to the left of its own box. A
-title-bar button in VS Code is a fixed little square and takes no label, so
-the label has to be part of the icon and has to hang outside it.
-
-That only works if `hmtx` tells the truth. `hmtx` declares where a glyph's ink
-begins and `glyf` is where it actually begins, nothing checks that they agree,
-and when they disagree a rasteriser trusts the declaration and slides the
-outline over until they do. Get it wrong by 2168 units and the word appears
-thirty-five pixels to the right of where you drew it, sitting on the button
-and spilling past it — which looks exactly like a sizing problem and is not
-one.
-
-The script sets the bearing from the glyph's own `xMin`, after calling
-`recalcBounds`. Leave it that way.
+The word lives in a row now, where the label, the icon, the highlight and the
+hit area are one thing. Do not try the glyph again.

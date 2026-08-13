@@ -86,7 +86,7 @@
         }
       },
       "vibe-read-reset": {
-        "description": "Puts all the vibes back — the arrow carries its own label, because a title-bar button takes an icon and no words",
+        "description": "Puts all the vibes back — the arrow only; the word beside it belongs to the row, where a label can actually be clicked",
         "default": {
           "fontPath": "media/vibe-read.woff",
           "fontCharacter": "\\E003"
