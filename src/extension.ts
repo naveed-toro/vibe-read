@@ -1013,12 +1013,16 @@ function askForMark(current: string): Promise<string | undefined> {
  * one; everybody else would have read a longer line forever, with the one
  * unguessable fact diluted in it.
  *
- * Every system has an emoji keyboard except, dependably, Linux, where the
- * shortcut belongs to the desktop rather than the system and differs on each
- * one. Naming a shortcut that does nothing is worse than naming none: they
- * press it, nothing happens, and the extension looks broken. So on Linux this
- * says nothing at all, because there is nothing here it could say that the
- * field is not already saying.
+ * Linux is the awkward one. The shortcut there belongs to the desktop rather
+ * than the system and differs on every one of them, and naming a shortcut
+ * that does nothing is worse than naming none: they press it, nothing
+ * happens, and the extension looks broken.
+ *
+ * But saying nothing was the wrong answer to that. The reason for the line is
+ * not only which keys to press — it is that a picker exists and emoji are
+ * what belongs here. That part is true everywhere, so Linux keeps the
+ * sentence and gives up only the half we cannot know. All three read as the
+ * same sentence with a different ending, which is what they are.
  *
  * The Mac line uses ⌃ ⌘ rather than the words. Mac users read those symbols
  * faster than they read "Control" and "Command", and this branch only ever
@@ -1028,7 +1032,10 @@ function emojiKeyboardHint(): string | undefined {
     switch (process.platform) {
         case 'win32': return 'For emoji, press Win + .';
         case 'darwin': return 'For emoji, press ⌃ ⌘ Space';
-        default: return undefined;
+        // "picker" rather than "emoji keyboard", which would say emoji twice
+        // in one short line; "system" rather than "desktop", which reads as
+        // the thing with the wallpaper on it.
+        default: return "For emoji, open your system's picker";
     }
 }
 
