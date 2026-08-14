@@ -2,20 +2,28 @@
 
 ## 0.2.0 — the reading room
 
-`Alt+M` no longer hands you a markdown document. It opens a pane beside the
-file where the reasoning is the text, the code sits folded underneath it, and
-the two scroll together — move the code and the reasoning follows, move the
-reasoning and the code follows.
+`Alt+M` no longer hands you a markdown document. It opens a page — a tab of
+its own, the width of the window, with the file's reasoning set as prose and
+each paragraph keeping its own code shut underneath it. Nothing else on the
+screen, because the promise was a place without distractions.
 
-The two panes meet at every point that can name a line: a comment and its
-heading, the rest of a comment and its paragraph, a stretch of code and its
-fold. Between those points the position is straight proportion. Nothing in it
-is tuned by hand, so it behaves the same in a file with a comment every five
-lines and one with them seventy apart.
+The type is set to be read rather than to look impressive: sixteen or seventeen
+pixels, lines nearly twice their own height, a column about sixty characters
+wide, ragged right, a little air between the letters. That is the advice given
+for dyslexic readers, which is simply the advice for readers.
 
-The markdown has not gone anywhere. **Save as Markdown** in the corner of the
-reading pane writes the same document as before, and that one opens in GitHub,
-Obsidian, Notion or anywhere else.
+Lines are run back into the sentences they were before somebody wrapped them at
+the eightieth column — that margin belongs to the editor, not to whoever was
+writing. Two breaks are the writer's own and stay: a bare comment marker is a
+paragraph break, and a list stays a list.
+
+At the foot of the page, three blocks, all shut: **comments**, the file with
+the code taken out and a single `⋯` wherever it went; **code**, the file with
+the reasoning taken out; and **as it is**, untouched.
+
+The markdown has not gone anywhere. **Save as Markdown** writes the same page
+into a document that opens in GitHub, Obsidian, Notion or anywhere else — and
+it opens rendered, not as source.
 
 **There is still one door.** `Alt+X` is the key you learn first, the corner
 still says *Vibe Read* and then *Reading 7 whys*, and both tooltips tell you
