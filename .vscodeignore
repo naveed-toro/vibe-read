@@ -27,5 +27,10 @@ media/__pycache__/**
 media/icon-violet.png
 media/icon-ink.png
 
+# The recordings are served from GitHub, which is the only place the
+# marketplace can read an image from. Shipping them inside the package would
+# be megabytes that nobody unpacks.
+media/gifs/**
+
 PLAN.md
 README-draft.md
