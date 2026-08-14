@@ -301,11 +301,8 @@ let statusBar: vscode.StatusBarItem;
  */
 let markBar: vscode.StatusBarItem;
 
-/** Reading. First in the bar, because it is the first thing to do. */
-let readBar: vscode.StatusBarItem;
-
 function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hidden: number): void {
-    if (!editor) { readBar.hide(); statusBar.hide(); markBar.hide(); return; }
+    if (!editor) { statusBar.hide(); markBar.hide(); return; }
 
     // Both tooltips end the same way, one word apart — hide only those, show
     // only those. Nowhere does either of them use the word toggle; reading the
@@ -318,29 +315,16 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
     // act on the selection by itself, so the wording is a leftover from a
     // behaviour that no longer exists. The teaching tip had it right all
     // along: select a few lines AND press Alt+X. These now say the same.
-    // Reading has its own chip now, and it comes first.
+    // One thing in the corner, not two.
     //
-    // Everything in this bar used to belong to Alt+X — the state, and a vibe
-    // that is a setting of hiding. Alt+M had nothing anywhere, so the design
-    // said what it did not mean: that reading is something you do afterwards,
-    // once the code is already hidden. It never was; Alt+M has always worked
-    // on its own.
+    // Reading was given a chip of its own for a while, so that neither key
+    // looked like the other's servant. It read as fair and it worked badly:
+    // two chips are two decisions, taken before anybody knows what either of
+    // them does, and every time. There is one door. Alt+X opens it, and what
+    // is written on the door says what else is inside.
     //
-    // The room it needed was already there, held by the vibe. A vibe does
-    // nothing at all while the code is on screen, and it was sitting in the
-    // bar regardless. So it now appears only while something is hidden — which
-    // is our own rule, applied to ourselves — and reading takes the place it
-    // was keeping warm.
-    readBar.text = whys > 0
-        ? `$(vibe-read-notes) Read ${whys} why${whys === 1 ? '' : 's'}`
-        : '$(vibe-read-notes) Read';
-    readBar.tooltip = new vscode.MarkdownString(
-        '**Read the reasoning**\n\n' +
-        '`Alt+M` the why beside the code, scrolling together'
-    );
-    readBar.text += '\u00a0\u00a0|';
-    readBar.show();
-
+    // Alt+M never needed the chip to work. It works on any file, at any
+    // moment, and both tooltips say so.
     if (hidden === 0) {
         // Nothing is covered up, whatever the flags happen to say.
         //
@@ -361,12 +345,13 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
         // so the two states read as two different objects instead of one thing
         // with two expressions. Two eyes in both, and only the expression
         // changes, which is the whole of how a face works.
-        statusBar.text = '$(vibe-read-resting) Hide';
+        statusBar.text = '$(vibe-read-resting) Vibe Read';
         statusBar.tooltip = new vscode.MarkdownString(
-            '**Hide the code**\n\n' +
+            '**Vibe Read**\n\n' +
             // A blank line, not a line break: the key is one thing and the
             // advice underneath it is another, and they were reading as one.
-            '`Alt+X` hide the code, read the reasoning\n\n' +
+            '`Alt+X` hide the code, read the reasoning  \n' +
+            '`Alt+M` read the whole file as a page\n\n' +
             'Select some lines and press `Alt+X` to hide only those.'
         );
     } else {
@@ -387,6 +372,7 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
         statusBar.tooltip = new vscode.MarkdownString(
             "**The code is hidden. You're reading the why.**\n\n" +
             '`Alt+X` show the code back  \n' +
+            '`Alt+M` read the whole file as a page  \n' +
             '`Ctrl+C` copy only what you see\n\n' +
             'Select some lines and press `Alt+X` to show only those.'
         );
@@ -405,13 +391,14 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
     // No-break spaces: plain ones would collapse to a single space here for
     // the same reason they collapse in a vibe, and the bar would end up
     // hugging the words instead of standing between the two items.
-    // The bar only when there is something on its right.
-    if (hidden > 0) { statusBar.text += '\u00a0\u00a0|'; }
+    // The corner keeps its shape. The vibe was hidden while nothing was
+    // covered, which was true to the rule that a control with nothing to do
+    // should not be there — and it made the bar jump the moment anybody
+    // pressed the key: one item became two, and the state item changed width
+    // in the same instant. A corner that rearranges itself under your eyes
+    // costs more than an idle chip.
+    statusBar.text += '\u00a0\u00a0|';
     statusBar.show();
-
-    // Nothing is hidden, so there is nothing for a vibe to stand in for. A
-    // control that cannot do anything should not be occupying the bar.
-    if (hidden === 0) { markBar.hide(); return; }
 
     // activeMark, not currentIcon: currentIcon holds the drawn form, whose
     // spaces have been swapped for no-break ones, and that will not match
@@ -1478,13 +1465,8 @@ export function activate(context: vscode.ExtensionContext): void {
     // anyone who learned it in an earlier session.
     if (learning().usedSelection) { markLearned(); }
 
-    // The same priority for all three, so nothing can come between them.
-    // Created and shown in this order, which is the order they read in:
-    // reading, then hiding, then the vibe that belongs to hiding.
-    readBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, TOGETHER);
-    readBar.command = 'vibeRead.read';
-    context.subscriptions.push(readBar);
-
+    // The same priority for both, so nothing can come between them. Created in
+    // this order, so the state reads first and the vibe sits to its right.
     statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, TOGETHER);
     statusBar.command = 'vibeRead.toggle';
     context.subscriptions.push(statusBar);

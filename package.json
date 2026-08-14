@@ -116,14 +116,14 @@
     "menus": {
       "editor/title": [
         {
-          "command": "vibeRead.read",
+          "command": "vibeRead.toggle",
           "group": "navigation@1",
           "when": "config.vibeRead.showEditorButton"
         },
         {
-          "command": "vibeRead.toggle",
+          "command": "vibeRead.read",
           "group": "navigation@2",
-          "when": "config.vibeRead.showEditorButton"
+          "when": "vibeRead.active && config.vibeRead.showEditorButton"
         }
       ],
       "editor/context": [

@@ -17,16 +17,15 @@ The markdown has not gone anywhere. **Save as Markdown** in the corner of the
 reading pane writes the same document as before, and that one opens in GitHub,
 Obsidian, Notion or anywhere else.
 
-**Reading and hiding now stand side by side.** Both have a chip in the status
-bar, a button above the editor and a line in the right-click menu, and neither
-waits for the other. The notes button used to appear only once the code was
-already hidden, which taught everybody that `Alt+M` was a step you take
-afterwards. It never was. The command is called **Read the reasoning** now;
-*Save as notes* always sounded like the step after some other step.
+**There is still one door.** `Alt+X` is the key you learn first, the corner
+still says *Vibe Read* and then *Reading 7 whys*, and both tooltips tell you
+that `Alt+M` reads the whole file as a page. `Alt+M` has never needed the code
+to be hidden first — it works on any file at any moment — but giving it a chip
+of its own made two decisions where there had been one, and that is a worse
+trade than the one it was fixing.
 
-The vibe appears only while something is hidden. A vibe stands in for covered
-code, so with nothing covered it was a control that could not do anything,
-holding a place in the bar for the whole session.
+The command is called **Read the reasoning** now. *Save as notes* always
+sounded like the step after some other step.
 
 **An edit that reaches hidden code puts the code back.** Hidden is not gone:
 those lines are still in the file, still inside a selection drawn across them,
