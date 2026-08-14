@@ -116,13 +116,8 @@
     "menus": {
       "editor/title": [
         {
-          "command": "vibeRead.toggle",
-          "group": "navigation@1",
-          "when": "config.vibeRead.showEditorButton"
-        },
-        {
           "command": "vibeRead.read",
-          "group": "navigation@2",
+          "group": "navigation@1",
           "when": "vibeRead.active && config.vibeRead.showEditorButton"
         }
       ],
@@ -223,7 +218,7 @@
         "vibeRead.showEditorButton": {
           "type": "boolean",
           "default": true,
-          "description": "Show the Vibe Read buttons above the editor while the code is hidden."
+          "description": "Show the reading button above the editor while the code is hidden. Hiding and showing the code has the corner of the status bar and Alt+X; this is the one place reading has a button of its own."
         }
       }
     }
