@@ -45,7 +45,8 @@ Works in more than 40 languages, including Java, TypeScript and Python.
 
 The noise is gone. Just the reasoning.
 
-**Understand better → tell AI better → get better back.**
+**Code is for the machine. Comments are for you.**
+Now you know what your AI built — and what to ask for next.
 
 Nothing was edited. Press Alt+X again and it is all back.
 

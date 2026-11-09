@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.5
+
+The recordings now tell the story on their own: a title card, numbered steps, a zoom onto the button at every click, and a closing card — *Now you know what your AI built — and what to ask for next.*
+
 ## 0.3.4
 
 The recording is a little smaller, so that in VS Code's own details pane it is seen whole, with the first line of text under it.
