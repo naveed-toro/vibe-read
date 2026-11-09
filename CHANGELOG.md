@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.3.4
+
+The recording is a little smaller, so that in VS Code's own details pane it is seen whole, with the first line of text under it.
+
+## 0.3.3
+
+The read-me no longer repeats the name and icon that the page header already shows, so the recording starts at the very top and is seen whole without scrolling.
+
+## 0.3.2
+
+The recording is now a short, wide strip right under the title, with bigger captions — it catches the eye without filling the screen, and the text and table sit right beneath it.
+
+## 0.3.1
+
+The recordings in the read-me are shown at a sensible size instead of the full width of the page, so the text and the table are visible at first glance.
+
+---
+
 ## 0.3.0 — show, don't tell
 
 - The read-me opens with a short recording: click **Vibe Read**, the code hides, scroll through the AI's reasons, click again and the code is back. A second recording shows **📖 Page**.

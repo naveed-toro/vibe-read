@@ -1,16 +1,11 @@
-# <img src="https://raw.githubusercontent.com/naveed-toro/vibe-read/main/icon.png" width="28" alt=""> Vibe Read — Read My AI
-
-Hide the code, read your AI's reasoning — then give it better instructions.
-Save it as notes.
-
-![Click Vibe Read: the code hides, only the AI's reasons stay](https://raw.githubusercontent.com/naveed-toro/vibe-read/main/media/vibe-read.gif)
+<img src="https://raw.githubusercontent.com/naveed-toro/vibe-read/main/media/vibe-read.gif" width="480" alt="Click Vibe Read: the code hides, only the AI's reasons stay">
 
 **AI writes the code and explains its thinking in the comments. But that thinking is buried in two hundred lines of code, so nobody reads it.**
 
 | | |
 |---|---|
-| 🖱️ **Vibe Read** | Click: the code hides, only the comments stay. **Scroll and read just them, nothing in the way.** Click again: your code is back, exactly as it was. *The button counts the comments as whys (10 whys).* |
-| 🖱️ **📖 Page** | Appears after that first click. Opens the whole file's reasoning as a clean page. |
+| 🖱️&nbsp;**Vibe&nbsp;Read** | Click: the code hides, only the comments stay. **Scroll and read just them, nothing in the way.** Click again: your code is back, exactly as it was. *The button counts the comments as whys (10 whys).* |
+| 🖱️&nbsp;**📖&nbsp;Page** | Appears after that first click. Opens the whole file's reasoning as a clean page. |
 | <kbd>Alt</kbd> <kbd>X</kbd> | The code hides. Only the comments, the AI's reasons, stay. Select some lines first to bring back just those. |
 | <kbd>Alt</kbd> <kbd>M</kbd> | The whole file's reasoning opens as a clean reading page, with each paragraph's code folded underneath. Save it as Markdown for GitHub, Obsidian or Notion. |
 | <kbd>Ctrl</kbd> <kbd>C</kbd> | Copies only what you see. |
@@ -74,7 +69,7 @@ Nothing was edited. Press Alt+X again and it is all back.
 
 | | |
 |---|---|
-| <kbd>Alt</kbd> <kbd>M</kbd> | ![Click Page: the whole file's reasoning, set like a book](https://raw.githubusercontent.com/naveed-toro/vibe-read/main/media/vibe-read-page.gif) |
+| <kbd>Alt</kbd> <kbd>M</kbd> | <img src="https://raw.githubusercontent.com/naveed-toro/vibe-read/main/media/vibe-read-page.gif" width="420" alt="Click Page: the whole file's reasoning, set like a book"> |
 
 One more key, and it is yours to keep. The reasoning becomes the document.
 
