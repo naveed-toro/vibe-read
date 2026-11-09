@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.7
+
+The top recording carries its key, <kbd>Alt</kbd> <kbd>X</kbd>, beside it — the same way the page recording carries <kbd>Alt</kbd> <kbd>M</kbd>.
+
 ## 0.3.6
 
 No zoom at the clicks any more: the picture stays still and everything except the button dims for a moment, so the eye goes to the click and comes straight back to the code. Text in the recordings is larger.
