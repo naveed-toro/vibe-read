@@ -1,11 +1,24 @@
 # <img src="https://raw.githubusercontent.com/naveed-toro/vibe-read/main/icon.png" width="28" alt=""> Vibe Read — Read My AI
 
-Hide the code, read the reasoning — then give better instructions to AI.
+Hide the code, read your AI's reasoning — then give it better instructions.
 Save it as notes.
 
----
+![Click Vibe Read: the code hides, only the AI's reasons stay](https://raw.githubusercontent.com/naveed-toro/vibe-read/main/media/vibe-read.gif)
 
-AI writes the code. Its comments explain the why.
+**AI writes the code and explains its thinking in the comments. But that thinking is buried in two hundred lines of code, so nobody reads it.**
+
+| | |
+|---|---|
+| 🖱️ **Vibe Read** | Click: the code hides, only the comments stay. **Scroll and read just them, nothing in the way.** Click again: your code is back, exactly as it was. *The button counts the comments as whys (10 whys).* |
+| 🖱️ **📖 Page** | Appears after that first click. Opens the whole file's reasoning as a clean page. |
+| <kbd>Alt</kbd> <kbd>X</kbd> | The code hides. Only the comments, the AI's reasons, stay. Select some lines first to bring back just those. |
+| <kbd>Alt</kbd> <kbd>M</kbd> | The whole file's reasoning opens as a clean reading page, with each paragraph's code folded underneath. Save it as Markdown for GitHub, Obsidian or Notion. |
+| <kbd>Ctrl</kbd> <kbd>C</kbd> | Copies only what you see. |
+| **Vibe** | Pick the mark shown where the code is hidden: ⋯, 🤫, 🙈 🙉 🙊. It shows in the status bar too. |
+
+Works in more than 40 languages, including Java, TypeScript and Python.
+
+---
 
 <!-- ═══════════════════════════════════════════════════════════════════
      GIF 1 — the one that decides whether anybody installs this.
@@ -35,10 +48,6 @@ AI writes the code. Its comments explain the why.
      SAVE AS  media/hide.gif   then commit and push.
      ═══════════════════════════════════════════════════════════════════ -->
 
-| | |
-|---|---|
-| <kbd>Alt</kbd> <kbd>X</kbd> | ![The code hides, the reasoning stays](https://raw.githubusercontent.com/naveed-toro/vibe-read/main/media/hide.gif) |
-
 The noise is gone. Just the reasoning.
 
 **Understand better → tell AI better → get better back.**
@@ -65,7 +74,7 @@ Nothing was edited. Press Alt+X again and it is all back.
 
 | | |
 |---|---|
-| <kbd>Alt</kbd> <kbd>M</kbd> | ![The file becomes notes](https://raw.githubusercontent.com/naveed-toro/vibe-read/main/media/notes.gif) |
+| <kbd>Alt</kbd> <kbd>M</kbd> | ![Click Page: the whole file's reasoning, set like a book](https://raw.githubusercontent.com/naveed-toro/vibe-read/main/media/vibe-read-page.gif) |
 
 One more key, and it is yours to keep. The reasoning becomes the document.
 
@@ -92,7 +101,7 @@ One more key, and it is yours to keep. The reasoning becomes the document.
 
 | | |
 |---|---|
-| select lines<br><kbd>Alt</kbd> <kbd>X</kbd> | ![Only the selected lines come back](https://raw.githubusercontent.com/naveed-toro/vibe-read/main/media/select.gif) |
+| select lines<br><kbd>Alt</kbd> <kbd>X</kbd> | Only the selected lines come back. |
 
 Some parts you want to read with the code. Select those lines, press Alt+X
 again.
@@ -119,8 +128,6 @@ again.
 
      ABOUT 6 SECONDS.   SAVE AS  media/mark.gif
      ═══════════════════════════════════════════════════════════════════ -->
-
-![Pick the vibe you want](https://raw.githubusercontent.com/naveed-toro/vibe-read/main/media/mark.gif)
 
 The default is an ellipsis, and that is the point — an emoji repeated down a
 whole page is the noise this exists to remove. But the vibe is yours. Click

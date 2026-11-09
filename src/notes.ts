@@ -91,7 +91,8 @@ export interface Paragraph {
 }
 
 /** Anything that opens a line the way a list opens a line. */
-const LIST = /^\s*([-*•+‣·]|\d+[.)]|[a-zA-Z][.)])\s+/;
+// @param, @returns and friends are a list too: one tag, one line.
+const LIST = /^\s*([-*•+‣·]|\d+[.)]|[a-zA-Z][.)]|@[a-zA-Z]+)\s+/;
 
 /**
  * Lines into paragraphs.

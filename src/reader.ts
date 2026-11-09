@@ -18,6 +18,7 @@
 // ---------------------------------------------------------------------------
 
 import * as vscode from 'vscode';
+import { highlight, HIGHLIGHT_CSS } from './highlight';
 import { codeOf, commentsOf, paragraphsOf, type Section } from './notes';
 
 let panel: vscode.WebviewPanel | undefined;
@@ -27,6 +28,8 @@ export interface ReaderInput {
     languageId: string;
     lineTexts: string[];
     sections: Section[];
+    /** The same count the status bar shows, so the two never disagree. */
+    whys: number;
     /** The file this was read from, so there is a way back to it. */
     source: vscode.Uri;
     /** Called when the reader asks for the portable copy. */
@@ -76,7 +79,7 @@ function pageFor(
         vscode.Uri.joinPath(extensionUri, 'media', 'vibe-read.woff'),
     );
     const today = new Date().toISOString().slice(0, 10);
-    const whys = input.sections.length;
+    const whys = input.whys;
     const code = codeOf(input.sections);
     const comments = commentsOf(input.sections);
 
@@ -93,7 +96,21 @@ function pageFor(
         const count = section.code.length;
         return paragraphs +
             `<details class="inline"><summary>code · ${count} line${count === 1 ? '' : 's'}</summary>` +
-            `<pre><code>${escape(section.code.join('\n'))}</code></pre></details>`;
+            `<pre><code>${highlight(section.code.join('\n'), input.languageId)}</code></pre></details>`;
+    }).join('');
+
+    // The same words again, all together and nothing between them but a mark
+    // where the code was. It used to be set like code — a grey box, a fixed-
+    // width face, lines cut off at the right edge — and it is not code. It is
+    // the file's reasoning in one sitting, so it is set like the reading
+    // above, only closer together.
+    const glance = input.sections.map(section => {
+        const paragraphs = paragraphsOf(section.prose)
+            .map(p => `<p${p.list ? ' class="item"' : ''}>${escape(p.text)}</p>`)
+            .join('');
+        return section.code.length > 0
+            ? paragraphs + '<div class="gap" aria-label="code">⋯</div>'
+            : paragraphs;
     }).join('');
 
     return `<!DOCTYPE html>
@@ -247,6 +264,7 @@ details.reading > summary.block { margin-bottom: 2em; }
  * it reads as something to press rather than something to read.
  */
 details.inline { margin: -.9em 0 1.7em 0; }
+p.item + details.inline { margin-top: .5em; }
 details.inline > summary {
     display: inline-block;
     padding: .2em .8em;
@@ -276,6 +294,39 @@ pre code {
     font-size: var(--vscode-editor-font-size);
     line-height: 1.55;
 }
+${HIGHLIGHT_CSS}
+
+/*
+ * The comments at a glance, on a card of their own.
+ *
+ * Left on the bare page they melted into the reading above and looked like
+ * more of it. A soft grey card says "this is a different thing" — but the
+ * words on it keep full ink and the reading type, because grey letters on a
+ * grey card was the version nobody could read.
+ */
+details.glance > summary.block { margin-bottom: 1.2em; }
+details.glance[open] {
+    background: var(--vscode-textBlockQuote-background, rgba(128,128,128,.08));
+    border: 1px solid var(--vscode-panel-border);
+    border-radius: 8px;
+    padding: 1.1em 1.5em .6em 1.5em;
+}
+details.glance[open] > summary.block { background: var(--vscode-editor-background); }
+details.glance > p {
+    color: var(--vscode-foreground);
+    font-size: 15.5px;
+    line-height: 1.75;
+    margin: 0 0 .9em 0;
+}
+details.glance > p.item { margin: 0 0 .4em 1.4em; }
+details.glance .gap {
+    text-align: center;
+    max-width: 32em;
+    margin: .1em 0 .9em 0;
+    opacity: .45;
+    letter-spacing: .3em;
+    user-select: none;
+}
 </style>
 </head>
 <body>
@@ -293,24 +344,26 @@ ${prose}
 </details>
 
 <section class="more">
-<details>
+<details open class="glance">
 <summary class="block">the whole file · comments · ${comments.length} lines</summary>
-<pre><code>${escape(comments.join('\n'))}</code></pre>
+${glance}
 </details>
 
 <details>
 <summary class="block">the whole file · code · ${code.length} lines</summary>
-<pre><code>${escape(code.join('\n'))}</code></pre>
+<pre><code>${highlight(code.join('\n'), input.languageId)}</code></pre>
 </details>
 
 <details>
 <summary class="block">the whole file · as it is · ${input.lineTexts.length} lines</summary>
-<pre><code>${escape(input.lineTexts.join('\n'))}</code></pre>
+<pre><code>${highlight(input.lineTexts.join('\n'), input.languageId)}</code></pre>
 </details>
 </section>
 </main>
 <script nonce="${nonce}">
 const api = acquireVsCodeApi();
+// A page starts at its top, whatever the last one was scrolled to.
+window.scrollTo(0, 0);
 document.getElementById('save').addEventListener('click', () => api.postMessage({ type: 'save' }));
 document.getElementById('open').addEventListener('click', () => api.postMessage({ type: 'open' }));
 </script>

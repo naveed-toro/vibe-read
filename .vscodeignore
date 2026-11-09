@@ -34,3 +34,6 @@ media/gifs/**
 
 PLAN.md
 README-draft.md
+
+# The read-me GIFs are shown from GitHub, so the package does not carry them.
+media/*.gif

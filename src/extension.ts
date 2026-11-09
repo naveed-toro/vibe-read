@@ -301,8 +301,39 @@ let statusBar: vscode.StatusBarItem;
  */
 let markBar: vscode.StatusBarItem;
 
+/**
+ * The second door, and it only appears once the first one has been used.
+ *
+ * Reading had a chip of its own once and it was taken away: two chips shown
+ * from the start are two decisions before anybody knows what either does.
+ * This one waits. Until the code is hidden there is one thing in the corner;
+ * the moment it is, the next step appears right beside the click that
+ * revealed it, where the eye already is. The button above the editor was the
+ * only other way in, and nobody looks up there.
+ */
+let readBar: vscode.StatusBarItem;
+
+/**
+ * Pads a label with no-break spaces, half each side, until it is about as
+ * wide as "Vibe Read".
+ *
+ * The bar grows to the left. When "Vibe Read" became the shorter "6 whys",
+ * the button shrank out from under the mouse and the next click landed on
+ * Page instead. Same width means the button you just pressed is still where
+ * you pressed it. Widths are estimated for the status bar's UI font: a digit
+ * is about seven pixels, " whys" about thirty, a no-break space about three.
+ */
+function sameWidthAsName(label: string): string {
+    const digits = (label.match(/\d/g) ?? []).length;
+    const words = label.endsWith('whys') ? 30 : 25;
+    const pad = Math.max(0, Math.round((55 - (digits * 7 + words)) / 3));
+    const left = '\u00a0'.repeat(Math.floor(pad / 2));
+    const right = '\u00a0'.repeat(Math.ceil(pad / 2));
+    return left + label + right;
+}
+
 function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hidden: number): void {
-    if (!editor) { statusBar.hide(); markBar.hide(); return; }
+    if (!editor) { statusBar.hide(); readBar.hide(); markBar.hide(); return; }
 
     // Both tooltips end the same way, one word apart — hide only those, show
     // only those. Nowhere does either of them use the word toggle; reading the
@@ -366,8 +397,12 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
         // code. This extension believes the opposite: while the code is on
         // screen nobody is reading the reasoning, and it is only once the code
         // goes that anybody sees anything. The eyes belong to the reader.
+        // "Reading" was dropped from the label to make room. The bar is shared
+        // with every other extension, and when it was full the extra word
+        // cost us the Page button beside it. The open eyes already say
+        // "reading"; the number is the part worth the space.
         statusBar.text = whys > 0
-            ? `$(vibe-read-reading) Reading ${whys} why${whys === 1 ? '' : 's'}`
+            ? `$(vibe-read-reading) ${sameWidthAsName(`${whys} why${whys === 1 ? '' : 's'}`)}`
             : '$(vibe-read-reading) Reading';
         statusBar.tooltip = new vscode.MarkdownString(
             "**The code is hidden. You're reading the why.**\n\n" +
@@ -399,6 +434,21 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
     // costs more than an idle chip.
     statusBar.text += '\u00a0\u00a0|';
     statusBar.show();
+
+    if (hidden > 0) {
+        // Short on purpose. The corner is shared with every other extension,
+        // and when it runs out of room VS Code drops the items on the left of
+        // it first, which is where the state lives. A long label here pushed
+        // "Reading 7 whys" off a laptop screen entirely.
+        readBar.text = '$(book) Page\u00a0\u00a0|';
+        readBar.tooltip = new vscode.MarkdownString(
+            '**Read as a page** `Alt+M`\n\n' +
+            "The whole file's reasoning on one clean page, each part's code folded underneath."
+        );
+        readBar.show();
+    } else {
+        readBar.hide();
+    }
 
     // activeMark, not currentIcon: currentIcon holds the drawn form, whose
     // spaces have been swapped for no-break ones, and that will not match
@@ -724,6 +774,7 @@ async function read(editor: vscode.TextEditor): Promise<void> {
         languageId: doc.languageId,
         lineTexts,
         sections: sectionsOf(input),
+        whys: countWhys(input.scanned),
         source: doc.uri,
         onSave: () => { void keepAsMarkdown(markdown); },
     });
@@ -1467,9 +1518,20 @@ export function activate(context: vscode.ExtensionContext): void {
 
     // The same priority for both, so nothing can come between them. Created in
     // this order, so the state reads first and the vibe sits to its right.
-    statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, TOGETHER);
+    // Fractions apart, so nothing from another extension can land between
+    // them and the order is fixed: the state, then reading, then the vibe.
+    // The on/off button sits right of Page, not left of it. VS Code drops the
+    // leftmost items first when the bar is full, so if anything has to go it
+    // is Page (Alt+M still works) and never the button that brings the code
+    // back. It also means the button you just pressed stays under your mouse:
+    // Page appears beside it instead of pushing it along.
+    statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, TOGETHER + 0.01);
     statusBar.command = 'vibeRead.toggle';
     context.subscriptions.push(statusBar);
+
+    readBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, TOGETHER + 0.02);
+    readBar.command = 'vibeRead.read';
+    context.subscriptions.push(readBar);
 
     markBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, TOGETHER);
     markBar.command = 'vibeRead.pickMark';

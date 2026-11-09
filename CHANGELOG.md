@@ -1,5 +1,60 @@
 # Changelog
 
+## 0.3.0 — show, don't tell
+
+- The read-me opens with a short recording: click **Vibe Read**, the code hides, scroll through the AI's reasons, click again and the code is back. A second recording shows **📖 Page**.
+- The button keeps its width when it turns into **8 whys**, so it stays under your mouse and the second click lands on it, not on Page.
+- A new sample, `samples/checkout.js`, written the way an AI writes code, with its reasons in the comments.
+
+---
+
+## 0.2.8 — one table
+
+The read-me no longer has a separate list of steps. The two clicks — **Vibe Read** and **📖 Page** — are now the first two rows of the same table as the keys, and the first row says what a *why* is.
+
+---
+
+## 0.2.7 — room for both buttons
+
+Once the code is hidden, the button now reads **14 whys** instead of *Reading 14 whys*. The open eyes on it already say you are reading; the shorter label leaves room for **📖 Page** beside it, even when other extensions fill the status bar.
+
+---
+
+## 0.2.6 — the button you pressed stays put
+
+**📖 Page** now appears to the *left* of the button you pressed, so that button stays under your mouse. And when the status bar is crowded, it is Page that gives way (`Alt+M` still opens the page) — never the button that brings your code back.
+
+---
+
+## 0.2.5 — the page, as a fresh reader sees it
+
+- The **comments** block sits on a soft grey card again, so it stands apart from the reading above — but the words on it are full colour and easy to read.
+- The page always opens at the top.
+- The page and the status bar now show the same number of whys.
+- `@param`, `@returns` and other tags each get their own line instead of running into one paragraph.
+
+---
+
+## 0.2.4 — the comments, readable
+
+The **comments** block at the foot of the reading page is open from the start, so it is there when you scroll down. It is no longer set like code — no grey box, no fixed-width letters, no lines cut off at the right edge. It uses the same type as the reading above, a little closer together, with a quiet `⋯` centred wherever the code was.
+
+The description now says what to do first: *Hide the code, read your AI's reasoning — then give it better instructions. Save it as notes.*
+
+---
+
+## 0.2.3 — the next step, where you already are
+
+Once the code is hidden, a second item appears in the status bar right beside the first: **📖 Page**. One click opens the reading page, the same as `Alt+M`. Before the code is hidden it is not there, so the corner still starts with one thing to press.
+
+---
+
+## 0.2.1 — code that looks like code
+
+On the reading page (`Alt+M`), code is now coloured the way it is in the editor: keywords, strings, numbers, function names, types and comments each have their own colour, light or dark to match your theme. Before, every folded block was plain text.
+
+---
+
 ## 0.2.0 — the reading room
 
 `Alt+M` no longer hands you a markdown document. It opens a page — a tab of
