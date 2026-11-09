@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.6
+
+No zoom at the clicks any more: the picture stays still and everything except the button dims for a moment, so the eye goes to the click and comes straight back to the code. Text in the recordings is larger.
+
 ## 0.3.5
 
 The recordings now tell the story on their own: a title card, numbered steps, a zoom onto the button at every click, and a closing card — *Now you know what your AI built — and what to ask for next.*

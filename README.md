@@ -1,4 +1,4 @@
-<img src="https://raw.githubusercontent.com/naveed-toro/vibe-read/main/media/vibe-read.gif" width="480" alt="Click Vibe Read: the code hides, only the AI's reasons stay">
+<img src="https://raw.githubusercontent.com/naveed-toro/vibe-read/main/media/vibe-read.gif" width="460" alt="Click Vibe Read: the code hides, only the AI's reasons stay">
 
 **AI writes the code and explains its thinking in the comments. But that thinking is buried in two hundred lines of code, so nobody reads it.**
 
