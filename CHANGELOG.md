@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.7
+
+The three recordings at the top show the new status bar: **Read**, **Page** always there, and the compact vibe.
+
 ## 0.4.6 — buttons you can find again
 
 The three status bar buttons now have their own names. Right-click the status bar and they appear as **Vibe Read: Read**, **Vibe Read: Page** and **Vibe Read: Your vibe**, so a button that was hidden can be ticked back. The order is unchanged.
