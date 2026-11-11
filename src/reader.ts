@@ -83,27 +83,20 @@ function pageFor(
     const code = codeOf(input.sections);
     const comments = commentsOf(input.sections);
 
-    // Each paragraph, and under it the code it was explaining — shut, one line
-    // high. No number in front of it and no heading above it: those were what
-    // turned a page into a filing cabinet.
-    const prose = input.sections.map(section => {
+    // Each why is numbered and has a rule down its left, so a reader who is
+    // scrolling always knows how many there are and which one they are on.
+    // The code under it is a small grey pill: there if wanted, never in the way.
+    const prose = input.sections.map((section, i) => {
         const paragraphs = paragraphsOf(section.prose)
             .map(p => `<p${p.list ? ' class="item"' : ''}>${escape(p.text)}</p>`)
             .join('');
-
-        if (section.code.length === 0) { return paragraphs; }
-
         const count = section.code.length;
-        return paragraphs +
+        const code = count === 0 ? '' :
             `<details class="inline"><summary>code · ${count} line${count === 1 ? '' : 's'}</summary>` +
             `<pre><code>${highlight(section.code.join('\n'), input.languageId)}</code></pre></details>`;
+        return `<article class="why"><span class="num">${i + 1}</span><div class="body">${paragraphs}${code}</div></article>`;
     }).join('');
 
-    // The same words again, all together and nothing between them but a mark
-    // where the code was. It used to be set like code — a grey box, a fixed-
-    // width face, lines cut off at the right edge — and it is not code. It is
-    // the file's reasoning in one sitting, so it is set like the reading
-    // above, only closer together.
     const glance = input.sections.map(section => {
         const paragraphs = paragraphsOf(section.prose)
             .map(p => `<p${p.list ? ' class="item"' : ''}>${escape(p.text)}</p>`)
@@ -124,248 +117,174 @@ function pageFor(
 body {
     color: var(--vscode-foreground);
     font-family: var(--vscode-font-family);
-    padding: 0;
-    margin: 0;
+    background: var(--vscode-editor-background);
+    padding: 0; margin: 0;
 }
+.col { max-width: 40em; margin: 0 auto; padding: 0 1.6em; }
 
 /*
- * A column, not a page.
- *
- * The tab is as wide as the window and a window can be very wide. Prose run
- * across all of it cannot be read: the eye loses its line on the way back to
- * the left margin. Around sixty characters is where books settled centuries
- * ago, and the empty space either side is doing as much work as the words.
+ * The bar. It stays at the top while the page scrolls, so the file's name and
+ * the one thing worth pressing are always in sight. It is the only tinted
+ * strip on the page and the button is the only filled colour, so those are
+ * the first two places the eye lands.
  */
-main {
-    max-width: 36em;
-    margin: 0 auto;
-    padding: 0 1.6em 40vh 1.6em;
+.bar {
+    position: sticky; top: 0; z-index: 5;
+    background: var(--vscode-sideBar-background, var(--vscode-textBlockQuote-background, rgba(128,128,128,.08)));
+    border-bottom: 1px solid var(--vscode-panel-border);
+    backdrop-filter: blur(6px);
+}
+.bar .col { display: flex; align-items: center; gap: .9em; padding-top: 1em; padding-bottom: 1em; }
+.bar .face {
+    font-family: 'vibe-read'; font-size: 26px; line-height: 1;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 42px; height: 42px; border-radius: 10px;
+    background: #f59e0b; color: #1f1f1f; flex: none;
+}
+.bar .who { display: flex; flex-direction: column; min-width: 0; }
+.bar .name {
+    cursor: pointer; color: var(--vscode-foreground); text-decoration: none;
+    font-size: 19px; font-weight: 700; letter-spacing: -.01em;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.bar .name:hover { text-decoration: underline; }
+.bar .about { font-size: 13px; color: var(--vscode-descriptionForeground); margin-top: .15em; }
+.bar .about b { color: var(--vscode-foreground); font-weight: 600; }
+.bar .grow { flex: 1; }
+.save {
+    font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap;
+    color: var(--vscode-button-foreground, #fff);
+    background: var(--vscode-button-background, #0078d4);
+    border: 0; border-radius: 8px; padding: .65em 1.2em;
+    box-shadow: 0 1px 2px rgba(0,0,0,.18), 0 4px 14px rgba(0,120,212,.28);
+    transition: transform .08s ease, background .15s ease;
+}
+.save:hover { background: var(--vscode-button-hoverBackground, #026ec1); }
+.save:active { transform: translateY(1px); }
+.save .hint { display: block; font-size: 11px; font-weight: 400; opacity: .85; margin-top: .1em; }
+
+/* Section titles: small, spaced capitals, so the page has two clear parts. */
+.label {
+    font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--vscode-descriptionForeground);
+    margin: 2.6em 0 1.4em 0;
 }
 
 /*
- * The line at the top says whose page this is, what it came from and how much
- * there was to say. It was set at four fifths of the size and two thirds of
- * the ink, and it disappeared. A page needs a name.
- */
-header {
-    display: flex; align-items: baseline; gap: .6em;
-    max-width: 36em; margin: 0 auto;
-    padding: 2.2em 1.6em 1.4em 1.6em;
-    font-size: 14px;
-}
-header .face { font-family: 'vibe-read'; font-size: 1.7em; opacity: .85; }
-header .name {
-    cursor: pointer; text-decoration: none;
-    color: var(--vscode-foreground);
-    font-weight: 600;
-}
-header .name:hover { text-decoration: underline; }
-header .about { opacity: .6; }
-header .grow { flex: 1; }
-header button {
-    font: inherit; cursor: pointer; white-space: nowrap;
-    color: var(--vscode-button-secondaryForeground, var(--vscode-foreground));
-    background: var(--vscode-button-secondaryBackground, transparent);
-    border: 1px solid var(--vscode-panel-border);
-    border-radius: 4px; padding: .3em .9em;
-}
-header button:hover { background: var(--vscode-button-secondaryHoverBackground, var(--vscode-list-hoverBackground)); }
-
-/*
- * The reading itself.
- *
- * Set for somebody who finds reading hard, because a page that works for them
- * works for everybody. The advice is old and consistent, and none of it is
- * decoration:
- *
- *   Bigger than you think. Sixteen or seventeen pixels, not fourteen.
- *   Lines far apart — half again the size of the type at least.
- *   A short line, sixty to seventy characters, so the eye finds its way back.
- *   Ragged right, never justified: even word spacing matters more than a
- *     straight edge, and justification tears rivers of white through a
- *     paragraph.
- *   Letters and words given a little air, which stops them running together.
- *   No italics for anything long, and no walls: paragraphs kept short and
- *     clearly apart.
+ * The reading. Set for somebody who finds reading hard: big type, lines far
+ * apart, a short measure, ragged right.
  */
 p {
-    font-size: 16.5px;
-    line-height: 1.85;
-    letter-spacing: .012em;
-    word-spacing: .06em;
-    margin: 0 0 1.7em 0;
-    max-width: 32em;
-    text-align: left;
-    hyphens: none;
+    font-size: 16.5px; line-height: 1.8; letter-spacing: .012em; word-spacing: .06em;
+    margin: 0 0 .9em 0; text-align: left; hyphens: none;
 }
+p.item { margin: 0 0 .4em 1.4em; text-indent: -1.4em; }
 
-/* A list line stays a list line: close under the one above, and stepped in. */
-p.item {
-    margin: 0 0 .5em 1.4em;
-    text-indent: -1.4em;
+.why {
+    display: grid; grid-template-columns: 2.2em 1fr; gap: 0 1em;
+    padding: .2em 0 .2em 0; margin: 0 0 1.9em 0;
 }
-p.item + p:not(.item) { margin-top: 1.4em; }
-
-details { margin: 1.1em 0; }
-
-/*
- * The folds are meant to be seen.
- *
- * They were set at three quarters of the size and half the ink, and they
- * vanished — a control nobody notices is a control that does not exist. A
- * fold is an offer, and an offer has to be legible before it can be refused.
- */
-summary {
-    cursor: pointer; list-style: none;
-    font-family: var(--vscode-font-family);
-    font-size: 13px;
-    opacity: .75;
+.why .num {
+    font-size: 13px; font-weight: 700; color: var(--vscode-textLink-foreground, #0078d4);
+    border: 1.5px solid currentColor; border-radius: 999px;
+    width: 1.9em; height: 1.9em; display: inline-flex; align-items: center; justify-content: center;
+    margin-top: .25em;
 }
+.why .body { border-left: 2px solid var(--vscode-panel-border); padding-left: 1.1em; }
+
+details > summary { cursor: pointer; list-style: none; }
 summary::-webkit-details-marker { display: none; }
-summary::before { content: '▸ '; }
-details[open] > summary::before { content: '▾ '; }
-summary:hover { opacity: 1; }
 
-/*
- * The blocks that hold the page together.
- *
- * They were the same grey whisper as everything else and read as a stray line
- * of the reasoning rather than as the lid of a box. A block needs to look like
- * a block: its own weight, its own outline, and — for the three at the bottom
- * — a rule and a stretch of empty page above them, so that the eye knows the
- * reading has ended and the shelf has begun.
- */
-summary.block {
-    display: inline-block;
-    font-family: var(--vscode-font-family);
-    font-size: 13.5px;
-    font-weight: 600;
-    letter-spacing: .01em;
-    opacity: .85;
-    padding: .35em .9em;
-    border: 1px solid var(--vscode-panel-border);
-    border-radius: 5px;
-}
-summary.block:hover {
-    opacity: 1;
-    background: var(--vscode-list-hoverBackground);
-}
-details.reading > summary.block { margin-bottom: 2em; }
-
-.more {
-    margin-top: 3.5em;
-    padding-top: 2em;
-    border-top: 1px solid var(--vscode-panel-border);
-}
-.more > details { margin: 0 0 1em 0; }
-
-/*
- * A paragraph's own code, stepped back under it and wearing a border so that
- * it reads as something to press rather than something to read.
- */
-details.inline { margin: -.9em 0 1.7em 0; }
-p.item + details.inline { margin-top: .5em; }
+/* A paragraph's own code: quiet, small, close under it. */
+details.inline { margin: -.2em 0 0 0; }
 details.inline > summary {
-    display: inline-block;
-    padding: .2em .8em;
-    border: 1px solid var(--vscode-panel-border);
-    border-radius: 999px;
-    font-family: var(--vscode-editor-font-family);
-    font-size: 12px;
-    opacity: .7;
+    display: inline-block; font-family: var(--vscode-editor-font-family); font-size: 11.5px;
+    color: var(--vscode-descriptionForeground); opacity: .8;
+    padding: .15em .7em; border-radius: 999px; border: 1px solid var(--vscode-panel-border);
 }
-details.inline > summary:hover {
-    opacity: 1;
-    background: var(--vscode-list-hoverBackground);
-}
+details.inline > summary::before { content: '▸ '; }
+details.inline[open] > summary::before { content: '▾ '; }
+details.inline > summary:hover { opacity: 1; background: var(--vscode-list-hoverBackground); }
 
 pre {
-    margin: .7em 0 0 0; padding: .85em 1.1em;
+    margin: .6em 0 0 0; padding: .85em 1.1em;
     background: var(--vscode-textCodeBlock-background, var(--vscode-editor-background));
     border: 1px solid var(--vscode-widget-border, var(--vscode-panel-border));
-    border-radius: 5px;
-    overflow-x: auto;
+    border-radius: 6px; overflow-x: auto;
 }
 pre code {
     display: block; background: none; border: 0; padding: 0;
-    white-space: pre; tab-size: 4;
-    color: var(--vscode-editor-foreground);
-    font-family: var(--vscode-editor-font-family);
-    font-size: var(--vscode-editor-font-size);
-    line-height: 1.55;
+    white-space: pre; tab-size: 4; color: var(--vscode-editor-foreground);
+    font-family: var(--vscode-editor-font-family); font-size: var(--vscode-editor-font-size); line-height: 1.55;
 }
 ${HIGHLIGHT_CSS}
 
 /*
- * The comments at a glance, on a card of their own.
- *
- * Left on the bare page they melted into the reading above and looked like
- * more of it. A soft grey card says "this is a different thing" — but the
- * words on it keep full ink and the reading type, because grey letters on a
- * grey card was the version nobody could read.
+ * The shelf. Three tiles side by side, all shut: the comments, the code and
+ * the file as it is. Left open, the comments repeated the reading word for
+ * word, and the same text twice reads as a mistake.
  */
-details.glance > summary.block { margin-bottom: 1.2em; }
-details.glance[open] {
-    background: var(--vscode-textBlockQuote-background, rgba(128,128,128,.08));
-    border: 1px solid var(--vscode-panel-border);
-    border-radius: 8px;
-    padding: 1.1em 1.5em .6em 1.5em;
-}
-details.glance[open] > summary.block { background: var(--vscode-editor-background); }
-details.glance > p {
+.shelf { border-top: 1px solid var(--vscode-panel-border); margin-top: 1em; padding-bottom: 40vh; }
+.tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: .8em; }
+.tile {
+    font: inherit; text-align: left; cursor: pointer;
     color: var(--vscode-foreground);
-    font-size: 15.5px;
-    line-height: 1.75;
-    margin: 0 0 .9em 0;
+    background: var(--vscode-textBlockQuote-background, rgba(128,128,128,.08));
+    border: 1px solid var(--vscode-panel-border); border-radius: 10px;
+    padding: .9em 1em;
 }
-details.glance > p.item { margin: 0 0 .4em 1.4em; }
-details.glance .gap {
-    text-align: center;
-    max-width: 32em;
-    margin: .1em 0 .9em 0;
-    opacity: .45;
-    letter-spacing: .3em;
-    user-select: none;
+.tile b { display: block; font-size: 14.5px; }
+.tile small { color: var(--vscode-descriptionForeground); font-size: 12.5px; }
+.tile:hover { border-color: var(--vscode-focusBorder, #0078d4); }
+.tile[aria-pressed="true"] { border-color: var(--vscode-focusBorder, #0078d4); box-shadow: inset 0 0 0 1px var(--vscode-focusBorder, #0078d4); }
+.panel { margin-top: 1.1em; }
+.panel.glance {
+    background: var(--vscode-textBlockQuote-background, rgba(128,128,128,.08));
+    border: 1px solid var(--vscode-panel-border); border-radius: 10px;
+    padding: 1.2em 1.5em .5em 1.5em;
 }
+.panel.glance p { font-size: 15.5px; line-height: 1.75; }
+.panel.glance .gap { text-align: center; opacity: .45; letter-spacing: .3em; margin: .1em 0 .9em 0; user-select: none; }
+@media (max-width: 560px) { .tiles { grid-template-columns: 1fr; } .save .hint { display: none; } }
 </style>
 </head>
 <body>
-<header>
+<header class="bar"><div class="col">
     <span class="face">&#xe002;</span>
-    <a class="name" id="open" title="Back to the file">${escape(input.fileName)}</a>
-    <span class="about">${today} · ${whys} why${whys === 1 ? '' : 's'}</span>
+    <div class="who">
+        <a class="name" id="open" title="Back to the file">${escape(input.fileName)}</a>
+        <span class="about"><b>${whys} why${whys === 1 ? '' : 's'}</b> · ${today}</span>
+    </div>
     <span class="grow"></span>
-    <button id="save">Save as Markdown</button>
-</header>
-<main>
-<details open class="reading">
-<summary class="block">the whole file · reasoning</summary>
+    <button class="save" id="save" title="Keep it as a Markdown file">⬇&nbsp; Save as notes</button>
+</div></header>
+<main class="col">
+<div class="label">Reasoning</div>
 ${prose}
-</details>
-
-<section class="more">
-<details open class="glance">
-<summary class="block">the whole file · comments · ${comments.length} lines</summary>
-${glance}
-</details>
-
-<details>
-<summary class="block">the whole file · code · ${code.length} lines</summary>
-<pre><code>${highlight(code.join('\n'), input.languageId)}</code></pre>
-</details>
-
-<details>
-<summary class="block">the whole file · as it is · ${input.lineTexts.length} lines</summary>
-<pre><code>${highlight(input.lineTexts.join('\n'), input.languageId)}</code></pre>
-</details>
+<section class="shelf">
+<div class="label">More</div>
+<div class="tiles">
+    <button class="tile" data-panel="p-comments" aria-pressed="false"><b>Comments</b><small>${comments.length} lines</small></button>
+    <button class="tile" data-panel="p-code" aria-pressed="false"><b>Code</b><small>${code.length} lines</small></button>
+    <button class="tile" data-panel="p-file" aria-pressed="false"><b>As it is</b><small>${input.lineTexts.length} lines</small></button>
+</div>
+<div class="panel glance" id="p-comments" hidden>${glance}</div>
+<div class="panel" id="p-code" hidden><pre><code>${highlight(code.join('\n'), input.languageId)}</code></pre></div>
+<div class="panel" id="p-file" hidden><pre><code>${highlight(input.lineTexts.join('\n'), input.languageId)}</code></pre></div>
 </section>
 </main>
 <script nonce="${nonce}">
 const api = acquireVsCodeApi();
-// A page starts at its top, whatever the last one was scrolled to.
 window.scrollTo(0, 0);
 document.getElementById('save').addEventListener('click', () => api.postMessage({ type: 'save' }));
 document.getElementById('open').addEventListener('click', () => api.postMessage({ type: 'open' }));
+// One tile open at a time; pressing the open one shuts it.
+const tiles = [...document.querySelectorAll('.tile')];
+tiles.forEach(t => t.addEventListener('click', () => {
+    const open = t.getAttribute('aria-pressed') === 'true';
+    tiles.forEach(o => { o.setAttribute('aria-pressed', 'false'); document.getElementById(o.dataset.panel).hidden = true; });
+    if (!open) { t.setAttribute('aria-pressed', 'true'); const p = document.getElementById(t.dataset.panel); p.hidden = false; p.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+}));
 </script>
 </body>
 </html>`;

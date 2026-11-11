@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.1 — the reading page, redesigned
+
+- A bar across the top that stays while you scroll: the file's name, how many whys, and one bright **Save as notes** button.
+- Every why is numbered, with a line down its left, so you always know where you are. Its code is a small grey pill underneath.
+- At the bottom, **Comments**, **Code** and **As it is** sit side by side as three tiles, shut until you press one. The comments no longer repeat the reading straight underneath it.
+
 ## 0.4.0
 
 Each recording now has its name beside it — Alt X with Vibe Read, the vibe with its marks, the pencil with Change vibe — and one line under it. The pencil recording shows the box filling as you type.
