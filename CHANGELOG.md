@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.2 — Save saves
+
+**Save as notes** now asks where to save, with `checkout.notes.md` already filled in next to the code, and writes the file. No second copy of the page, no Untitled tab to close, no "Save changes?" on the way out. The button says **✓ Saved** for a moment, and a message offers to open the file.
+
 ## 0.4.1 — the reading page, redesigned
 
 - A bar across the top that stays while you scroll: the file's name, how many whys, and one bright **Save as notes** button.

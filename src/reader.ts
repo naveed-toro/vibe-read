@@ -22,6 +22,9 @@ import { highlight, HIGHLIGHT_CSS } from './highlight';
 import { codeOf, commentsOf, paragraphsOf, type Section } from './notes';
 
 let panel: vscode.WebviewPanel | undefined;
+// The page now showing. The message handler is attached once, so it must read
+// this, not the input it was created with, or Save keeps the first file.
+let current: ReaderInput | undefined;
 
 export interface ReaderInput {
     fileName: string;
@@ -33,7 +36,8 @@ export interface ReaderInput {
     /** The file this was read from, so there is a way back to it. */
     source: vscode.Uri;
     /** Called when the reader asks for the portable copy. */
-    onSave: () => void;
+    /** Resolves to the saved file's name, or undefined if the reader cancelled. */
+    onSave: () => Thenable<string | undefined>;
 }
 
 export function showReader(extensionUri: vscode.Uri, input: ReaderInput): void {
@@ -53,13 +57,18 @@ export function showReader(extensionUri: vscode.Uri, input: ReaderInput): void {
 
         panel.onDidDispose(() => { panel = undefined; });
         panel.webview.onDidReceiveMessage((message: { type: string }) => {
-            if (message.type === 'save') { input.onSave(); }
+            if (message.type === 'save' && current) {
+                void current.onSave().then(name => {
+                    if (name) { void panel?.webview.postMessage({ type: 'saved', name }); }
+                });
+            }
             if (message.type === 'open') {
-                void vscode.window.showTextDocument(input.source);
+                if (current) { void vscode.window.showTextDocument(current.source); }
             }
         });
     }
 
+    current = input;
     panel.title = `Reading ${input.fileName}`;
     panel.webview.html = pageFor(panel.webview, extensionUri, input);
     panel.reveal(panel.viewColumn);
@@ -161,6 +170,7 @@ body {
 }
 .save:hover { background: var(--vscode-button-hoverBackground, #026ec1); }
 .save:active { transform: translateY(1px); }
+.save.done { background: #2e7d32; }
 .save .hint { display: block; font-size: 11px; font-weight: 400; opacity: .85; margin-top: .1em; }
 
 /* Section titles: small, spaced capitals, so the page has two clear parts. */
@@ -256,7 +266,7 @@ ${HIGHLIGHT_CSS}
         <span class="about"><b>${whys} why${whys === 1 ? '' : 's'}</b> · ${today}</span>
     </div>
     <span class="grow"></span>
-    <button class="save" id="save" title="Keep it as a Markdown file">⬇&nbsp; Save as notes</button>
+    <button class="save" id="save" title="Save as a Markdown file next to the code">⬇&nbsp; Save as notes</button>
 </div></header>
 <main class="col">
 <div class="label">Reasoning</div>
@@ -276,7 +286,16 @@ ${prose}
 <script nonce="${nonce}">
 const api = acquireVsCodeApi();
 window.scrollTo(0, 0);
-document.getElementById('save').addEventListener('click', () => api.postMessage({ type: 'save' }));
+const save = document.getElementById('save');
+save.addEventListener('click', () => api.postMessage({ type: 'save' }));
+// After a save the button says so for a few seconds, then is ready again.
+window.addEventListener('message', e => {
+    if (e.data && e.data.type === 'saved') {
+        save.textContent = '✓  Saved';
+        save.classList.add('done');
+        setTimeout(() => { save.innerHTML = '⬇&nbsp; Save as notes'; save.classList.remove('done'); }, 3000);
+    }
+});
 document.getElementById('open').addEventListener('click', () => api.postMessage({ type: 'open' }));
 // One tile open at a time; pressing the open one shuts it.
 const tiles = [...document.querySelectorAll('.tile')];

@@ -776,35 +776,40 @@ async function read(editor: vscode.TextEditor): Promise<void> {
         sections: sectionsOf(input),
         whys: countWhys(input.scanned),
         source: doc.uri,
-        onSave: () => { void keepAsMarkdown(markdown); },
+        onSave: () => keepAsMarkdown(markdown, doc.uri),
     });
 }
 
 /**
- * Opened, not written. Nothing lands on disk until the user says so.
+ * One click, one question, done.
  *
- * And opened rendered, not as markdown source. Somebody who has just spent
- * five minutes reading a page does not want the next thing they see to be
- * angle brackets and backticks — that is the syntax this extension exists to
- * take away, handed back at the last moment. The source is a click behind the
- * preview's own Show Source button for anybody who wants to edit it.
+ * It used to open the notes as an unsaved document with a preview beside it.
+ * That showed the same page a second time, left an "Untitled" tab behind, and
+ * asked "Save changes?" when it was closed without saving. Pressing Save
+ * should save. So it asks where, with a sensible name already filled in next
+ * to the code, and writes the file. Cancel leaves nothing behind.
  */
-async function keepAsMarkdown(markdown: string): Promise<void> {
-    const notes = await vscode.workspace.openTextDocument({
-        content: markdown,
-        language: 'markdown',
+async function keepAsMarkdown(markdown: string, source: vscode.Uri): Promise<string | undefined> {
+    const base = source.path.split('/').pop() || 'notes';
+    const stem = base.replace(/\.[^.]+$/, '');
+    const folder = vscode.Uri.joinPath(source, '..');
+    const target = await vscode.window.showSaveDialog({
+        defaultUri: vscode.Uri.joinPath(folder, `${stem}.notes.md`),
+        filters: { Markdown: ['md'] },
+        saveLabel: 'Save notes',
+        title: 'Save the reasoning as notes',
     });
+    if (!target) { return undefined; }
 
-    try {
-        await vscode.commands.executeCommand('markdown.showPreviewToSide', notes.uri);
-    } catch {
-        // The built-in markdown extension can be turned off. Plain notes beat
-        // no notes.
-        await vscode.window.showTextDocument(notes, {
-            viewColumn: vscode.ViewColumn.Beside,
-            preview: false,
-        });
-    }
+    await vscode.workspace.fs.writeFile(target, new TextEncoder().encode(markdown));
+    const name = target.path.split('/').pop() || 'notes.md';
+    void vscode.window.showInformationMessage(`Saved ${name}`, 'Open').then(choice => {
+        if (choice === 'Open') {
+            void vscode.commands.executeCommand('markdown.showPreview', target)
+                .then(undefined, () => vscode.window.showTextDocument(target));
+        }
+    });
+    return name;
 }
 
 // ---------------------------------------------------------------------------
