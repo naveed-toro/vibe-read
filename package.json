@@ -10,6 +10,10 @@
     "type": "git",
     "url": "https://github.com/naveed-toro/vibe-read.git"
   },
+  "bugs": {
+    "url": "https://github.com/naveed-toro/vibe-read/issues"
+  },
+  "homepage": "https://github.com/naveed-toro/vibe-read#readme",
   "engines": {
     "vscode": "^1.75.0"
   },
