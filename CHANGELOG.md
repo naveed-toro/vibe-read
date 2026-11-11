@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.2 — pick a part, copy its reasons
+
+- A new GIF on this page: select one part, hide its code, copy only its reasons and paste them to your AI.
+
 ## 0.5.1 — a lighter first minute
 
 - The walkthrough is three steps now, in the order people click: open a file, click **Read**, click **Page**. The selection step is gone from the start; it is a tip later.
