@@ -1,13 +1,20 @@
 | | |
 |---|---|
-| <kbd>Alt</kbd> <kbd>X</kbd> | <img src="https://raw.githubusercontent.com/naveed-toro/vibe-read/main/media/vibe-read.gif" width="460" alt="Click Vibe Read: the code hides, only the AI's reasons stay"> |
+| <kbd>Alt</kbd> <kbd>X</kbd><br><br>🖱️&nbsp;**Vibe&nbsp;Read** | <img src="https://raw.githubusercontent.com/naveed-toro/vibe-read/main/media/vibe-read.gif" width="460" alt="Click Vibe Read: the code hides, only the AI's reasons stay"> |
 
 **AI writes the code and explains its thinking in the comments. But that thinking is buried in two hundred lines of code, so nobody reads it.**
 
 | | |
 |---|---|
-| **Vibe** | <img src="https://raw.githubusercontent.com/naveed-toro/vibe-read/main/media/vibe-pick.gif" width="460" alt="Click the mark in the status bar and pick a mood for the hidden code"> |
-| ✏️ | <img src="https://raw.githubusercontent.com/naveed-toro/vibe-read/main/media/vibe-own.gif" width="460" alt="Press the pencil and type any emoji or word"> |
+| ⋯ 🤫 🙈<br><br>**Vibe** | <img src="https://raw.githubusercontent.com/naveed-toro/vibe-read/main/media/vibe-pick.gif" width="460" alt="Click the mark in the status bar and pick a mood for the hidden code"> |
+
+**Pick a mood for the hidden code.** Same code, a different vibe.
+
+| | |
+|---|---|
+| ✏️<br><br>**Change&nbsp;vibe** | <img src="https://raw.githubusercontent.com/naveed-toro/vibe-read/main/media/vibe-own.gif" width="460" alt="Press the pencil and type any emoji or word"> |
+
+**Make it yours.** Type any emoji or word, and the hidden code changes as you type.
 
 | | |
 |---|---|

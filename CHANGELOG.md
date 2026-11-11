@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.0
+
+Each recording now has its name beside it — Alt X with Vibe Read, the vibe with its marks, the pencil with Change vibe — and one line under it. The pencil recording shows the box filling as you type.
+
 ## 0.3.9
 
 Two short recordings sit right under the first one: pick a mood for the hidden code, and make your own with the pencil — it changes as you type.
