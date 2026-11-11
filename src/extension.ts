@@ -315,7 +315,7 @@ let readBar: vscode.StatusBarItem;
 
 /**
  * Pads a label with no-break spaces, half each side, until it is about as
- * wide as "Vibe Read".
+ * wide as the widest label.
  *
  * The bar grows to the left. When "Vibe Read" became the shorter "6 whys",
  * the button shrank out from under the mouse and the next click landed on
@@ -324,12 +324,23 @@ let readBar: vscode.StatusBarItem;
  * is about seven pixels, " whys" about thirty, a no-break space about three.
  */
 function sameWidthAsName(label: string): string {
+    // "Read" and "8 whys" are padded to one width, so the button does not
+    // change size under the mouse when it is pressed.
     const digits = (label.match(/\d/g) ?? []).length;
-    const words = label.endsWith('whys') ? 30 : 25;
-    const pad = Math.max(0, Math.round((55 - (digits * 7 + words)) / 3));
+    const width = label === 'Read' ? 32 : digits * 7 + (label.endsWith('whys') ? 30 : 25);
+    const pad = Math.max(0, Math.round((44 - width) / 3));
     const left = '\u00a0'.repeat(Math.floor(pad / 2));
     const right = '\u00a0'.repeat(Math.ceil(pad / 2));
     return left + label + right;
+}
+
+function shortMark(mark: string): string {
+    const seg = (Intl as unknown as {
+        Segmenter?: new () => { segment(input: string): Iterable<{ segment: string }> };
+    }).Segmenter;
+    const parts = (seg ? [...new seg().segment(mark)].map(p => p.segment) : [...mark])
+        .filter(p => p.trim() !== '');
+    return parts.length > 2 ? parts.slice(0, 2).join('') + '…' : parts.join('');
 }
 
 function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hidden: number): void {
@@ -376,7 +387,7 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
         // so the two states read as two different objects instead of one thing
         // with two expressions. Two eyes in both, and only the expression
         // changes, which is the whole of how a face works.
-        statusBar.text = '$(vibe-read-resting) Vibe Read';
+        statusBar.text = `$(vibe-read-resting) ${sameWidthAsName('Read')}`;
         statusBar.tooltip = new vscode.MarkdownString(
             '**Vibe Read**\n\n' +
             // A blank line, not a line break: the key is one thing and the
@@ -432,38 +443,35 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
     // pressed the key: one item became two, and the state item changed width
     // in the same instant. A corner that rearranges itself under your eyes
     // costs more than an idle chip.
-    statusBar.text += '\u00a0\u00a0|';
     statusBar.show();
 
-    if (hidden > 0) {
-        // Short on purpose. The corner is shared with every other extension,
-        // and when it runs out of room VS Code drops the items on the left of
-        // it first, which is where the state lives. A long label here pushed
-        // "Reading 7 whys" off a laptop screen entirely.
-        readBar.text = '$(book) Page\u00a0\u00a0|';
-        readBar.tooltip = new vscode.MarkdownString(
-            '**Read as a page** `Alt+M`\n\n' +
-            "The whole file's reasoning on one clean page, each part's code folded underneath."
-        );
-        readBar.show();
-    } else {
-        readBar.hide();
-    }
+    // Page is always there. It works whether the code is hidden or not, and a
+    // button that appears only after another click reads like a hidden
+    // feature and makes the bar rearrange itself under the mouse.
+    readBar.text = '$(book) Page\u00a0\u00a0|';
+    readBar.tooltip = new vscode.MarkdownString(
+        '**Read as a page** `Alt+M`\n\n' +
+        "The whole file's reasoning on one clean page. Save it as notes from there."
+    );
+    readBar.show();
 
     // activeMark, not currentIcon: currentIcon holds the drawn form, whose
     // spaces have been swapped for no-break ones, and that will not match
     // anything in the saved list. The name has to be looked up by what was
     // actually saved.
     const vibe = activeMark();
-    markBar.text = `${asDrawn(vibe)} ${nameFor(vibe)} $(chevron-down)`;
+    // Only the first two characters of the vibe, and no name: the whole mark is
+    // already down the file, and this chip is the first thing to give way
+    // when the bar is full. The name lives in the tooltip.
+    markBar.text = `${shortMark(asDrawn(vibe))} $(chevron-down)\u00a0\u00a0|`;
     markBar.tooltip = new vscode.MarkdownString(
+        `**Your vibe: ${nameFor(vibe)}**\n\n` +
         // Two words and what to do with them. It opened with "What stands in
         // for hidden code" — an idiom on an abstraction — and I replaced that
         // with a plainer version of the same sentence, which was still a
         // sentence explaining a thing that is already on screen. Anybody
         // hovering this can see their vibe down the whole file behind it.
         // Hovering and clicking now say the same two words.
-        '**Your vibe**\n\n' +
         'Click to change it. Emoji, text, or both.'
     );
     markBar.show();
@@ -1525,20 +1533,26 @@ export function activate(context: vscode.ExtensionContext): void {
     // this order, so the state reads first and the vibe sits to its right.
     // Fractions apart, so nothing from another extension can land between
     // them and the order is fixed: the state, then reading, then the vibe.
-    // The on/off button sits right of Page, not left of it. VS Code drops the
-    // leftmost items first when the bar is full, so if anything has to go it
-    // is Page (Alt+M still works) and never the button that brings the code
-    // back. It also means the button you just pressed stays under your mouse:
-    // Page appears beside it instead of pushing it along.
-    statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, TOGETHER + 0.01);
+    // Left to right: the vibe, Page, then on/off. VS Code drops the leftmost
+    // items first when the bar is full, so the vibe goes first (it is only
+    // looks), then Page (Alt+M still works), and the button that brings the
+    // code back never goes.
+    // Each item has its own id and name. Without them the status bar's
+    // right-click menu showed all three as one "Vibe Read", so a button that
+    // had been hidden there could not be found again. The ids change nothing
+    // about the order; that still comes from the priorities.
+    statusBar = vscode.window.createStatusBarItem('vibeRead.read', vscode.StatusBarAlignment.Right, TOGETHER);
+    statusBar.name = 'Vibe Read: Read (hide / show code)';
     statusBar.command = 'vibeRead.toggle';
     context.subscriptions.push(statusBar);
 
-    readBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, TOGETHER + 0.02);
+    readBar = vscode.window.createStatusBarItem('vibeRead.page', vscode.StatusBarAlignment.Right, TOGETHER + 0.01);
+    readBar.name = 'Vibe Read: Page';
     readBar.command = 'vibeRead.read';
     context.subscriptions.push(readBar);
 
-    markBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, TOGETHER);
+    markBar = vscode.window.createStatusBarItem('vibeRead.vibe', vscode.StatusBarAlignment.Right, TOGETHER + 0.02);
+    markBar.name = 'Vibe Read: Your vibe';
     markBar.command = 'vibeRead.pickMark';
     context.subscriptions.push(markBar);
 

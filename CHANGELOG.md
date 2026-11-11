@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.4.6 — buttons you can find again
+
+The three status bar buttons now have their own names. Right-click the status bar and they appear as **Vibe Read: Read**, **Vibe Read: Page** and **Vibe Read: Your vibe**, so a button that was hidden can be ticked back. The order is unchanged.
+
+## 0.4.5 — three buttons, three jobs
+
+- **Read** turns the code off and on (it says **8 whys** while the code is hidden). It used to say *Vibe Read*.
+- **📖 Page** is always there, not only after the first click.
+- The vibe chip shows just the first two characters of your mark and ⌄; its name is in the tooltip.
+- Left to right: vibe, Page, Read. When the bar is full the vibe gives way first, then Page; Read never does.
+
 ## 0.4.4 — notes that match the page
 
 The saved Markdown now has the same shape as the reading page: one line of facts, a **Reasoning** section as a numbered list, each why with its code folded inside it, then **More** with Comments, Code and As it is, shut. The stray ◎ ◎ in the first line is gone.

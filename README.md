@@ -1,6 +1,6 @@
 | | |
 |---|---|
-| <kbd>Alt</kbd> <kbd>X</kbd><br><br>🖱️&nbsp;**Vibe&nbsp;Read** | <img src="https://raw.githubusercontent.com/naveed-toro/vibe-read/main/media/vibe-read.gif" width="460" alt="Click Vibe Read: the code hides, only the AI's reasons stay"> |
+| <kbd>Alt</kbd> <kbd>X</kbd><br><br>🖱️&nbsp;**Read** | <img src="https://raw.githubusercontent.com/naveed-toro/vibe-read/main/media/vibe-read.gif" width="460" alt="Click Vibe Read: the code hides, only the AI's reasons stay"> |
 
 **AI writes the code and explains its thinking in the comments. But that thinking is buried in two hundred lines of code, so nobody reads it.**
 
@@ -18,12 +18,14 @@
 
 | | |
 |---|---|
-| 🖱️&nbsp;**Vibe&nbsp;Read** | Click: the code hides, only the comments stay. **Scroll and read just them, nothing in the way.** Click again: your code is back, exactly as it was. *The button counts the comments as whys (10 whys).* |
-| 🖱️&nbsp;**📖&nbsp;Page** | Appears after that first click. Opens the whole file's reasoning as a clean page. |
+| 🖱️&nbsp;**Read** | Click: the code hides, only the comments stay. **Scroll and read just them, nothing in the way.** Click again: your code is back, exactly as it was. *The button counts the comments as whys (10 whys).* |
+| 🖱️&nbsp;**📖&nbsp;Page** | Always there. Opens the whole file's reasoning as a clean page, ready to save as notes. |
 | <kbd>Alt</kbd> <kbd>X</kbd> | The code hides. Only the comments, the AI's reasons, stay. Select some lines first to bring back just those. |
 | <kbd>Alt</kbd> <kbd>M</kbd> | The whole file's reasoning opens as a clean reading page, with each paragraph's code folded underneath. Save it as Markdown for GitHub, Obsidian or Notion. |
 | <kbd>Ctrl</kbd> <kbd>C</kbd> | Copies only what you see. |
 | **Vibe** | Pick the mark shown where the code is hidden: ⋯, 🤫, 🙈 🙉 🙊. It shows in the status bar too. |
+
+Can't see a button? Right-click the status bar and tick **Vibe Read: Read**, **Page** or **Your vibe**. <kbd>Alt</kbd> <kbd>X</kbd> and <kbd>Alt</kbd> <kbd>M</kbd> always work.
 
 Works in more than 40 languages, including Java, TypeScript and Python.
 
