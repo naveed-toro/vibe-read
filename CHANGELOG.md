@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.8
+
+A third recording shows the vibe: click it in the status bar, pick a mark, or press the pencil to make your own. The read-me now runs in the order people use it: hide and read, the page, the vibe, then selecting lines.
+
 ## 0.3.7
 
 The top recording carries its key, <kbd>Alt</kbd> <kbd>X</kbd>, beside it — the same way the page recording carries <kbd>Alt</kbd> <kbd>M</kbd>.

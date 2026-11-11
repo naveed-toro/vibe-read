@@ -18,6 +18,109 @@ Works in more than 40 languages, including Java, TypeScript and Python.
 ---
 
 <!-- ═══════════════════════════════════════════════════════════════════
+     GIF 2 — the second reason to install.
+
+     The message is not what the notes say. It is that a document
+     appeared. That is a movement, so it has to move.
+
+     RECORD
+       1. Same file, already in reading mode — the monkeys showing, so
+          this picks up where the one above left off.
+       2. Window wide enough for two panes side by side.
+       3. Press Alt+M. The notes open on the right.
+       4. Hold 3 seconds on the split view. Stop.
+
+     ABOUT 5 SECONDS.   SAVE AS  media/notes.gif
+     ═══════════════════════════════════════════════════════════════════ -->
+
+| | |
+|---|---|
+| <kbd>Alt</kbd> <kbd>M</kbd> | <img src="https://raw.githubusercontent.com/naveed-toro/vibe-read/main/media/vibe-read-page.gif" width="420" alt="Click Page: the whole file's reasoning, set like a book"> |
+
+One more key, and it is yours to keep. The reasoning becomes the document.
+
+---
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     GIF 4 — the one that makes people keep it.
+
+     People put stickers on laptops, charms in their Crocs, four emoji on
+     a Telegram profile. None of it does anything. All of it is why they
+     stay attached to the thing. And in an editor, other people see this:
+     a developer screen-shares several times a day, and the vibe is down
+     the left of every hidden line.
+
+     So this is not a settings screenshot. It is somebody making the tool
+     theirs, and it should look like fun.
+
+     RECORD
+       1. Code hidden. Click Vibe in the status bar.
+       2. Arrow slowly down the list — the editor behind changes with
+          each one. That change is the whole recording; let it land.
+       3. Stop on one that is nothing like the default.
+
+     ABOUT 6 SECONDS.   SAVE AS  media/mark.gif
+     ═══════════════════════════════════════════════════════════════════ -->
+
+| | |
+|---|---|
+| **Vibe** | <img src="https://raw.githubusercontent.com/naveed-toro/vibe-read/main/media/vibe-read-vibe.gif" width="420" alt="Pick a vibe for the hidden code, or press the pencil and make your own"> |
+
+
+The default is an ellipsis, and that is the point — an emoji repeated down a
+whole page is the noise this exists to remove. But the vibe is yours. Click
+**Vibe** at the bottom and take one of these, or put in anything you like —
+emoji, text, or both. Your system's emoji keyboard does the choosing.
+
+```
+⋯          Mute      ← the default
+🤫         Shh
+🙈 🙉 🙊    Hide
+🌚         Vibe
+💻         Code
+🦆 ☕       Yours
+```
+
+The name is not decoration. It goes up in the status bar beside whatever you
+picked, so the corner reads **🤫 Shh** or **🙈 🙉 🙊 Hide** — the mood, not just
+the mark.
+
+And the name belongs to the slot, not the character. Put something else in the
+Shh slot and it is still your Shh. Every row has a pencil, and the last row is
+a duck and a coffee only because somebody had to go first. They are a starting
+point, not a cage.
+
+---
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     GIF 3 — small, and deliberately so.
+
+     Watching the first one, a reader thinks: that is a blunt instrument,
+     I would want some of the code. This answers that, but the doubt
+     forms after the pitch, not before it — so it belongs here, and it
+     must not compete with the first picture for attention.
+
+     RECORD
+       1. Already in reading mode — monkeys showing.
+       2. Frame EIGHT OR TEN LINES ONLY, not the whole editor. This is
+          what keeps it small.
+       3. Drag-select two or three lines. The selection must be visible.
+       4. Press Alt+X. Only that code comes back.
+       5. Hold 2 seconds. Stop.
+
+     ABOUT 4 SECONDS.   SAVE AS  media/select.gif
+     ═══════════════════════════════════════════════════════════════════ -->
+
+| | |
+|---|---|
+| select lines<br><kbd>Alt</kbd> <kbd>X</kbd> | Only the selected lines come back. |
+
+Some parts you want to read with the code. Select those lines, press Alt+X
+again.
+
+---
+
+<!-- ═══════════════════════════════════════════════════════════════════
      GIF 1 — the one that decides whether anybody installs this.
 
      Nobody reads a marketplace page. They scroll for two seconds, watch
@@ -51,104 +154,6 @@ The noise is gone. Just the reasoning.
 Now you know what your AI built — and what to ask for next.
 
 Nothing was edited. Press Alt+X again and it is all back.
-
----
-
-<!-- ═══════════════════════════════════════════════════════════════════
-     GIF 2 — the second reason to install.
-
-     The message is not what the notes say. It is that a document
-     appeared. That is a movement, so it has to move.
-
-     RECORD
-       1. Same file, already in reading mode — the monkeys showing, so
-          this picks up where the one above left off.
-       2. Window wide enough for two panes side by side.
-       3. Press Alt+M. The notes open on the right.
-       4. Hold 3 seconds on the split view. Stop.
-
-     ABOUT 5 SECONDS.   SAVE AS  media/notes.gif
-     ═══════════════════════════════════════════════════════════════════ -->
-
-| | |
-|---|---|
-| <kbd>Alt</kbd> <kbd>M</kbd> | <img src="https://raw.githubusercontent.com/naveed-toro/vibe-read/main/media/vibe-read-page.gif" width="420" alt="Click Page: the whole file's reasoning, set like a book"> |
-
-One more key, and it is yours to keep. The reasoning becomes the document.
-
----
-
-<!-- ═══════════════════════════════════════════════════════════════════
-     GIF 3 — small, and deliberately so.
-
-     Watching the first one, a reader thinks: that is a blunt instrument,
-     I would want some of the code. This answers that, but the doubt
-     forms after the pitch, not before it — so it belongs here, and it
-     must not compete with the first picture for attention.
-
-     RECORD
-       1. Already in reading mode — monkeys showing.
-       2. Frame EIGHT OR TEN LINES ONLY, not the whole editor. This is
-          what keeps it small.
-       3. Drag-select two or three lines. The selection must be visible.
-       4. Press Alt+X. Only that code comes back.
-       5. Hold 2 seconds. Stop.
-
-     ABOUT 4 SECONDS.   SAVE AS  media/select.gif
-     ═══════════════════════════════════════════════════════════════════ -->
-
-| | |
-|---|---|
-| select lines<br><kbd>Alt</kbd> <kbd>X</kbd> | Only the selected lines come back. |
-
-Some parts you want to read with the code. Select those lines, press Alt+X
-again.
-
----
-
-<!-- ═══════════════════════════════════════════════════════════════════
-     GIF 4 — the one that makes people keep it.
-
-     People put stickers on laptops, charms in their Crocs, four emoji on
-     a Telegram profile. None of it does anything. All of it is why they
-     stay attached to the thing. And in an editor, other people see this:
-     a developer screen-shares several times a day, and the vibe is down
-     the left of every hidden line.
-
-     So this is not a settings screenshot. It is somebody making the tool
-     theirs, and it should look like fun.
-
-     RECORD
-       1. Code hidden. Click Vibe in the status bar.
-       2. Arrow slowly down the list — the editor behind changes with
-          each one. That change is the whole recording; let it land.
-       3. Stop on one that is nothing like the default.
-
-     ABOUT 6 SECONDS.   SAVE AS  media/mark.gif
-     ═══════════════════════════════════════════════════════════════════ -->
-
-The default is an ellipsis, and that is the point — an emoji repeated down a
-whole page is the noise this exists to remove. But the vibe is yours. Click
-**Vibe** at the bottom and take one of these, or put in anything you like —
-emoji, text, or both. Your system's emoji keyboard does the choosing.
-
-```
-⋯          Mute      ← the default
-🤫         Shh
-🙈 🙉 🙊    Hide
-🌚         Vibe
-💻         Code
-🦆 ☕       Yours
-```
-
-The name is not decoration. It goes up in the status bar beside whatever you
-picked, so the corner reads **🤫 Shh** or **🙈 🙉 🙊 Hide** — the mood, not just
-the mark.
-
-And the name belongs to the slot, not the character. Put something else in the
-Shh slot and it is still your Shh. Every row has a pencil, and the last row is
-a duck and a coffee only because somebody had to go first. They are a starting
-point, not a cage.
 
 ---
 
