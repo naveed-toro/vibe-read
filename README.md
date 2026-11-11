@@ -18,284 +18,49 @@
 
 | | |
 |---|---|
-| 🖱️&nbsp;**Read** | Click: the code hides, only the comments stay. **Scroll and read just them, nothing in the way.** Click again: your code is back, exactly as it was. *The button counts the comments as whys (10 whys).* |
-| 🖱️&nbsp;**📖&nbsp;Page** | Always there. Opens the whole file's reasoning as a clean page, ready to save as notes. |
-| <kbd>Alt</kbd> <kbd>X</kbd> | The code hides. Only the comments, the AI's reasons, stay. Select some lines first to bring back just those. |
-| <kbd>Alt</kbd> <kbd>M</kbd> | The whole file's reasoning opens as a clean reading page, with each paragraph's code folded underneath. Save it as Markdown for GitHub, Obsidian or Notion. |
-| <kbd>Ctrl</kbd> <kbd>C</kbd> | Copies only what you see. |
-| **Vibe** | Pick the mark shown where the code is hidden: ⋯, 🤫, 🙈 🙉 🙊. It shows in the status bar too. |
-
-Can't see a button? Right-click the status bar and tick **Vibe Read: Read**, **Page** or **Your vibe**. <kbd>Alt</kbd> <kbd>X</kbd> and <kbd>Alt</kbd> <kbd>M</kbd> always work.
-
-Works in more than 40 languages, including Java, TypeScript and Python.
-
----
-
-<!-- ═══════════════════════════════════════════════════════════════════
-     GIF 2 — the second reason to install.
-
-     The message is not what the notes say. It is that a document
-     appeared. That is a movement, so it has to move.
-
-     RECORD
-       1. Same file, already in reading mode — the monkeys showing, so
-          this picks up where the one above left off.
-       2. Window wide enough for two panes side by side.
-       3. Press Alt+M. The notes open on the right.
-       4. Hold 3 seconds on the split view. Stop.
-
-     ABOUT 5 SECONDS.   SAVE AS  media/notes.gif
-     ═══════════════════════════════════════════════════════════════════ -->
-
-| | |
-|---|---|
 | <kbd>Alt</kbd> <kbd>M</kbd><br><br>🖱️&nbsp;**📖&nbsp;Page** | <img src="https://raw.githubusercontent.com/naveed-toro/vibe-read/main/media/vibe-read-page.gif" width="460" alt="Click Page: every why numbered, set like a book, then save it as notes"> |
 
 **Read it like a book.** Every why numbered — then save it as notes, a Markdown file next to your code.
 
 ---
 
-<!-- ═══════════════════════════════════════════════════════════════════
-     GIF 4 — the one that makes people keep it.
+## Code is for the machine. Comments are for you.
 
-     People put stickers on laptops, charms in their Crocs, four emoji on
-     a Telegram profile. None of it does anything. All of it is why they
-     stay attached to the thing. And in an editor, other people see this:
-     a developer screen-shares several times a day, and the vibe is down
-     the left of every hidden line.
-
-     So this is not a settings screenshot. It is somebody making the tool
-     theirs, and it should look like fun.
-
-     RECORD
-       1. Code hidden. Click Vibe in the status bar.
-       2. Arrow slowly down the list — the editor behind changes with
-          each one. That change is the whole recording; let it land.
-       3. Stop on one that is nothing like the default.
-
-     ABOUT 6 SECONDS.   SAVE AS  media/mark.gif
-     ═══════════════════════════════════════════════════════════════════ -->
-
-
-The default is an ellipsis, and that is the point — an emoji repeated down a
-whole page is the noise this exists to remove. But the vibe is yours. Click
-**Vibe** at the bottom and take one of these, or put in anything you like —
-emoji, text, or both. Your system's emoji keyboard does the choosing.
-
-```
-⋯          Mute      ← the default
-🤫         Shh
-🙈 🙉 🙊    Hide
-🌚         Vibe
-💻         Code
-🦆 ☕       Yours
-```
-
-The name is not decoration. It goes up in the status bar beside whatever you
-picked, so the corner reads **🤫 Shh** or **🙈 🙉 🙊 Hide** — the mood, not just
-the mark.
-
-And the name belongs to the slot, not the character. Put something else in the
-Shh slot and it is still your Shh. Every row has a pencil, and the last row is
-a duck and a coffee only because somebody had to go first. They are a starting
-point, not a cage.
-
----
-
-<!-- ═══════════════════════════════════════════════════════════════════
-     GIF 3 — small, and deliberately so.
-
-     Watching the first one, a reader thinks: that is a blunt instrument,
-     I would want some of the code. This answers that, but the doubt
-     forms after the pitch, not before it — so it belongs here, and it
-     must not compete with the first picture for attention.
-
-     RECORD
-       1. Already in reading mode — monkeys showing.
-       2. Frame EIGHT OR TEN LINES ONLY, not the whole editor. This is
-          what keeps it small.
-       3. Drag-select two or three lines. The selection must be visible.
-       4. Press Alt+X. Only that code comes back.
-       5. Hold 2 seconds. Stop.
-
-     ABOUT 4 SECONDS.   SAVE AS  media/select.gif
-     ═══════════════════════════════════════════════════════════════════ -->
+Your AI explains every decision it makes, in the comments. You never read them, because they are buried in the code. Vibe Read hides the code for a moment, so you finally do — and your next instruction to the AI is a sharper one.
 
 | | |
 |---|---|
-| select lines<br><kbd>Alt</kbd> <kbd>X</kbd> | Only the selected lines come back. |
+| 🖱️&nbsp;**Read** · <kbd>Alt</kbd>&nbsp;<kbd>X</kbd> | The code hides. Only the AI's reasons, the comments, stay. Press again and it is back exactly as it was — nothing is edited. |
+| 🖱️&nbsp;**📖&nbsp;Page** · <kbd>Alt</kbd>&nbsp;<kbd>M</kbd> | The whole file's reasoning on one page, every why numbered, its code folded under it. **Save as notes** keeps it as a Markdown file for GitHub, Obsidian or Notion. |
+| Select&nbsp;lines · <kbd>Alt</kbd>&nbsp;<kbd>X</kbd> | Hides or shows only those lines. |
+| <kbd>Ctrl</kbd>&nbsp;<kbd>C</kbd> | While the code is hidden, copies only what you see. The rest of the time it is VS Code's own copy. |
+| ✏️&nbsp;**Vibe** | The mark where the code was: ⋯ Mute, 🤫 Shh, 🙈 🙉 🙊 Hide, 🌚 Vibe, 💻 Code — or your own, with the pencil. |
 
-Some parts you want to read with the code. Select those lines, press Alt+X
-again.
+The status bar button counts the comments as **whys**: *8 whys* means the file explains eight things. A low number means the AI barely explained itself — ask it for better comments next time.
 
----
+Can't see a button? Right-click the status bar and tick **Vibe Read: Read**, **Page** or **Your vibe**. <kbd>Alt</kbd> <kbd>X</kbd> and <kbd>Alt</kbd> <kbd>M</kbd> always work.
 
-<!-- ═══════════════════════════════════════════════════════════════════
-     GIF 1 — the one that decides whether anybody installs this.
+## How to use it with your AI
 
-     Nobody reads a marketplace page. They scroll for two seconds, watch
-     whatever moves, and decide. With no download count yet, this picture
-     carries the whole argument on its own.
+1. **Ask for reasons.** *"Write this function, and comment your reasoning."* That second half costs nothing and is the whole reason this works.
+2. **Press Read.** The code goes, the reasons stay. Thirty seconds of reading.
+3. **Ask better.** Not *"fix the checkout"*, but *"keep the discount before tax, round only at the end."* A sentence you could not have written a minute ago.
+4. **Save as notes.** What you understood is kept.
 
-     RECORD
-       1. Open samples/checkout.py. Zoom the editor up two or three steps
-          (Ctrl and +) so the text survives being shrunk on the page.
-       2. Hold still 1 second — let the eye see a normal, full file.
-       3. Press Alt+X. Now hold 3 seconds. This pause IS the recording:
-          it is the moment someone realises they are reading English
-          instead of code. Do not cut it short.
-       4. Press Alt+X again. Hold 1 second. Stop.
+Then round again. Each turn you understand a little more, and the AI guesses a little less.
 
-     ABOUT 6 SECONDS, looping.
+## Any language
 
-     HOW
-       ScreenToGif — free, Windows, built for this.
-       Turn ON the keystroke overlay so Alt+X appears as it is pressed.
-       Frame the editor only. No title bar, no sidebar, no taskbar.
-       12 fps is plenty. Under 3 MB, or the page crawls.
-       A dark theme gives a smaller, cleaner file than a light one.
+Python, JavaScript, TypeScript, JSX/TSX, Java, C, C++, C#, Go, Rust, Ruby, PHP, Swift, Kotlin, Scala, Dart, SQL, HTML, XML, Vue, Svelte, CSS, YAML, TOML, shell, PowerShell, Dockerfile, Makefile, Lua, Haskell, Clojure, LaTeX, MATLAB, R, Perl, Elixir and more.
 
-     SAVE AS  media/hide.gif   then commit and push.
-     ═══════════════════════════════════════════════════════════════════ -->
-
-The noise is gone. Just the reasoning.
-
-**Code is for the machine. Comments are for you.**
-Now you know what your AI built — and what to ask for next.
-
-Nothing was edited. Press Alt+X again and it is all back.
-
----
-
-## Any language.
-
-Python, JavaScript, TypeScript, JSX/TSX, Java, C, C++, C#, Go, Rust, Ruby,
-PHP, Swift, Kotlin, Scala, Dart, SQL, HTML, XML, Vue, Svelte, CSS, YAML, TOML,
-shell, PowerShell, Dockerfile, Makefile, Lua, Haskell, Clojure, LaTeX, MATLAB,
-R, Perl, Elixir and more. Trailing comments and Python docstrings too.
-
-## Two keys
-
-| Key | What it does |
-|---|---|
-| <kbd>Alt</kbd> <kbd>X</kbd> | Hide / show the code. Select some lines to do only those. |
-| <kbd>Alt</kbd> <kbd>M</kbd> | Keep it as notes |
-| <kbd>Ctrl</kbd> <kbd>C</kbd> | Copy only what you see |
-
-That is all of them. There is nothing else to learn.
-
-<br>
-
----
-
-<br>
-
-*Everything below is for whoever wants it. The keys above are the whole
-extension.*
-
-## The notes, close up
-
-This is what `Alt+M` writes. The fold is real — click it.
-
-**checkout.py** · 🙈 Vibe Read · 1 note
-
-**1. Discount before tax**
-
-The other order overcharges the customer, and in most places it is also
-illegal.
-
-<details>
-<summary>🙈 code</summary>
-
-```python
-if coupon:
-    subtotal *= (1 - coupon.rate)
-```
-
-</details>
-
-Dated, numbered, and yours. Nothing is written to disk until you save it.
-
-## This isn't a folding tool. It's a way of working.
-
-You describe what you want. The AI writes it — clean, structured, and full of
-comments explaining every decision it made. Those comments are gold. They are
-the AI telling you exactly what it was thinking.
-
-But you never read them. They arrive buried inside two hundred lines of code,
-and your eyes go straight to the code. So you skim, you accept, you move on —
-and you learn nothing. Then the next prompt is just as vague as the last one.
-
-That is the trap. Not that the AI writes badly, but that it explains itself to
-someone who is not listening.
-
-**Vibe Read breaks the habit.** One key hides the code and leaves only the
-reasoning. Thirty seconds later you know the shape of the solution — and your
-next instruction is a sharper one, because you know what you are asking it to
-change.
-
-## The loop
-
-**1. Ask for reasoning.** *"Write this function, and comment your reasoning."*
-Most people never add that second half. It costs nothing, and it is the whole
-reason this works.
-
-**2. You get code.** Correct, probably. Overwhelming, definitely.
-
-**3. Press `Alt+X`.** The code goes. The reasoning stays.
-
-**4. Read it.** Thirty seconds.
-
-**5. Ask better.** Not *"fix the checkout"* — but *"keep the discount order,
-but round after tax, not before."* That is a sentence you could not have
-written a minute ago.
-
-**6. Press `Alt+M`.** What you understood is kept.
-
-Then round again. Each turn you understand a little more, and the AI guesses a
-little less. That is the whole method, and there is nothing clever about it —
-it only works because you finally read the part you were skipping.
-
-## Small things that matter
-
-**Trailing comments.** `total = subtotal * 1.2  # VAT included here` hides the
-statement and leaves the reason. The comment is the point; the multiplication
-is not.
-
-**Python docstrings count as reasoning, not code.** Most languages explain
-themselves in real comments — JSDoc, Javadoc, `///`, `<!-- -->`. Python puts
-its explanation in a string, and hiding that would defeat the entire point. A
-string used as data — a block of SQL, an HTML template — is code, and goes.
-
-**`Ctrl+C` only changes while something is hidden.** The rest of the time it
-is VS Code's own copy, untouched. An editor's defaults are not mine to take
-away.
-
-**Your vibe is seen by other people.** That is half the point of letting you
-choose it. You screen-share, you pair, you paste a screenshot into a pull
-request — and it is down the left of every hidden line while you do. Nobody
-ever saw your tab width.
+**Trailing comments** count: `total = subtotal * 1.2  # VAT included` hides the sum and keeps the reason. **Python docstrings** count as reasoning too; a string used as data, like a block of SQL, is code and hides.
 
 ## Why I built this
 
-I built an extension called **Smart Fold** a while back. It folded code. It
-had four modes and eight commands, and almost nobody used it — which was fair,
-because nobody wants to learn eight commands.
+I stopped writing most of my code and started describing it instead. The AI explained itself carefully every single time — and I ignored every word, accepted code I had not understood, then wondered why my prompts were not working.
 
-Then the way I worked changed. I stopped writing most of my code and started
-describing it instead. And I noticed something uncomfortable: the AI was
-explaining itself carefully, every single time, and I was ignoring every word
-of it. I was accepting code I had not understood, and then complaining that my
-prompts were not working.
-
-The problem was never folding. It was that the explanation and the code live
-in the same file, and the code always wins your attention.
-
-So this does one thing. It takes the code away for a moment, so you can
-actually read what your AI told you.
+The explanation and the code live in the same file, and the code always wins your attention. So this does one thing: it takes the code away for a moment, so you can actually read what your AI told you.
 
 ---
 
-*Made by [Naveed](https://github.com/naveed-toro). MIT licensed.
-Issues and ideas welcome at
-[github.com/naveed-toro/vibe-read](https://github.com/naveed-toro/vibe-read).*
+*Made by [Naveed](https://github.com/naveed-toro). MIT licensed. Issues and ideas welcome at [github.com/naveed-toro/vibe-read](https://github.com/naveed-toro/vibe-read).*

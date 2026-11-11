@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.9 — a read-me for people who scroll
+
+The four recordings come first, one after another. Under them, one short section says what it is, one table says what every button does, and four steps say how to use it with an AI. Old sections that described earlier versions are gone.
+
 ## 0.4.8
 
 A new Page recording: click **Page**, scroll the numbered whys, press **Save as notes**, and it is saved.
