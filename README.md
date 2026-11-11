@@ -36,6 +36,12 @@ Your AI explains every decision it makes, in the comments. You never read them, 
 | <kbd>Ctrl</kbd>&nbsp;<kbd>C</kbd> | While the code is hidden, copies only what you see. The rest of the time it is VS Code's own copy. |
 | ✏️&nbsp;**Vibe** | The mark where the code was: ⋯ Mute, 🤫 Shh, 🙈 🙉 🙊 Hide, 🌚 Vibe, 💻 Code — or your own, with the pencil. |
 
+| | |
+|---|---|
+| Select<br><br><kbd>Alt</kbd> <kbd>X</kbd><br><br><kbd>Ctrl</kbd> <kbd>C</kbd> | <img src="https://raw.githubusercontent.com/naveed-toro/vibe-read/main/media/vibe-select.gif" width="380" alt="Select a part, press Alt+X, Ctrl+C copies only its reasons"> |
+
+**Just the lines you choose.** Select a part, hide its code, copy only its reasons — and paste them to your AI.
+
 The status bar button counts the comments as **whys**: *8 whys* means the file explains eight things. A low number means the AI barely explained itself — ask it for better comments next time.
 
 Can't see a button? Right-click the status bar and tick **Vibe Read: Read**, **Page** or **Your vibe**. <kbd>Alt</kbd> <kbd>X</kbd> and <kbd>Alt</kbd> <kbd>M</kbd> always work.
@@ -53,7 +59,7 @@ Then round again. Each turn you understand a little more, and the AI guesses a l
 
 Python, JavaScript, TypeScript, JSX/TSX, Java, C, C++, C#, Go, Rust, Ruby, PHP, Swift, Kotlin, Scala, Dart, SQL, HTML, XML, Vue, Svelte, CSS, YAML, TOML, shell, PowerShell, Dockerfile, Makefile, Lua, Haskell, Clojure, LaTeX, MATLAB, R, Perl, Elixir and more.
 
-**Trailing comments** count: `total = subtotal * 1.2  # VAT included` hides the sum and keeps the reason. **Python docstrings** count as reasoning too; a string used as data, like a block of SQL, is code and hides.
+Comments at the end of a line and Python docstrings count as reasons too.
 
 ## Why I built this
 
