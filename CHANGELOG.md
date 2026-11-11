@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.8
+
+A new Page recording: click **Page**, scroll the numbered whys, press **Save as notes**, and it is saved.
+
 ## 0.4.7
 
 The three recordings at the top show the new status bar: **Read**, **Page** always there, and the compact vibe.

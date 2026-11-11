@@ -49,9 +49,9 @@ Works in more than 40 languages, including Java, TypeScript and Python.
 
 | | |
 |---|---|
-| <kbd>Alt</kbd> <kbd>M</kbd> | <img src="https://raw.githubusercontent.com/naveed-toro/vibe-read/main/media/vibe-read-page.gif" width="420" alt="Click Page: the whole file's reasoning, set like a book"> |
+| <kbd>Alt</kbd> <kbd>M</kbd><br><br>🖱️&nbsp;**📖&nbsp;Page** | <img src="https://raw.githubusercontent.com/naveed-toro/vibe-read/main/media/vibe-read-page.gif" width="460" alt="Click Page: every why numbered, set like a book, then save it as notes"> |
 
-One more key, and it is yours to keep. The reasoning becomes the document.
+**Read it like a book.** Every why numbered — then save it as notes, a Markdown file next to your code.
 
 ---
 
