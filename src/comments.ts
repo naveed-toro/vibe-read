@@ -1,9 +1,16 @@
 // ---------------------------------------------------------------------------
 // Knowing what a comment looks like, in any language.
 //
-// The old extension only understood //, /* and *. That meant it worked on
-// JavaScript and almost nothing else — while the AI people actually use it
-// with writes mostly Python. This file fixes that.
+// Every line of a file is one of four things: blank, a comment, code, or code
+// with a comment at the end. Getting that right is the whole extension — a
+// line called a comment by mistake stays on screen while its code vanishes,
+// and a comment called code disappears with the code.
+//
+// It is a small scanner rather than a regular expression, because the hard
+// cases are all about context: a // inside a string, a /* inside a glob, a
+// # inside ${#arr[@]}, a regex like /https?:\/\//, a string that runs over
+// several lines. It remembers, from one line to the next, whether it is
+// inside a block comment, a docstring or a multi-line string.
 // ---------------------------------------------------------------------------
 
 export interface CommentSyntax {
@@ -11,71 +18,110 @@ export interface CommentSyntax {
     line: string[];
     /** Block comment delimiters, if the language has them. */
     block?: { open: string; close: string };
-    /**
-     * Quote marks that, when a line begins with them, open a block of prose
-     * rather than a value. Python's docstrings, essentially.
-     *
-     * Every other language documents itself in real comments — JSDoc, Javadoc,
-     * `///`, `<!-- -->`, `/* *\/` are all comments already. Python is the one
-     * that puts its explanation in a string, and it is also the language most
-     * AI-written code arrives in, so it cannot be left out.
-     */
+    /** Python-style docstrings: a string at the start of a body is prose. */
     docQuotes?: string[];
+    /** Strings that may run over several lines: ` in JavaScript, """ in Kotlin. */
+    multiQuotes?: string[];
+    /** Single-line quote marks. Defaults to " ' and `. */
+    quotes?: string;
+    /** JavaScript-style /regex/ literals, which can contain //. */
+    regex?: boolean;
+    /** Words that start a comment line, any case: REM in batch files. */
+    words?: string[];
+    /** Haskell: -- followed by a symbol is an operator, not a comment. */
+    dashOperators?: boolean;
+    /** PHP 8: #[Attribute] is code, not a comment. */
+    hashBracketIsCode?: boolean;
+    /** HTML, Vue, Svelte: <script> and <style> sections use their own syntax. */
+    embedded?: boolean;
 }
 
-const C_STYLE: CommentSyntax = { line: ['//'], block: { open: '/*', close: '*/' } };
+const C: CommentSyntax = { line: ['//'], block: { open: '/*', close: '*/' } };
+const C_MULTI: CommentSyntax = { ...C, multiQuotes: ['"""'] };
+const JS: CommentSyntax = { ...C, multiQuotes: ['`'], regex: true };
 const HASH: CommentSyntax = { line: ['#'] };
-const PYTHON: CommentSyntax = { line: ['#'], docQuotes: ['"""', "'''"] };
-const HTML: CommentSyntax = { line: [], block: { open: '<!--', close: '-->' } };
+const HASH_MULTI: CommentSyntax = { line: ['#'], multiQuotes: ['"""'] };
+const DASH: CommentSyntax = { line: ['--'] };
+const CSS: CommentSyntax = { line: [], block: { open: '/*', close: '*/' } };
+const SCSS: CommentSyntax = { ...C };
+const PYTHON: CommentSyntax = {
+    line: ['#'], docQuotes: ['"""', "'''"], multiQuotes: ['"""', "'''"],
+};
+const HTML: CommentSyntax = { line: [], block: { open: '<!--', close: '-->' }, quotes: '"', embedded: true };
+const LISP: CommentSyntax = { line: [';'], block: { open: '#|', close: '|#' }, quotes: '"' };
 
 const BY_LANGUAGE: Record<string, CommentSyntax> = {
-    // C family
-    javascript: C_STYLE, javascriptreact: C_STYLE,
-    typescript: C_STYLE, typescriptreact: C_STYLE,
-    java: C_STYLE, c: C_STYLE, cpp: C_STYLE, csharp: C_STYLE,
-    go: C_STYLE, rust: C_STYLE, swift: C_STYLE, kotlin: C_STYLE,
-    scala: C_STYLE, dart: C_STYLE, php: { line: ['//', '#'], block: { open: '/*', close: '*/' } },
-    json: C_STYLE, jsonc: C_STYLE, groovy: C_STYLE, objectivec: C_STYLE,
+    javascript: JS, javascriptreact: JS, typescript: JS, typescriptreact: JS,
+    coffeescript: { line: ['#'], block: { open: '###', close: '###' }, multiQuotes: ['"""', "'''"] },
+    java: C_MULTI, kotlin: C_MULTI, scala: C_MULTI, swift: C_MULTI, csharp: C_MULTI,
+    groovy: { ...C, multiQuotes: ['"""', "'''"] },
+    dart: { ...C, multiQuotes: ['"""', "'''"] },
+    go: { ...C, multiQuotes: ['`'] },
+    c: C, cpp: C, 'objective-c': C, 'objective-cpp': C, objectivec: C, 'cuda-cpp': C,
+    rust: C, zig: { line: ['//'] }, d: C, v: C, solidity: C, proto: C, proto3: C,
+    hlsl: C, glsl: C, shaderlab: C, arduino: C, apex: C, verilog: C, systemverilog: C,
+    json: C, jsonc: C, json5: C,
+    php: { line: ['//', '#'], block: { open: '/*', close: '*/' }, hashBracketIsCode: true },
+    fsharp: { line: ['//'], block: { open: '(*', close: '*)' }, multiQuotes: ['"""'] },
+    ocaml: { line: [], block: { open: '(*', close: '*)' }, quotes: '"' },
+    pascal: { line: ['//'], block: { open: '{', close: '}' } },
 
-    // Hash family — this is the one that matters most
-    python: PYTHON, ruby: HASH, shellscript: HASH, bash: HASH, zsh: HASH,
-    yaml: HASH, toml: HASH, dockerfile: HASH, makefile: HASH,
-    r: HASH, perl: HASH, elixir: HASH, powershell: { line: ['#'], block: { open: '<#', close: '#>' } },
+    python: PYTHON, mojo: PYTHON, gdscript: { ...PYTHON },
+    julia: { line: ['#'], block: { open: '#=', close: '=#' }, multiQuotes: ['"""'] },
+    ruby: { line: ['#'], block: { open: '=begin', close: '=end' } },
+    crystal: HASH, elixir: HASH_MULTI, nim: { line: ['#'], block: { open: '#[', close: ']#' }, multiQuotes: ['"""'] },
+    perl: { line: ['#'], block: { open: '=pod', close: '=cut' } }, raku: HASH,
+    r: HASH, tcl: HASH, awk: HASH,
+    shellscript: HASH, bash: HASH, sh: HASH, zsh: HASH, fish: HASH, nushell: HASH,
+    powershell: { line: ['#'], block: { open: '<#', close: '#>' } },
+    yaml: HASH, toml: HASH, dockerfile: HASH, makefile: HASH, cmake: HASH,
+    properties: { line: ['#', '!'] }, dotenv: HASH, ignore: HASH, gitignore: HASH,
+    graphql: HASH, nix: { line: ['#'], block: { open: '/*', close: '*/' } },
+    terraform: { line: ['#', '//'], block: { open: '/*', close: '*/' } },
+    hcl: { line: ['#', '//'], block: { open: '/*', close: '*/' } },
+    ini: { line: [';', '#'] },
+    bat: { line: ['::'], words: ['rem'] },
 
-    // Markup
-    html: HTML, xml: HTML, markdown: HTML, vue: HTML, svelte: HTML,
+    html: HTML, xml: { ...HTML, embedded: false }, svg: { ...HTML, embedded: false },
+    vue: HTML, svelte: HTML, astro: HTML, 'django-html': HTML, razor: HTML,
+    markdown: { ...HTML, embedded: false },
+    handlebars: { line: [], block: { open: '{{!--', close: '--}}' }, quotes: '"' },
+    twig: { line: [], block: { open: '{#', close: '#}' }, quotes: '"' },
+    jinja: { line: [], block: { open: '{#', close: '#}' }, quotes: '"' },
+    css: CSS, scss: SCSS, less: SCSS, sass: { line: ['//'], block: { open: '/*', close: '*/' } },
+    stylus: SCSS,
 
-    // Others
-    css: { line: [], block: { open: '/*', close: '*/' } },
-    scss: C_STYLE, less: C_STYLE,
     sql: { line: ['--'], block: { open: '/*', close: '*/' } },
-    lua: { line: ['--'], block: { open: '--[[', close: ']]' } },
-    haskell: { line: ['--'], block: { open: '{-', close: '-}' } },
-    clojure: { line: [';'] }, lisp: { line: [';'] }, ini: { line: [';', '#'] },
-    latex: { line: ['%'] }, matlab: { line: ['%'] }, erlang: { line: ['%'] },
-    vb: { line: ["'"] },
+    lua: { line: ['--'], block: { open: '--[[', close: ']]' }, multiQuotes: ['[['] },
+    haskell: { line: ['--'], block: { open: '{-', close: '-}' }, dashOperators: true },
+    elm: { line: ['--'], block: { open: '{-', close: '-}' }, dashOperators: true },
+    purescript: { line: ['--'], block: { open: '{-', close: '-}' }, dashOperators: true },
+    ada: DASH, vhdl: DASH,
+    clojure: LISP, lisp: LISP, scheme: LISP, racket: LISP,
+    latex: { line: ['%'], quotes: '' }, tex: { line: ['%'], quotes: '' }, bibtex: { line: ['%'], quotes: '' },
+    matlab: { line: ['%'], block: { open: '%{', close: '%}' } },
+    erlang: { line: ['%'] }, prolog: { line: ['%'], block: { open: '/*', close: '*/' } },
+    fortran: { line: ['!'] }, 'fortran-modern': { line: ['!'] }, FortranFreeForm: { line: ['!'] },
+    vb: { line: ["'"], words: ['rem'], quotes: '"' },
 };
 
-/** Falls back to C-style, which is the most common shape. */
 export function syntaxFor(languageId: string): CommentSyntax {
-    return BY_LANGUAGE[languageId] ?? C_STYLE;
+    return BY_LANGUAGE[languageId] ?? C;
 }
+
+/** The syntax used inside <script> and <style> in HTML-like files. */
+const SECTION: Record<string, CommentSyntax> = { script: JS, style: CSS };
 
 /**
  * How many separate things the file explains — its "whys".
  *
- * Not the number of comment lines. A four-line paragraph is one reason told
- * over four lines, not four reasons, and counting lines would say otherwise.
  * A run of comment lines is one why; a blank line or a line of code ends it;
- * a trailing comment is a why of its own, belonging to the line it sits on.
- *
- * This is the unit the status bar counts and the unit Alt+M turns into a
- * numbered section, so both always agree.
+ * a trailing comment is a why of its own. This is the unit the status bar
+ * counts and the reading page numbers, so both always agree.
  */
 export function countWhys(lines: ScannedLine[]): number {
     let total = 0;
     let insideRun = false;
-
     for (const line of lines) {
         if (line.kind.kind === 'comment') {
             if (!insideRun) { total++; insideRun = true; }
@@ -97,175 +143,245 @@ export interface ScannedLine {
 export type LineKind =
     | { kind: 'blank' }
     | { kind: 'comment' }
-    /** Nothing but code on this line. */
     | { kind: 'code' }
     /** Code, then a trailing comment. `commentAt` is where the comment starts. */
     | { kind: 'mixed'; commentAt: number };
 
-/**
- * Works out what a single line is made of.
- *
- * `insideBlock` tells us we are already inside a /* ... *\/ that opened on an
- * earlier line, so the whole line counts as comment.
- */
-export function readLine(
-    text: string,
-    syntax: CommentSyntax,
-    insideBlock: boolean,
-    docAllowed = false
-): LineKind {
-    // Inside a block, even an empty line belongs to it. This is checked first:
-    // treating it as blank would cut one long explanation into two.
-    if (insideBlock) { return { kind: 'comment' }; }
-    if (text.trim() === '') { return { kind: 'blank' }; }
-
-    const trimmed = text.trim();
-
-    // A line that opens with a comment token is a comment line.
-    for (const token of syntax.line) {
-        if (trimmed.startsWith(token)) { return { kind: 'comment' }; }
-    }
-    if (syntax.block && trimmed.startsWith(syntax.block.open)) { return { kind: 'comment' }; }
-    // A docstring: prose, so far as anyone reading is concerned.
-    if (docAllowed && openingDoc(trimmed, syntax) !== null) { return { kind: 'comment' }; }
-    // Continuation of a JSDoc-style block: "  * some text"
-    if (syntax.block?.open === '/*' && trimmed.startsWith('*')) { return { kind: 'comment' }; }
-
-    // Otherwise: is there a comment further along the line? We have to walk the
-    // characters so that a // inside a string doesn't fool us.
-    const at = findTrailingComment(text, syntax);
-    return at === -1 ? { kind: 'code' } : { kind: 'mixed', commentAt: at };
+/** What the scanner is in the middle of when a line ends. */
+interface State {
+    mode: 'code' | 'block' | 'doc' | 'string';
+    close: string;
+    section: 'html' | 'script' | 'style';
 }
 
-/** Index where a trailing comment begins, or -1. Ignores tokens inside strings. */
-function findTrailingComment(text: string, syntax: CommentSyntax): number {
-    let quote: string | null = null;
+const WORDS_BEFORE_REGEX = new Set([
+    'return', 'typeof', 'case', 'do', 'else', 'in', 'of', 'yield', 'await',
+    'void', 'delete', 'throw', 'new',
+]);
 
-    for (let i = 0; i < text.length; i++) {
+export function scanLines(texts: string[], syntax: CommentSyntax): ScannedLine[] {
+    const out: ScannedLine[] = [];
+    let state: State = { mode: 'code', close: '', section: 'html' };
+    let previous: string | null = null;   // last line that was not blank
+
+    texts.forEach((text, index) => {
+        const active = syntax.embedded && state.section !== 'html' ? SECTION[state.section] : syntax;
+        // A docstring only opens a body: the first line of the file, or right
+        // after a line that ends with a colon.
+        const docAllowed = previous === null || previous.trimEnd().endsWith(':');
+        const result = scanLine(text, active, state, docAllowed, index === 0);
+        out.push({ kind: result.kind, codeStart: text.length - text.trimStart().length });
+        state = result.state;
+        if (syntax.embedded) { state = { ...state, section: nextSection(text, state.section) }; }
+        if (text.trim() !== '') { previous = text; }
+    });
+    return out;
+}
+
+function nextSection(text: string, section: State['section']): State['section'] {
+    const lower = text.toLowerCase();
+    if (section === 'html') {
+        for (const tag of ['script', 'style'] as const) {
+            const open = lower.lastIndexOf(`<${tag}`);
+            if (open !== -1 && lower.indexOf(`</${tag}`, open) === -1) { return tag; }
+        }
+        return 'html';
+    }
+    return lower.includes(`</${section}`) ? 'html' : section;
+}
+
+function scanLine(
+    text: string,
+    syntax: CommentSyntax,
+    state: State,
+    docAllowed: boolean,
+    firstLine: boolean,
+): { kind: LineKind; state: State } {
+    const keep = { ...state };
+
+    // Inside a block comment or a docstring: the whole line is prose.
+    if (state.mode === 'block' || state.mode === 'doc') {
+        if (text.includes(state.close)) { keep.mode = 'code'; }
+        return { kind: { kind: 'comment' }, state: keep };
+    }
+
+    let from = 0;
+    let kind: LineKind = { kind: 'code' };
+
+    // Inside a string that started on an earlier line: this line is code
+    // until the string closes, and only after that can a comment begin.
+    if (state.mode === 'string') {
+        const end = findClose(text, 0, state.close);
+        if (end === -1) { return { kind: { kind: 'code' }, state: keep }; }
+        keep.mode = 'code';
+        from = end;
+    } else {
+        const trimmed = text.trim();
+        if (trimmed === '') { return { kind: { kind: 'blank' }, state: keep }; }
+        const start = text.length - text.trimStart().length;
+
+        // #!/usr/bin/env python is how the file is run, not an explanation.
+        if (firstLine && trimmed.startsWith('#!')) { return { kind: { kind: 'code' }, state: keep }; }
+
+        for (const word of syntax.words ?? []) {
+            const head = trimmed.slice(0, word.length + 1).toLowerCase();
+            if (head === word || head === word + ' ' || head === word + '\t') {
+                return { kind: { kind: 'comment' }, state: keep };
+            }
+        }
+
+        // A block that opens at the start of the line. Checked before line
+        // tokens because Lua's --[[ also starts with --.
+        if (syntax.block && trimmed.startsWith(syntax.block.open)) {
+            const close = text.indexOf(syntax.block.close, start + syntax.block.open.length);
+            if (close === -1) { keep.mode = 'block'; keep.close = syntax.block.close; }
+            return { kind: { kind: 'comment' }, state: keep };
+        }
+        for (const token of syntax.line) {
+            if (trimmed.startsWith(token) && tokenCounts(text, start, token, syntax)) {
+                return { kind: { kind: 'comment' }, state: keep };
+            }
+        }
+        if (docAllowed) {
+            for (const quote of syntax.docQuotes ?? []) {
+                if (trimmed.startsWith(quote)) {
+                    if (text.indexOf(quote, start + quote.length) === -1) {
+                        keep.mode = 'doc'; keep.close = quote;
+                    }
+                    return { kind: { kind: 'comment' }, state: keep };
+                }
+            }
+        }
+        from = start;
+    }
+
+    // Walk the code, skipping strings and regexes, looking for a comment.
+    const quotes = syntax.quotes ?? '"\'`';
+    let lastSignificant = '';
+    let lastWord = '';
+    let i = from;
+    while (i < text.length) {
         const ch = text[i];
 
-        if (quote) {
-            if (ch === '\\') { i++; continue; }      // escaped character
-            if (ch === quote) { quote = null; }
+        const multi = (syntax.multiQuotes ?? []).find(q => text.startsWith(q, i));
+        if (multi) {
+            const end = findClose(text, i + multi.length, multi === '[[' ? ']]' : multi);
+            if (end === -1) {
+                keep.mode = 'string'; keep.close = multi === '[[' ? ']]' : multi;
+                return { kind, state: keep };
+            }
+            i = end; lastSignificant = '"'; lastWord = '';
             continue;
         }
 
-        if (ch === '"' || ch === "'" || ch === '`') { quote = ch; continue; }
-
-        for (const token of syntax.line) {
-            if (text.startsWith(token, i)) { return i; }
+        if (quotes.includes(ch)) {
+            const end = findClose(text, i + 1, ch);
+            if (end !== -1) { i = end; lastSignificant = '"'; lastWord = ''; continue; }
+            // A quote that never closes is an apostrophe or a Rust lifetime.
+            i++;
+            continue;
         }
-        if (syntax.block && text.startsWith(syntax.block.open, i)) { return i; }
+
+        if (syntax.block && text.startsWith(syntax.block.open, i)) {
+            kind = { kind: 'mixed', commentAt: i };
+            if (text.indexOf(syntax.block.close, i + syntax.block.open.length) === -1) {
+                keep.mode = 'block'; keep.close = syntax.block.close;
+            }
+            return { kind, state: keep };
+        }
+
+        const token = syntax.line.find(t => text.startsWith(t, i) && tokenCounts(text, i, t, syntax));
+        if (token) { return { kind: { kind: 'mixed', commentAt: i }, state: keep }; }
+
+        if (syntax.regex && ch === '/' && regexCanStart(lastSignificant, lastWord)) {
+            const end = regexEnd(text, i);
+            if (end !== -1) { i = end; lastSignificant = '/'; lastWord = ''; continue; }
+        }
+
+        if (/[A-Za-z0-9_$]/.test(ch)) {
+            lastWord = /[A-Za-z0-9_$]/.test(text[i - 1] ?? '') ? lastWord + ch : ch;
+        } else if (!/\s/.test(ch)) {
+            lastWord = '';
+        }
+        if (!/\s/.test(ch)) { lastSignificant = ch; }
+        i++;
+    }
+    return { kind, state: keep };
+}
+
+/** Whether a line-comment token at position i really starts a comment. */
+function tokenCounts(text: string, i: number, token: string, syntax: CommentSyntax): boolean {
+    const before = text[i - 1];
+    const after = text[i + token.length];
+    if (token === '#') {
+        // A # in the middle of code is part of it: ${#arr[@]}, $#, color#1.
+        if (before !== undefined && !/\s/.test(before)) { return false; }
+        if (syntax.hashBracketIsCode && after === '[') { return false; }
+    }
+    // http:// in unquoted text — a URL, not a comment.
+    if (token === '//' && before === ':' && /[A-Za-z]/.test(text[i - 2] ?? '')) { return false; }
+    // \% in LaTeX is a percent sign.
+    if (token === '%' && before === '\\') { return false; }
+    // Haskell's --> and --| are operators.
+    if (token === '--' && syntax.dashOperators) {
+        let j = i;
+        while (text[j] === '-') { j++; }
+        if (j < text.length && /[!#$%&*+./<=>?@\\^|~:]/.test(text[j])) { return false; }
+    }
+    return true;
+}
+
+/** Index just past the closing quote, or -1 if it does not close on this line. */
+function findClose(text: string, from: number, quote: string): number {
+    for (let j = from; j < text.length; j++) {
+        if (text[j] === '\\' && quote !== '[[' && quote !== ']]') { j++; continue; }
+        if (text.startsWith(quote, j)) { return j + quote.length; }
+    }
+    return -1;
+}
+
+function regexCanStart(lastSignificant: string, lastWord: string): boolean {
+    if (lastWord && WORDS_BEFORE_REGEX.has(lastWord)) { return true; }
+    if (lastWord) { return false; }
+    return lastSignificant === '' || '(,=:[!&|?{};+-*%<>~^'.includes(lastSignificant);
+}
+
+function regexEnd(text: string, start: number): number {
+    if (text[start + 1] === '/' || text[start + 1] === '*') { return -1; }
+    let inClass = false;
+    for (let j = start + 1; j < text.length; j++) {
+        const ch = text[j];
+        if (ch === '\\') { j++; continue; }
+        if (ch === '[') { inClass = true; continue; }
+        if (ch === ']') { inClass = false; continue; }
+        if (ch === '/' && !inClass) { return j + 1; }
     }
     return -1;
 }
 
 /**
- * Which docstring quote this line begins with, or null.
- *
- * The line has to *start* with it. That single condition is what keeps a
- * multi-line string being used as data out of the way:
- *
- *     query = """SELECT * FROM carts"""    <- starts with `query =`, so: code
- *     """Why this function exists."""      <- starts with the quotes, so: prose
- *
- * A string only stands alone at the start of a line when it is being used as
- * documentation. Anything else has a name or an operator in front of it.
+ * The comment's words, without the markers around them.
  */
-function openingDoc(trimmed: string, syntax: CommentSyntax): string | null {
-    for (const quote of syntax.docQuotes ?? []) {
-        if (trimmed.startsWith(quote)) { return quote; }
-    }
-    return null;
-}
-
-/** Does a block comment or docstring open on this line and stay open? */
-export function opensBlock(
-    text: string,
-    syntax: CommentSyntax,
-    insideBlock: boolean,
-    docAllowed = false
-): boolean {
-    const trimmed = text.trim();
-
-    if (insideBlock) {
-        // Whichever kind we are inside, a closing token on this line ends it.
-        // Both are checked because only one of them can have been open, and no
-        // language here has both.
-        if (syntax.block && text.includes(syntax.block.close)) { return false; }
-        for (const quote of syntax.docQuotes ?? []) {
-            if (text.includes(quote)) { return false; }
-        }
-        return !!(syntax.block || syntax.docQuotes);
-    }
-
-    if (docAllowed) {
-        const quote = openingDoc(trimmed, syntax);
-        if (quote !== null) {
-            // The tokens are the same at both ends, so a one-liner needs a
-            // second one: `"""Short."""` opens and closes on this line.
-            return trimmed.indexOf(quote, quote.length) === -1;
-        }
-    }
-
-    if (!syntax.block) { return false; }
-    const { open, close } = syntax.block;
-    const openAt = text.lastIndexOf(open);
-    if (openAt === -1) { return false; }
-    return text.indexOf(close, openAt + open.length) === -1;
-}
-
-/**
- * Reads a whole file, keeping the state that single lines cannot carry.
- *
- * The docstring rule lives here because it needs the line before. Python only
- * calls a string a docstring when it is the first thing in a module, a class
- * or a function — so it has to open the file, or follow a line ending in a
- * colon. Anywhere else a string is just a value:
- *
- *     query = """            <- a value; the closing """ below is not prose
- *         SELECT * FROM carts
- *     """
- *
- * Without that condition the closing quotes of an ordinary multi-line string
- * look exactly like the start of a docstring, and every line after it in the
- * file is misread as explanation.
- */
-export function scanLines(texts: string[], syntax: CommentSyntax): ScannedLine[] {
-    const out: ScannedLine[] = [];
-    let insideBlock = false;
-    let previous: string | null = null;   // last line that was not blank
-
-    for (const text of texts) {
-        const docAllowed = previous === null || previous.trimEnd().endsWith(':');
-
-        out.push({
-            kind: readLine(text, syntax, insideBlock, docAllowed),
-            codeStart: text.length - text.trimStart().length,
-        });
-
-        insideBlock = opensBlock(text, syntax, insideBlock, docAllowed);
-        if (text.trim() !== '') { previous = text; }
-    }
-    return out;
-}
-
-/** Strips comment markers so the text can be read as prose. */
 export function toProse(text: string, syntax: CommentSyntax): string {
     let s = text.trim();
-
-    for (const token of syntax.line) {
-        if (s.startsWith(token)) { s = s.slice(token.length); break; }
+    const all = syntax.embedded ? [syntax, JS, CSS] : [syntax];
+    for (const syn of all) {
+        // The block first: Lua's --[[ and MATLAB's %{ begin with a line token.
+        if (syn.block && s.startsWith(syn.block.open)) { s = s.slice(syn.block.open.length); }
+        else {
+            for (const token of syn.line) {
+                if (s.startsWith(token)) { s = s.slice(token.length); break; }
+            }
+        }
+        if (syn.block && s.endsWith(syn.block.close)) { s = s.slice(0, -syn.block.close.length); }
     }
-    if (syntax.block) {
-        if (s.startsWith(syntax.block.open)) { s = s.slice(syntax.block.open.length); }
-        if (s.endsWith(syntax.block.close)) { s = s.slice(0, -syntax.block.close.length); }
+    for (const word of syntax.words ?? []) {
+        if (s.toLowerCase().startsWith(word + ' ') || s.toLowerCase() === word) { s = s.slice(word.length); }
     }
     for (const quote of syntax.docQuotes ?? []) {
         if (s.startsWith(quote)) { s = s.slice(quote.length); }
         if (s.endsWith(quote)) { s = s.slice(0, -quote.length); }
     }
     if (s.startsWith('*')) { s = s.slice(1); }        // JSDoc continuation
-
     return s.trim();
 }

@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.5.0 — every language, read right
+
+The part that decides what is a comment was rewritten and tested on 56 languages. It now gets these right:
+
+- `"src/**/*.ts"` — a `/*` inside a string no longer turns the rest of the file into a comment.
+- A line starting with `*` that is code (a multiplication carried over, a generator) stays code.
+- Regular expressions like `/https?:\/\//` are not mistaken for a `//` comment.
+- `${#arr[@]}`, `$#`, `url#anchor` in shell and YAML; `#[Attribute]` in PHP.
+- Rust lifetimes (`'a`), `http://` in CSS `url(...)`, `\%` in LaTeX, Haskell's `-->`.
+- Strings that run over several lines — JavaScript templates, Go raw strings, Python and Kotlin triple quotes, Lua long strings — are code, even when a line inside starts with `//` or `#`.
+- `<script>` and `<style>` sections in HTML, Vue and Svelte use JavaScript and CSS comments.
+- `#!/bin/bash` on the first line is code.
+- New: Julia, CoffeeScript, F#, OCaml, Pascal, Nim, Crystal, Zig, Terraform, GraphQL, Nix, CMake, Fortran, Ada, VHDL, Elm, Scheme, Racket, Prolog, batch files and more.
+
 ## 0.4.9 — a read-me for people who scroll
 
 The four recordings come first, one after another. Under them, one short section says what it is, one table says what every button does, and four steps say how to use it with an AI. Old sections that described earlier versions are gone.
