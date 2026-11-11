@@ -1,15 +1,12 @@
 ## Any file. Any language.
 
-It only needs **comments** in it.
+It only needs **comments** in it — the AI's reasons.
 
-```python
-# Discount before tax. The other order
-# overcharges the customer.
-if coupon:
-    subtotal *= (1 - coupon.rate)
+```js
+// Lock the button the moment it is tapped.
+// A double tap would charge the card twice.
+button.disabled = true;
 ```
-
-**←  or open the sample file**
 
 No comments? Ask your AI again, adding
 **"and comment your reasoning."**

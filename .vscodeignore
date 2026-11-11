@@ -37,3 +37,7 @@ README-draft.md
 
 # The read-me GIFs are shown from GitHub, so the package does not carry them.
 media/*.gif
+
+# Old walkthrough pages, no longer used.
+media/3-select.md
+media/4-notes.md

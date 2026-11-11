@@ -510,9 +510,6 @@ interface Learning {
 }
 
 const LEARNING_KEY = 'vibeRead.learning';
-const TIP_LIMIT = 5;
-/** Hides after which someone who learned it and stopped gets one reminder. */
-const REMIND_AT = 60;
 
 let learningStore: vscode.Memento;
 
@@ -524,18 +521,20 @@ function learning(): Learning {
 function noteWholeFileHide(): void {
     const state = learning();
 
+    // Three hints, once each, then silence for good. Each one is the next
+    // thing worth knowing: how to undo, where the page is, what selection
+    // does. A hint that keeps coming back stops being help.
     if (state.hides === 0) {
-        say('Press Alt+X again to bring the code back.');
-    } else if (!state.usedSelection && state.hides <= TIP_LIMIT) {
-        say('Tip: select a few lines and press Alt+X to see just their code.');
-    } else if (state.usedSelection && state.hides === REMIND_AT) {
-        say('Remember: select a few lines and press Alt+X to see just their code.');
+        say('Click it again, or press Alt+X, to bring the code back.');
+    } else if (state.hides === 1) {
+        say('Tip: 📖 Page shows the whole file as a clean page you can save.');
+    } else if (state.hides === 2 && !state.usedSelection) {
+        say('Tip: select a few lines, then Alt+X, to hide or show just those.');
     }
 
-    learningStore.update(LEARNING_KEY, { ...state, hides: state.hides + 1 });
+    if (state.hides < 3) { learningStore.update(LEARNING_KEY, { ...state, hides: state.hides + 1 }); }
 }
 
-/** Called when Alt+X is used on a selection — the moment the skill is learned. */
 function noteSelectionUsed(): void {
     const state = learning();
     if (state.usedSelection) { return; }
@@ -568,7 +567,7 @@ function markLearned(): void {
  * in a lifetime, and it is the whole personality of the thing.
  */
 function say(message: string): void {
-    vscode.window.setStatusBarMessage(`🙈  ${message}`, 6000);
+    vscode.window.setStatusBarMessage(`$(vibe-read-reading)  ${message}`, 7000);
 }
 
 // ---------------------------------------------------------------------------
@@ -1492,7 +1491,7 @@ async function openSample(): Promise<void> {
     await vscode.window.showTextDocument(doc, { preview: false });
 }
 
-const SAMPLE = `# A file to try Vibe Read on. Press Alt+X.
+const SAMPLE = `# A file to try Vibe Read on. Click Read at the bottom, or press Alt+X.
 
 
 def apply_checkout(cart, tax_rate, coupon=None):
@@ -1648,8 +1647,8 @@ function showWelcomeOnce(context: vscode.ExtensionContext): void {
     context.globalState.update('vibeRead.welcomed', true);
 
     vscode.window.showInformationMessage(
-        '🙈 AI writes the code. Its comments explain the why. Alt+X hides the code ' +
-        'and leaves the why — press it again to bring the code back.',
+        'Vibe Read: click Read at the bottom (or press Alt+X). The code hides and ' +
+        "your AI's reasons stay. Click again to bring the code back.",
         'Show me how'
     ).then(choice => {
         // The walkthrough, not the keyboard shortcuts list. Someone who has

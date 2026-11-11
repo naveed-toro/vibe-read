@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.1 — a lighter first minute
+
+- The walkthrough is three steps now, in the order people click: open a file, click **Read**, click **Page**. The selection step is gone from the start; it is a tip later.
+- The welcome message talks about the **Read** button first, the key second.
+- Three status bar hints, once each — how to undo, where Page is, what selecting lines does — then never again. The old tip repeated five times and came back at the sixtieth use.
+
 ## 0.5.0 — every language, read right
 
 The part that decides what is a comment was rewritten and tested on 56 languages. It now gets these right:

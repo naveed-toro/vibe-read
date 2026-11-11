@@ -1,14 +1,16 @@
-## Nothing is edited.
+## Code is for the machine. Comments are for you.
 
-Press **`Alt+X`** again and it all comes back.
+Click **Read** at the bottom — or press **`Alt+X`**.
 
 **Before**
-```python
-# Discount before tax.
-subtotal *= (1 - rate)
+```js
+// Lock the button the moment it is tapped.
+button.disabled = true;
 ```
-**After** `Alt+X`
-```python
-# Discount before tax.
-🙈
+**After**
+```js
+// Lock the button the moment it is tapped.
+⋯
 ```
+
+Nothing is edited. Click again and it all comes back.
