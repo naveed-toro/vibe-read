@@ -6,6 +6,11 @@
 
 | | |
 |---|---|
+| **Vibe** | <img src="https://raw.githubusercontent.com/naveed-toro/vibe-read/main/media/vibe-pick.gif" width="460" alt="Click the mark in the status bar and pick a mood for the hidden code"> |
+| ✏️ | <img src="https://raw.githubusercontent.com/naveed-toro/vibe-read/main/media/vibe-own.gif" width="460" alt="Press the pencil and type any emoji or word"> |
+
+| | |
+|---|---|
 | 🖱️&nbsp;**Vibe&nbsp;Read** | Click: the code hides, only the comments stay. **Scroll and read just them, nothing in the way.** Click again: your code is back, exactly as it was. *The button counts the comments as whys (10 whys).* |
 | 🖱️&nbsp;**📖&nbsp;Page** | Appears after that first click. Opens the whole file's reasoning as a clean page. |
 | <kbd>Alt</kbd> <kbd>X</kbd> | The code hides. Only the comments, the AI's reasons, stay. Select some lines first to bring back just those. |
@@ -61,10 +66,6 @@ One more key, and it is yours to keep. The reasoning becomes the document.
 
      ABOUT 6 SECONDS.   SAVE AS  media/mark.gif
      ═══════════════════════════════════════════════════════════════════ -->
-
-| | |
-|---|---|
-| **Vibe** | <img src="https://raw.githubusercontent.com/naveed-toro/vibe-read/main/media/vibe-read-vibe.gif" width="420" alt="Pick a vibe for the hidden code, or press the pencil and make your own"> |
 
 
 The default is an ellipsis, and that is the point — an emoji repeated down a

@@ -4,7 +4,7 @@
   "publisher": "naveed-toro",
   "description": "Hide the code, read your AI's reasoning — then give it better instructions. Save it as notes.",
   "icon": "icon.png",
-  "version": "0.3.8",
+  "version": "0.3.9",
   "license": "MIT",
   "repository": {
     "type": "git",

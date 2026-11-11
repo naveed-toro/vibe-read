@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.9
+
+Two short recordings sit right under the first one: pick a mood for the hidden code, and make your own with the pencil — it changes as you type.
+
 ## 0.3.8
 
 A third recording shows the vibe: click it in the status bar, pick a mark, or press the pencil to make your own. The read-me now runs in the order people use it: hide and read, the page, the vibe, then selecting lines.
