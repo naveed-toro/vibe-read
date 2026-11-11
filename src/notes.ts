@@ -47,38 +47,35 @@ export function buildNotes(input: NotesInput): string | null {
     const comments = commentsOf(sections);
     const out: string[] = [];
 
+    // The same shape as the reading page, so what is kept looks like what was
+    // read: the name, one line of facts, the numbered whys with their code
+    // folded under each, then the three extras, shut.
     out.push(`# ${input.fileName}`);
     out.push('');
-    out.push(`> Read with ◎ ◎ **Vibe Read** · ${today} · ${whys} why${whys === 1 ? '' : 's'}`);
+    out.push(`*${whys} why${whys === 1 ? '' : 's'} · ${today} · read with Vibe Read*`);
     out.push('');
-    out.push('---');
-    out.push('');
-
-    // Three blocks, and the reasoning is the one that is open. Inside it the
-    // code still sits where it belongs — under the paragraph that explains it,
-    // shut, one line high. Those small folds were taken out once and it was a
-    // mistake: what made the page unreadable was the numbering and the great
-    // headings, not the folds. A shut fold says "this was here" and offers to
-    // show it. That is the shape of the whole idea, in miniature.
-    out.push('<details open>');
-    out.push('<summary>the whole file · reasoning</summary>');
+    out.push('## Reasoning');
     out.push('');
 
-    for (const section of sections) {
-        for (const paragraph of paragraphsOf(section.prose)) {
-            out.push(paragraph.text);
+    // A real numbered list, with each why's code indented inside its item, so
+    // every renderer keeps the fold with the reason it belongs to instead of
+    // letting it drift down against the next number.
+    const indent = (text: string) => text.split('\n').map(l => (l === '' ? '' : '   ' + l)).join('\n');
+    sections.forEach((section, i) => {
+        paragraphsOf(section.prose).forEach((paragraph, j) => {
+            out.push(j === 0 ? `${i + 1}. ${paragraph.text}` : indent(paragraph.text));
             out.push('');
-        }
+        });
         if (section.code.length > 0) {
-            out.push(fold(`code · ${section.code.length} line${section.code.length === 1 ? '' : 's'}`, section.code, fence));
+            out.push(indent(fold(`code · ${section.code.length} line${section.code.length === 1 ? '' : 's'}`, section.code, fence)));
         }
-    }
+    });
 
-    out.push('</details>');
+    out.push('## More');
     out.push('');
-    out.push(fold(`the whole file · comments · ${comments.length} lines`, comments, fence));
-    out.push(fold(`the whole file · code · ${code.length} lines`, code, fence));
-    out.push(fold(`the whole file · as it is · ${input.lineTexts.length} lines`, input.lineTexts, fence));
+    out.push(fold(`Comments · ${comments.length} lines`, comments, fence));
+    out.push(fold(`Code · ${code.length} lines`, code, fence));
+    out.push(fold(`As it is · ${input.lineTexts.length} lines`, input.lineTexts, fence));
 
     return out.join('\n');
 }

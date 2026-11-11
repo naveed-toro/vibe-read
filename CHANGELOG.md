@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.4 — notes that match the page
+
+The saved Markdown now has the same shape as the reading page: one line of facts, a **Reasoning** section as a numbered list, each why with its code folded inside it, then **More** with Comments, Code and As it is, shut. The stray ◎ ◎ in the first line is gone.
+
 ## 0.4.2 — Save saves
 
 **Save as notes** now asks where to save, with `checkout.notes.md` already filled in next to the code, and writes the file. No second copy of the page, no Untitled tab to close, no "Save changes?" on the way out. The button says **✓ Saved** for a moment, and a message offers to open the file.
