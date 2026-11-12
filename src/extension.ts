@@ -23,7 +23,7 @@ let extensionUri: vscode.Uri;
 // ---------------------------------------------------------------------------
 
 interface DocState {
-    /** Alt+X with no selection turns this on for the whole file. */
+    /** Alt+M with no selection turns this on for the whole file. */
     wholeFile: boolean;
     /**
      * Lines that disagree with `wholeFile`. true = hidden, false = showing.
@@ -326,9 +326,9 @@ let readBar: vscode.StatusBarItem;
 function sameWidthAsName(label: string): string {
     // "Read" and "8 whys" are padded to one width, so the button does not
     // change size under the mouse when it is pressed.
-    const digits = (label.match(/\d/g) ?? []).length;
-    const width = label === 'Read' ? 32 : digits * 7 + (label.endsWith('whys') ? 30 : 25);
-    const pad = Math.max(0, Math.round((44 - width) / 3));
+    // Hide and Show are about the same width; Show is a little wider.
+    const width = label === 'Show' ? 34 : 30;
+    const pad = Math.max(0, Math.round((36 - width) / 3));
     const left = '\u00a0'.repeat(Math.floor(pad / 2));
     const right = '\u00a0'.repeat(Math.ceil(pad / 2));
     return left + label + right;
@@ -352,20 +352,20 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
     //
     // And both name the key. They used to read "Select some lines to hide only
     // those", which leaves out the half that does the work: a selection on its
-    // own does nothing at all until Alt+X is pressed. Somebody who selects and
+    // own does nothing at all until Alt+M is pressed. Somebody who selects and
     // waits is left thinking it is broken — and an earlier version really did
     // act on the selection by itself, so the wording is a leftover from a
     // behaviour that no longer exists. The teaching tip had it right all
-    // along: select a few lines AND press Alt+X. These now say the same.
+    // along: select a few lines AND press Alt+M. These now say the same.
     // One thing in the corner, not two.
     //
     // Reading was given a chip of its own for a while, so that neither key
     // looked like the other's servant. It read as fair and it worked badly:
     // two chips are two decisions, taken before anybody knows what either of
-    // them does, and every time. There is one door. Alt+X opens it, and what
+    // them does, and every time. There is one door. Alt+M opens it, and what
     // is written on the door says what else is inside.
     //
-    // Alt+M never needed the chip to work. It works on any file, at any
+    // Alt+X never needed the chip to work. It works on any file, at any
     // moment, and both tooltips say so.
     if (hidden === 0) {
         // Nothing is covered up, whatever the flags happen to say.
@@ -387,14 +387,12 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
         // so the two states read as two different objects instead of one thing
         // with two expressions. Two eyes in both, and only the expression
         // changes, which is the whole of how a face works.
-        statusBar.text = `$(vibe-read-resting) ${sameWidthAsName('Read')}`;
+        statusBar.text = `$(vibe-read-resting) ${sameWidthAsName('Hide')}\u00a0\u00a0|`;
         statusBar.tooltip = new vscode.MarkdownString(
-            '**Vibe Read**\n\n' +
+            '**Hide the code, right here in the editor** `Alt+M`\n\n' +
             // A blank line, not a line break: the key is one thing and the
             // advice underneath it is another, and they were reading as one.
-            '`Alt+X` hide the code, read the reasoning  \n' +
-            '`Alt+M` read the whole file as a page\n\n' +
-            'Select some lines and press `Alt+X` to hide only those.'
+            'Only the comments stay. Select some lines and press `Alt+M` to hide only those.'
         );
     } else {
         // The same face, with its eyes open.
@@ -412,15 +410,11 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
         // with every other extension, and when it was full the extra word
         // cost us the Page button beside it. The open eyes already say
         // "reading"; the number is the part worth the space.
-        statusBar.text = whys > 0
-            ? `$(vibe-read-reading) ${sameWidthAsName(`${whys} why${whys === 1 ? '' : 's'}`)}`
-            : '$(vibe-read-reading) Reading';
+        statusBar.text = `$(vibe-read-reading) ${sameWidthAsName('Show')}\u00a0\u00a0|`;
         statusBar.tooltip = new vscode.MarkdownString(
-            "**The code is hidden. You're reading the why.**\n\n" +
-            '`Alt+X` show the code back  \n' +
-            '`Alt+M` read the whole file as a page  \n' +
-            '`Ctrl+C` copy only what you see\n\n' +
-            'Select some lines and press `Alt+X` to show only those.'
+            '**The code is hidden. Click to bring it back.** `Alt+M`\n\n' +
+            '`Ctrl+C` copies only what you see.  \n' +
+            'Select some lines and press `Alt+M` to show only those.'
         );
     }
 
@@ -448,10 +442,11 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
     // Page is always there. It works whether the code is hidden or not, and a
     // button that appears only after another click reads like a hidden
     // feature and makes the bar rearrange itself under the mouse.
-    readBar.text = '$(book) Page\u00a0\u00a0|';
+    readBar.text = '$(book) Read';
     readBar.tooltip = new vscode.MarkdownString(
-        '**Read as a page** `Alt+M`\n\n' +
-        "The whole file's reasoning on one clean page. Save it as notes from there."
+        '**Read it like a book** `Alt+X`\n\n' +
+        (whys > 0 ? `${whys} why${whys === 1 ? '' : 's'} in this file, ` : 'Every reason in this file, ') +
+        'numbered on one calm page. Save it as notes from there.'
     );
     readBar.show();
 
@@ -482,7 +477,7 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
 //
 // Two things are worth saying out loud, and nowhere on screen says them:
 //
-//   That Alt+X is a toggle. Someone presses it, their whole file vanishes, and
+//   That Alt+M is a toggle. Someone presses it, their whole file vanishes, and
 //   if they do not know how to undo that they will assume it broke something.
 //   Panic first — everything else can wait.
 //
@@ -490,7 +485,7 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
 //
 // Shown once and it gets ignored; shown every time and it becomes an
 // irritation. So it is shown until the person has actually learned it — which
-// is something we can see rather than guess, because using Alt+X on a
+// is something we can see rather than guess, because using Alt+M on a
 // selection *is* the skill — or five times, whichever comes first. The limit
 // matters: plenty of people will never want that move, and they should not be
 // told about it forever.
@@ -498,14 +493,14 @@ function updateStatusBar(editor: vscode.TextEditor | undefined, whys: number, hi
 // One reminder much later, for anyone who learned it and then stopped. Then
 // silence, permanently.
 //
-// It is two messages, not a system, and it must stay that way. Alt+M and
+// It is two messages, not a system, and it must stay that way. Alt+X and
 // Ctrl+C will look like they deserve the same treatment. They do not.
 // ---------------------------------------------------------------------------
 
 interface Learning {
     /** How many times the whole file has been hidden. */
     hides: number;
-    /** Has Alt+X ever been used on a selection? */
+    /** Has Alt+M ever been used on a selection? */
     usedSelection: boolean;
 }
 
@@ -517,7 +512,7 @@ function learning(): Learning {
     return learningStore.get<Learning>(LEARNING_KEY) ?? { hides: 0, usedSelection: false };
 }
 
-/** Called when Alt+X hides the whole file. */
+/** Called when Alt+M hides the whole file. */
 function noteWholeFileHide(): void {
     const state = learning();
 
@@ -525,11 +520,11 @@ function noteWholeFileHide(): void {
     // thing worth knowing: how to undo, where the page is, what selection
     // does. A hint that keeps coming back stops being help.
     if (state.hides === 0) {
-        say('Click it again, or press Alt+X, to bring the code back.');
+        say('Click Show, or press Alt+M, to bring the code back.');
     } else if (state.hides === 1) {
-        say('Tip: 📖 Page shows the whole file as a clean page you can save.');
+        say('Tip: 📖 Read (Alt+X) shows every reason on one calm page you can save.');
     } else if (state.hides === 2 && !state.usedSelection) {
-        say('Tip: select a few lines, then Alt+X, to hide or show just those.');
+        say('Tip: select a few lines, then Alt+M, to hide or show just those.');
     }
 
     if (state.hides < 3) { learningStore.update(LEARNING_KEY, { ...state, hides: state.hides + 1 }); }
@@ -571,7 +566,7 @@ function say(message: string): void {
 }
 
 // ---------------------------------------------------------------------------
-// Alt+X — the only key that matters
+// Alt+M — hiding, right in the editor
 // ---------------------------------------------------------------------------
 
 function toggle(editor: vscode.TextEditor): void {
@@ -621,7 +616,7 @@ function warnIfNothingToRead(lines: ScannedLine[]): boolean {
 
     vscode.window.showInformationMessage(
         'There are no comments in this file, so there is nothing to read. ' +
-        'Ask your AI to explain its reasoning in comments, then press Alt+X.',
+        'Ask your AI to explain its reasoning in comments, then try again.',
         'Hide it anyway'
     ).then(choice => {
         if (choice === 'Hide it anyway') {
@@ -653,7 +648,7 @@ function warnIfNothingToRead(lines: ScannedLine[]): boolean {
 //   so the blame card arrives first and the code is buried underneath it. A
 //   feature that most people will never see is not a feature.
 //
-// So Alt+X is the only answer, and it is enough: select the lines you want and
+// So Alt+M is the only answer, and it is enough: select the lines you want and
 // press it. The same key, narrowed to what you picked.
 // ---------------------------------------------------------------------------
 
@@ -747,7 +742,7 @@ function visibleTextOf(
 }
 
 // ---------------------------------------------------------------------------
-// Alt+M — keep it as notes
+// Alt+X — keep it as notes
 // ---------------------------------------------------------------------------
 
 async function read(editor: vscode.TextEditor): Promise<void> {
@@ -870,7 +865,7 @@ const DEFAULT_MARK = '⋯';
  * A mark is looked at; text is read. While it stays about the size of one
  * short word the eye takes it as a shape — a column running down the left of
  * the file. Past that it starts being read instead, and a thing you read
- * forty times down one page is the noise Alt+X was pressed to be rid of.
+ * forty times down one page is the noise Alt+M was pressed to be rid of.
  *
  * Everything worth having fits: one emoji, four emoji, three monkeys, an
  * emoji and a word, [hidden], — code —. What it turns away is the loose
@@ -1477,7 +1472,7 @@ function openWalkthrough(): void {
  * The first step's button.
  *
  * A walkthrough panel can only hold pictures and text — no buttons of its own,
- * nothing that runs. So rather than animate what Alt+X does, this hands the
+ * nothing that runs. So rather than animate what Alt+M does, this hands the
  * reader a real file and lets them press the key themselves. The editor is the
  * demonstration; the panel only has to point at it.
  *
@@ -1491,7 +1486,7 @@ async function openSample(): Promise<void> {
     await vscode.window.showTextDocument(doc, { preview: false });
 }
 
-const SAMPLE = `# A file to try Vibe Read on. Click Read at the bottom, or press Alt+X.
+const SAMPLE = `# A file to try Vibe Read on. Click 📖 Read at the bottom, or press Alt+X.
 
 
 def apply_checkout(cart, tax_rate, coupon=None):
@@ -1540,13 +1535,17 @@ export function activate(context: vscode.ExtensionContext): void {
     // right-click menu showed all three as one "Vibe Read", so a button that
     // had been hidden there could not be found again. The ids change nothing
     // about the order; that still comes from the priorities.
-    statusBar = vscode.window.createStatusBarItem('vibeRead.read', vscode.StatusBarAlignment.Right, TOGETHER);
-    statusBar.name = 'Vibe Read: Read (hide / show code)';
+    // Left to right now: the vibe, Hide, then Read. Read is the page, the
+    // reason this extension exists, so it sits rightmost and is the last to go
+    // when the bar is full. The ids stay as they were so that anything someone
+    // hid by right-clicking stays hidden; only the names changed.
+    statusBar = vscode.window.createStatusBarItem('vibeRead.read', vscode.StatusBarAlignment.Right, TOGETHER + 0.01);
+    statusBar.name = 'Vibe Read: Hide (hide / show the code)';
     statusBar.command = 'vibeRead.toggle';
     context.subscriptions.push(statusBar);
 
-    readBar = vscode.window.createStatusBarItem('vibeRead.page', vscode.StatusBarAlignment.Right, TOGETHER + 0.01);
-    readBar.name = 'Vibe Read: Page';
+    readBar = vscode.window.createStatusBarItem('vibeRead.page', vscode.StatusBarAlignment.Right, TOGETHER);
+    readBar.name = 'Vibe Read: Read (the page)';
     readBar.command = 'vibeRead.read';
     context.subscriptions.push(readBar);
 
@@ -1647,8 +1646,8 @@ function showWelcomeOnce(context: vscode.ExtensionContext): void {
     context.globalState.update('vibeRead.welcomed', true);
 
     vscode.window.showInformationMessage(
-        'Vibe Read: click Read at the bottom (or press Alt+X). The code hides and ' +
-        "your AI's reasons stay. Click again to bring the code back.",
+        'Vibe Read: click 📖 Read at the bottom (or press Alt+X). Every reason ' +
+        'your AI wrote, numbered on one calm page.',
         'Show me how'
     ).then(choice => {
         // The walkthrough, not the keyboard shortcuts list. Someone who has

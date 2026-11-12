@@ -2,9 +2,9 @@
   "name": "vibe-read",
   "displayName": "Vibe Read — Read My AI",
   "publisher": "naveed-toro",
-  "description": "Hide the code, read your AI's reasoning — then give it better instructions. Save it as notes.",
+  "description": "Read your AI's code like a book: every reason numbered on one calm page. Save it as notes.",
   "icon": "icon.png",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -51,7 +51,7 @@
       },
       {
         "command": "vibeRead.read",
-        "title": "Vibe Read: Read the reasoning",
+        "title": "Vibe Read: Read as a page",
         "icon": "$(vibe-read-notes)"
       },
       {
@@ -100,14 +100,14 @@
     "keybindings": [
       {
         "command": "vibeRead.toggle",
-        "key": "alt+x",
-        "mac": "alt+x",
+        "key": "alt+m",
+        "mac": "alt+m",
         "when": "editorIsOpen && !terminalFocus"
       },
       {
         "command": "vibeRead.read",
-        "key": "alt+m",
-        "mac": "alt+m",
+        "key": "alt+x",
+        "mac": "alt+x",
         "when": "editorIsOpen && !terminalFocus"
       },
       {
@@ -146,7 +146,7 @@
       {
         "id": "readMyAI",
         "title": "Read the why",
-        "description": "Your AI explains its code in comments. Three clicks to read them.",
+        "description": "Your AI explains its code in comments. Two clicks to read them.",
         "steps": [
           {
             "id": "open",
@@ -157,25 +157,25 @@
             }
           },
           {
-            "id": "hide",
-            "title": "Click Read",
-            "description": "In the status bar at the bottom, or press Alt+X. The code hides, the reasons stay. Click again and the code is back.",
-            "media": {
-              "markdown": "media/2-hide.md"
-            },
-            "completionEvents": [
-              "onCommand:vibeRead.toggle"
-            ]
-          },
-          {
             "id": "page",
-            "title": "Click Page",
-            "description": "The whole file's reasoning on one page, every why numbered. Save it as notes if you want to keep it.",
+            "title": "Click 📖 Read",
+            "description": "At the bottom right, or press Alt+X. Every reason in the file, numbered on one calm page. Save it as notes if you want to keep it.",
             "media": {
               "markdown": "media/3-page.md"
             },
             "completionEvents": [
               "onCommand:vibeRead.read"
+            ]
+          },
+          {
+            "id": "hide",
+            "title": "Or hide the code right in the editor",
+            "description": "Click Hide, or press Alt+M. The code hides, the reasons stay in place. Select a few lines first to hide only those.",
+            "media": {
+              "markdown": "media/2-hide.md"
+            },
+            "completionEvents": [
+              "onCommand:vibeRead.toggle"
             ]
           }
         ]
@@ -207,7 +207,7 @@
         "vibeRead.showEditorButton": {
           "type": "boolean",
           "default": true,
-          "description": "Show the reading button above the editor while the code is hidden. Hiding and showing the code has the corner of the status bar and Alt+X; this is the one place reading has a button of its own."
+          "description": "Show the reading button above the editor while the code is hidden. Reading also has 📖 Read in the status bar and Alt+X."
         }
       }
     }

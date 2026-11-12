@@ -1,6 +1,6 @@
 ## Read it like a book.
 
-Click **📖 Page** at the bottom — or press **`Alt+M`**.
+Click **📖 Read** at the bottom — or press **`Alt+X`**.
 
 > **checkout.js** · 8 whys
 >

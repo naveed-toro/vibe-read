@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.0 — the page comes first
+
+- **📖 Read is now the page**, and it is the main button: every reason in the file, numbered on one calm page. Its key is **Alt+X**.
+- Hiding the code in the editor is now **Hide** (**Alt+M**). When the code is hidden the button says **Show**. Selecting lines and pressing Alt+M hides only those, and Ctrl+C still copies only what you see.
+- Status bar, left to right: your vibe, Hide, 📖 Read. Read sits rightmost, so it is the last to give way when the bar is full.
+- The walkthrough is two clicks now: open a file, click 📖 Read. Hiding is the optional last step.
+- The read-me starts with the page.
+
 ## 0.5.2 — pick a part, copy its reasons
 
 - A new GIF on this page: select one part, hide its code, copy only its reasons and paste them to your AI.

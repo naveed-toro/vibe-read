@@ -1,6 +1,6 @@
-## Code is for the machine. Comments are for you.
+## Stay in the code.
 
-Click **Read** at the bottom — or press **`Alt+X`**.
+Click **Hide** at the bottom — or press **`Alt+M`**.
 
 **Before**
 ```js
@@ -13,4 +13,5 @@ button.disabled = true;
 ⋯
 ```
 
-Nothing is edited. Click again and it all comes back.
+Nothing is edited. Click **Show** and it all comes back.
+Select a few lines first to hide only those.
