@@ -2,8 +2,8 @@
 
 ## 0.6.0 — the page comes first
 
-- **📖 Read is now the page**, and it is the main button: every reason in the file, numbered on one calm page. Its key is **Alt+X**.
-- Hiding the code in the editor is now **Hide** (**Alt+M**). When the code is hidden the button says **Show**. Selecting lines and pressing Alt+M hides only those, and Ctrl+C still copies only what you see.
+- **📖 Read is now the page**, and it is the main button: every reason in the file, numbered on one calm page. Its key is **Alt+M**.
+- Hiding the code in the editor is now **Hide** (**Alt+X**). When the code is hidden the button says **Show**. Selecting lines and pressing Alt+X hides only those, and Ctrl+C still copies only what you see.
 - Status bar, left to right: your vibe, Hide, 📖 Read. Read sits rightmost, so it is the last to give way when the bar is full.
 - The walkthrough is two clicks now: open a file, click 📖 Read. Hiding is the optional last step.
 - The read-me starts with the page.

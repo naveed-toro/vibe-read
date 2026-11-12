@@ -1,6 +1,6 @@
 ## Stay in the code.
 
-Click **Hide** at the bottom — or press **`Alt+M`**.
+Click **Hide** at the bottom — or press **`Alt+X`**.
 
 **Before**
 ```js
