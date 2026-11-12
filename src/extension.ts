@@ -857,7 +857,9 @@ async function keepAsMarkdown(markdown: string, source: vscode.Uri): Promise<str
  * covered too, three times over — half the page vanishes, the status bar says
  * how many whys are left, and the welcome message spells it out.
  */
-const DEFAULT_MARK = '⋯';
+// The duck and the cup by default: the Yours slot, so the very first thing
+// someone sees is that the vibe is theirs to play with.
+const DEFAULT_MARK = '🦆 ☕';
 
 /**
  * Eight, and the number is not arbitrary.
@@ -881,7 +883,12 @@ const MOST_CHARACTERS = 8;
 // The default sits first and is therefore in the list — which it was not
 // before. 🙈 was the default and was nowhere among these, so anybody who
 // changed it once could never find their way back to it.
-const FILLED_IN = ['⋯', '🤫', '🙈 🙉 🙊', '🌚', '💻', '🦆 ☕'];
+// Five, each a different mood, ordered from the calmest to the loudest after
+// the default. The mark repeats down every hidden line, so it is a texture as
+// much as a picture: one or two glyphs read as rhythm, three as a stripe — fine
+// for the one slot that is a famous joke, too much for any other. The duck sits
+// first because it is the default, and the row in use is the one the eye finds.
+const FILLED_IN = ['🦆 ☕', '⋯', '🤫', '🤷\u200d♂️ 🤦\u200d♀️', '🙈 🙉 🙊'];
 
 /**
  * A name for each slot, and it is not decoration — this is the word that goes
@@ -921,8 +928,11 @@ const FILLED_IN = ['⋯', '🤫', '🙈 🙉 🙊', '🌚', '💻', '🦆 ☕'];
  * between them was the other option and it separates something that the gap
  * has already separated, so it only adds a mark that means nothing.
  */
-const NAMES = ['Mute', 'Shh', 'Hide', 'Vibe', 'Code', 'Yours'];
-const YOURS = NAMES[NAMES.length - 1];
+// One short word each, a mood rather than a description. None may share a
+// name with a button (Read, Hide, Show) or with the list itself (your vibe).
+const NAMES = ['Duck', 'Quiet', 'Shh', 'Oops', 'Wise'];
+// A vibe typed in that is not in the list is simply the user's own.
+const YOURS = 'Yours';
 
 /** The word that goes beside the vibe. Falls back to Vibe for anything ours. */
 function nameFor(vibe: string): string {
@@ -931,7 +941,7 @@ function nameFor(vibe: string): string {
 }
 
 interface MarkRow extends vscode.QuickPickItem {
-    /** Which of the six, or RESET for the row at the bottom. */
+    /** Which of the five, or RESET for the row at the bottom. */
     slot: number;
     mark: string;
 }

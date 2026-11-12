@@ -7,6 +7,7 @@
 - Status bar, left to right: your vibe, Hide, 📖 Read. Read sits rightmost, so it is the last to give way when the bar is full.
 - The walkthrough is two clicks now: open a file, click 📖 Read. Hiding is the optional last step.
 - The read-me starts with the page.
+- A new set of five vibes, each a different mood: 🦆 ☕ Duck (the new default), ⋯ Quiet, 🤫 Shh, 🤷‍♂️ 🤦‍♀️ Oops, 🙈 🙉 🙊 Wise. Moon and Code are gone, and no vibe shares a name with a button any more.
 
 ## 0.5.2 — pick a part, copy its reasons
 

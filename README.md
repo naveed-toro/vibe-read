@@ -12,7 +12,7 @@
 
 | | |
 |---|---|
-| ⋯ 🤫 🙈<br><br>**Vibe** | <img src="https://raw.githubusercontent.com/naveed-toro/vibe-read/main/media/vibe-pick.gif" width="460" alt="Click the mark in the status bar and pick a mood for the hidden code"> |
+| 🦆 🤫 🙈<br><br>**Vibe** | <img src="https://raw.githubusercontent.com/naveed-toro/vibe-read/main/media/vibe-pick.gif" width="460" alt="Click the mark in the status bar and pick a mood for the hidden code"> |
 
 **Pick a mood for the hidden code.** Same code, a different vibe.
 
@@ -34,7 +34,7 @@ Your AI explains every decision it makes, in the comments. You never read them, 
 | 🖱️&nbsp;**Hide** · <kbd>Alt</kbd>&nbsp;<kbd>M</kbd> | The code hides right in the editor. Only the comments stay. Click **Show** and it is back exactly as it was — nothing is edited. |
 | Select&nbsp;lines · <kbd>Alt</kbd>&nbsp;<kbd>M</kbd> | Hides or shows only those lines. |
 | <kbd>Ctrl</kbd>&nbsp;<kbd>C</kbd> | While the code is hidden, copies only what you see. The rest of the time it is VS Code's own copy. |
-| ✏️&nbsp;**Vibe** | The mark where the code was: ⋯ Mute, 🤫 Shh, 🙈 🙉 🙊 Hide, 🌚 Vibe, 💻 Code — or your own, with the pencil. |
+| ✏️&nbsp;**Vibe** | The mark where the code was: 🦆 ☕ Duck, ⋯ Quiet, 🤫 Shh, 🤷‍♂️ 🤦‍♀️ Oops, 🙈 🙉 🙊 Wise — or your own, with the pencil. |
 
 | | |
 |---|---|
